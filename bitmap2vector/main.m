@@ -14,3 +14,7 @@ x = input("run c++ code to to get line segments and island line segments");
 run line_segments.m
 run display_line_segments.m
 run display_islands.m
+run assign_line_seg_to_regions.m
+print_points_for_path(node, line_seg, island_line_seg);
+x = input("run c++ code to to get optimize paths in paths.txt");
+run opt_curves.m
