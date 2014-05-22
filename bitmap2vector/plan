@@ -34,3 +34,12 @@ id
 isControlPt
 isIslandPt
 controlPtColNum
+
+
+Rebordering Plan
+create a function to reverse a path without changing its configuration
+for each region create a closed path string out of the optimized paths
+	- the trick to join will be:
+		since the end points of a path and the start point of the next path of the region will either be one to two pixels 
+		make a line from the end point to the start point and then draw the usual path.
+		print these combined paths with tags and fill color
