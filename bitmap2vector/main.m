@@ -1,5 +1,5 @@
 clear;
-img = imread("segmentation_in_srs_213.png");
+img = imread("atlas_310.png");
 M = popout_boundaries_color(img);
 [cntrl_pt num_cntrl_pt adj_pix_coord node pix_to_node_map] = detect_control_points(M);
 x = input("run c++ code to create and store color code matrix with recursion limit = unlimited and read from popped_out_boundaries.png[argument to main] and write to create_color_code_matrix.m [indirection]");

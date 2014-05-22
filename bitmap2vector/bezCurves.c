@@ -67,7 +67,7 @@ main()
 {   
     static Point2 **d; /*  Digitized points */
     int *numPoints, i, numPaths, j;
-    double  error = 4;  
+    double  error = 0;
     scanf("%d", &numPaths);
 
     d = (Point2**)malloc(numPaths * sizeof(Point2*));
