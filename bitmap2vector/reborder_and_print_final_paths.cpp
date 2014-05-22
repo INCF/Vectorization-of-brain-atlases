@@ -194,6 +194,14 @@ int sameOrRevDirection(Path *path_list, int focus, Point b)
 		return 0;
 }
 
+int checkSame(Point a, Point b)
+{
+	if(a.x == b.x && a.y == b.y)
+		return 1;
+	else
+		return 0;
+}
+
 void processRegion(Region *region, Path *path_list, int numPaths)
 {
 	int counter = region->numSurroundPaths;
@@ -214,7 +222,16 @@ void processRegion(Region *region, Path *path_list, int numPaths)
 		}
 		else
 		{
-			focus = getNextPathIndex(region->pathNum, region->numSurroundPaths, (revFlag == 0)?(region->closedPath[pushed - 1]->end):(region->closedPath[pushed - 1]->reverse->end), path_list, numPaths);
+			// If initial point becomes equal  to final point return ... 
+			// This will prevent interaction with islands
+			// Also reduce the number of surrounding paths
+			if(checkSame(region->closedPath[0]->start, region->closedPath[pushed - 1]->end))
+			{
+				region->numSurroundPaths = pushed;
+				return;
+			}
+
+			focus = getNextPathIndex(region->pathNum, region->numSurroundPaths, (revFlag == 0)?(region->closedPath[pushed - 1]->end):(region->closedPath[pushed - 1]->end), path_list, numPaths);
 			if(focus == -1)
 				cout << "ERROR" << endl;
 			else
@@ -223,7 +240,7 @@ void processRegion(Region *region, Path *path_list, int numPaths)
 				region->pathNum[focus] = -1;
 				focus = temp;
 				
-				if(sameOrRevDirection(path_list, focus, (revFlag == 0)?(region->closedPath[pushed - 1]->end):(region->closedPath[pushed - 1]->reverse->end)))
+				if(sameOrRevDirection(path_list, focus, (revFlag == 0)?(region->closedPath[pushed - 1]->end):(region->closedPath[pushed - 1]->end)))
 				{
 					region->closedPath[pushed] = &path_list[focus];
 					counter--;
@@ -312,10 +329,11 @@ int main()
 	}
 
 	// Ouput final svg paths
+	
 	for(int i = 0; i < numRegions; ++i)
 	{
 		if(i != 0)
-			cout << "<path  style=\"fill:rgb(" << myRegions[i].r << "," << myRegions[i].g << "," << myRegions[i].b << "); \" d = \"";
+			cout << "<path  style=\"fill:rgb(" << myRegions[i].r << "," << myRegions[i].g << "," << myRegions[i].b << "); stroke-width:1; stroke:rgb(" << myRegions[i].r << "," << myRegions[i].g << "," << myRegions[i].b << ") \" d = \"";
 		else
 			cout << "<path fill=\"none\" d =\" ";
 		for(int j = 0; j < myRegions[i].numSurroundPaths; ++j)
@@ -342,14 +360,16 @@ int main()
 				}
 			}
 		}
-		cout << " \" />" << endl;
+		cout << " Z\" />" << endl;
 		cout << endl;
 	}
+	
+
 
 /*
-
 	for(int i = 0; i < numPaths; ++i)
 	{
+		cout << "<path fill=\"none\" stroke=\"black\" stroke-width=\"1\" d =\" ";
 		for(int j = 0;j < myPaths[i].length; ++j)
 		{
 			for(int k = 0; k < 3; ++k)
@@ -361,11 +381,13 @@ int main()
 				cout << myPaths[i].c[j][k].x << "," << myPaths[i].c[j][k].y << " ";
 			}
 		}
+		cout << " \" />" << endl;
 	}
 
 
 	for(int i = 0; i < numPaths; ++i)
 	{
+		cout << "<path fill=\"none\" stroke=\"red\" stroke-width=\"1\" d =\" ";
 		for(int j = 0;j < myPaths[i].length; ++j)
 		{
 			for(int k = 0; k < 3; ++k)
@@ -377,10 +399,11 @@ int main()
 				cout << myPaths[i].reverse->c[j][k].x << "," << myPaths[i].reverse->c[j][k].y << " ";
 			}
 		}
+		cout << " \" />" << endl;
 	}
 
-
-	*/
+*/
+	
 
 
 	return 0;

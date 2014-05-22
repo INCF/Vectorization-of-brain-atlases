@@ -14,3 +14,12 @@ for i = 1:size(line_seg)(2)
 		endif
 	endif
 endfor
+
+for i = 1:size(island_line_seg)(2)
+	if(size(node(island_line_seg(i).a(2) + 1).adj_regions)(2) != 2)
+		printf("Maybe Some ERROR\n");
+	else
+		regions(node(island_line_seg(i).a(2)+1).adj_regions(1,1)).path = [regions(node(island_line_seg(i).a(2)+1).adj_regions(1,1)).path , i + size(line_seg)(2)];
+		regions(node(island_line_seg(i).a(2)+1).adj_regions(1,2)).path = [regions(node(island_line_seg(i).a(2)+1).adj_regions(1,2)).path , i + size(line_seg)(2)];
+	endif
+endfor

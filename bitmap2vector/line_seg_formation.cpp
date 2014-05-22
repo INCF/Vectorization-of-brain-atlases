@@ -206,7 +206,7 @@ void move_to_node(Graph* graph, int to, vector<int>& temp, int from)
     int ind;
     if(check_cntrl_adj(graph, to) && !graph->array[ind = get_adj_cntrl_pt(graph, to)].isUsedUp)
     {
-        temp.push_back(to);
+        temp.push_back(ind); // ind IS THEOROTICALLY CORRECT
     }
     else
     {
