@@ -263,7 +263,12 @@ int main()
 {
 	int numPaths;
 	int pathLength;
+	int imageHeight;
+	int imageWidth;
 	Path *myPaths = NULL;
+
+	scanf("%d", &imageHeight);
+	scanf("%d", &imageWidth);
 
 	scanf("%d", &numPaths);
 	myPaths = (Path*)malloc(numPaths * sizeof(Path));
@@ -328,8 +333,10 @@ int main()
 		processRegion(&myRegions[i], myPaths, numPaths);
 	}
 
-	// Ouput final svg paths
-	
+cout << "<!DOCTYPE html>" << endl << "<html>" << endl << "<body>" << endl << "<svg height=\"" << imageHeight << "\" width=\"" << imageWidth << "\">" << endl << "<g>" << endl;
+
+	// Ouput final svg paths with bezier curves only
+
 	for(int i = 0; i < numRegions; ++i)
 	{
 		if(i != 0)
@@ -353,7 +360,7 @@ int main()
 					{
 						if(k == 0 && l == 0)
 						{
-							cout << "L" << myRegions[i].closedPath[j]->start.x << " " << myRegions[i].closedPath[j]->start.y << " C";
+							//cout << "L" << myRegions[i].closedPath[j]->start.x << " " << myRegions[i].closedPath[j]->start.y << " C";
 						}
 					}
 					cout << myRegions[i].closedPath[j]->c[k][l].x << "," << myRegions[i].closedPath[j]->c[k][l].y << " ";
@@ -363,8 +370,46 @@ int main()
 		cout << " Z\" />" << endl;
 		cout << endl;
 	}
-	
 
+
+/* Only Lines
+	
+	for(int i = 0; i < numRegions; ++i)
+	{
+		if(i != 0)
+			cout << "<path  style=\"fill:rgb(" << myRegions[i].r << "," << myRegions[i].g << "," << myRegions[i].b << "); stroke-width:1; stroke:rgb(" << myRegions[i].r << "," << myRegions[i].g << "," << myRegions[i].b << ") \" d = \"";
+		else
+			cout << "<path fill=\"none\" d =\" ";
+		for(int j = 0; j < myRegions[i].numSurroundPaths; ++j)
+		{
+			for(int k = 0; k < myRegions[i].closedPath[j]->length; ++k)
+			{
+				for(int l = 0; l < 3; ++l)
+				{
+					if(j == 0)
+					{
+						if(k == 0 && l == 0)
+						{
+							cout << "M" << myRegions[i].closedPath[j]->start.x << " " << myRegions[i].closedPath[j]->start.y << " L";
+						}
+					}
+					else
+					{
+						if(k == 0 && l == 0)
+						{
+							//cout << "L" << myRegions[i].closedPath[j]->start.x << " " << myRegions[i].closedPath[j]->start.y << " C";
+						}
+					}
+					if(l == 2)
+					cout << myRegions[i].closedPath[j]->c[k][l].x << "," << myRegions[i].closedPath[j]->c[k][l].y << " L";
+				}
+			}
+		}
+		cout << " Z\" />" << endl;
+		cout << endl;
+	}
+	*/
+cout << "</g>" << endl << "</svg>" << endl << "</body>" << endl << "</html>" << endl;
 
 /*
 	for(int i = 0; i < numPaths; ++i)
