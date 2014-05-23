@@ -1,5 +1,7 @@
-function print_reborder_input(curve, regions, col_code)
+function print_reborder_input(curve, regions, col_code, M)
 	file_id = fopen('input_for_rebordering.txt', 'w');
+	fprintf(file_id, "%d\n", size(M)(1));
+	fprintf(file_id, "%d\n", size(M)(2));
 	fprintf(file_id, "%d\n", size(curve)(2));
 	for i =1:size(curve)(2)
 		fprintf(file_id, "%d\n",size(curve(i).path)(1));
