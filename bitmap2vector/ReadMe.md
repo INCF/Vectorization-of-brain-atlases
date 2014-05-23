@@ -22,4 +22,4 @@ NOTE:
 
 Your output svg will be in "output" folder in bitmap2vector directory.
 
-To know more about the project and its progress, please visit: [[https://rtvba.weebly.com][https://rtvba.weebly.com]]
+To know more about the project and its progress, please visit: [https://rtvba.weebly.com]
