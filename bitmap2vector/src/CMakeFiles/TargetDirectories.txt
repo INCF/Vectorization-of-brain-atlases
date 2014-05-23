@@ -1,1 +1,0 @@
-/home/dhruv/bitmap2vector/src/CMakeFiles/bitmap2vector.dir

@@ -1,5 +1,0 @@
-cmake_minimum_required(VERSION 2.8)
-project( bitmap2vector )
-find_package( OpenCV REQUIRED )
-add_executable( bitmap2vector bitmap2vector.cpp )
-target_link_libraries( bitmap2vector ${OpenCV_LIBS} )
