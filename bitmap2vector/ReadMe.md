@@ -21,5 +21,3 @@ NOTE:
 - There must be two arguments to the ./main.sh
 
 Your output svg will be in "output" folder in bitmap2vector directory.
-
-To know more about the project and its progress, please visit: [https://rtvba.weebly.com]
