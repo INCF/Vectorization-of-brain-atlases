@@ -317,7 +317,7 @@ int main()
    
     int lineCounter = 1;
 
-    
+    cout << "line_seg = [];" << endl;
 
     for(int i = 0; i < numControlPoints; ++i)
     {
@@ -356,6 +356,8 @@ int main()
         }
         graph->array[cntrlPt[i]].isUsedUp = 0;
     }
+
+    cout << "island_line_seg = [];" << endl;
 
     int islandLineCounter = 1;
     // Form Island segments with same start and end
