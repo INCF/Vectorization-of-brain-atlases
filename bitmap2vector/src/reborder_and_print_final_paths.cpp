@@ -26,7 +26,9 @@ struct Region
 	int r;
 	int g;
 	int b;
-	Path** closedPath;
+	Path*** closedPath;
+	int numClosedPaths;
+	int* pathCount;
 };
 
 double cubicBezierValue(double t, double P0, double P1, double P2, double P3)
@@ -202,20 +204,47 @@ int checkSame(Point a, Point b)
 		return 0;
 }
 
+int getLegibleInd(int *a, int b)
+{
+	for(int i = 0; i < b; ++i)
+	{
+		if(a[i] != -1)
+			return i;
+	}
+	return -1;
+}
+
+int checkRemainingPathsIsLand(int *a, Path* p, int b)
+{
+	for(int i = 0; i < b; ++i)
+	{
+		if(a[i] != -1)
+		{
+			if(p[a[i]].start.x != p[a[i]].end.x || p[a[i]].start.y != p[a[i]].end.y)
+				return 0;
+		}
+	}
+	return 1;
+}
+
 void processRegion(Region *region, Path *path_list, int numPaths)
 {
 	int counter = region->numSurroundPaths;
 	int pushed = 0;
 	int focus = 0;
 	int revFlag = 0;
+	int remPath = region->numSurroundPaths;
 	while(counter > 0)
 	{
 		if(pushed == 0)
 		{
 			if(region->pathNum[pushed] >= numPaths)
 				cout << "Some Problem" << endl;
-			region->closedPath[pushed] = &path_list[region->pathNum[focus]];
-			region->pathNum[pushed] = -1;  // -1 IMPLIES USED UP PATH
+			focus = getLegibleInd(region->pathNum, region->numSurroundPaths);///  GET A PATH
+			if(focus == -1)
+				cout << "Some ERROR" << endl;
+			region->closedPath[region->numClosedPaths][pushed] = &path_list[region->pathNum[focus]];
+			region->pathNum[focus] = -1;  // -1 IMPLIES USED UP PATH
 			counter--;
 			pushed++;	
 			revFlag = 0;		
@@ -225,37 +254,60 @@ void processRegion(Region *region, Path *path_list, int numPaths)
 			// If initial point becomes equal  to final point return ... 
 			// This will prevent interaction with islands
 			// Also reduce the number of surrounding paths
-			if(checkSame(region->closedPath[0]->start, region->closedPath[pushed - 1]->end))
-			{
-				region->numSurroundPaths = pushed;
-				return;
-			}
-
-			focus = getNextPathIndex(region->pathNum, region->numSurroundPaths, (revFlag == 0)?(region->closedPath[pushed - 1]->end):(region->closedPath[pushed - 1]->end), path_list, numPaths);
-			if(focus == -1)
-				cout << "ERROR" << endl;
-			else
-			{
-				int temp = region->pathNum[focus];
-				region->pathNum[focus] = -1;
-				focus = temp;
-				
-				if(sameOrRevDirection(path_list, focus, (revFlag == 0)?(region->closedPath[pushed - 1]->end):(region->closedPath[pushed - 1]->end)))
+			if(checkSame(region->closedPath[region->numClosedPaths][0]->start, region->closedPath[region->numClosedPaths][pushed - 1]->end))
+			{region->pathCount[region->numClosedPaths] = pushed;
+				if(checkRemainingPathsIsLand(region->pathNum, path_list, region->numSurroundPaths))
 				{
-					region->closedPath[pushed] = &path_list[focus];
-					counter--;
-					pushed++;
-					revFlag = 0;
+					region->pathCount[region->numClosedPaths] = pushed;
+					region->closedPath[region->numClosedPaths] = (Path**)realloc(region->closedPath[region->numClosedPaths], (pushed)*sizeof(Path*));
+					return;
 				}
 				else
 				{
-					region->closedPath[pushed] = path_list[focus].reverse;
-					counter--;
-					pushed++;
-					revFlag = 1;
+					region->closedPath[region->numClosedPaths] = (Path**)realloc(region->closedPath[region->numClosedPaths], (pushed)*sizeof(Path*));
+					region->pathCount[region->numClosedPaths] = pushed;
+					
+					region->numClosedPaths++;
+					region->closedPath = (Path***)realloc(region->closedPath, (region->numClosedPaths + 1)* sizeof(Path**));
+					region->pathCount = (int*)realloc(region->pathCount, (region->numClosedPaths + 1)*sizeof(int));
+					region->closedPath[region->numClosedPaths] = (Path**)malloc((counter)*sizeof(Path*));
+					pushed = 0;
+
+				}
+			}
+			else
+			{
+				focus = getNextPathIndex(region->pathNum, region->numSurroundPaths, (revFlag == 0)?(region->closedPath[region->numClosedPaths][pushed - 1]->end):(region->closedPath[region->numClosedPaths][pushed - 1]->end), path_list, numPaths);
+				if(focus == -1)
+					cout << "ERROR" << endl;
+				else
+				{
+					int temp = region->pathNum[focus];
+					region->pathNum[focus] = -1;
+					focus = temp;
+					
+					if(sameOrRevDirection(path_list, focus, (revFlag == 0)?(region->closedPath[region->numClosedPaths][pushed - 1]->end):(region->closedPath[region->numClosedPaths][pushed - 1]->end)))
+					{
+						region->closedPath[region->numClosedPaths][pushed] = &path_list[focus];
+						counter--;
+						pushed++;
+						revFlag = 0;
+					}
+					else
+					{
+						region->closedPath[region->numClosedPaths][pushed] = path_list[focus].reverse;
+						counter--;
+						pushed++;
+						revFlag = 1;
+					}
 				}
 			}
 		}
+	}
+	if(counter == 0)
+	{
+		region->pathCount[region->numClosedPaths] = pushed;
+		region->closedPath[region->numClosedPaths] = (Path**)realloc(region->closedPath[region->numClosedPaths], (pushed)*sizeof(Path*));
 	}
 }
 
@@ -316,7 +368,10 @@ int main()
 		scanf("%d", &surrPaths);
 		myRegions[i].numSurroundPaths = surrPaths;
 		myRegions[i].pathNum = (int*)malloc(surrPaths * sizeof(int));
-		myRegions[i].closedPath = (Path**)malloc(surrPaths * sizeof(Path*));
+		myRegions[i].numClosedPaths = 0;
+		myRegions[i].closedPath = (Path***)malloc(sizeof(Path**));
+		myRegions[i].pathCount = (int*)malloc(sizeof(int));
+		myRegions[i].closedPath[0] = (Path**)malloc(surrPaths * sizeof(Path*));
 
 		for(int j = 0; j < surrPaths; ++j)
 		{
@@ -340,30 +395,32 @@ cout << "<svg height=\"" << imageHeight << "\" width=\"" << imageWidth << "\">" 
 	for(int i = 0; i < numRegions; ++i)
 	{
 		if(i != 0)
-			cout << "<path  style=\"fill:rgb(" << myRegions[i].r << "," << myRegions[i].g << "," << myRegions[i].b << "); stroke-width:1; stroke:rgb(" << myRegions[i].r << "," << myRegions[i].g << "," << myRegions[i].b << ") \" d = \"";
+		{
+			if(myRegions[i].numClosedPaths == 0)
+				cout << "<path  style=\"fill:rgb(" << myRegions[i].r << "," << myRegions[i].g << "," << myRegions[i].b << "); stroke-width:1; stroke:rgb(" << myRegions[i].r << "," << myRegions[i].g << "," << myRegions[i].b << ") \" d = \"";
+			else
+				cout << "<path  style=\"fill-rule:evenodd;fill:rgb(" << myRegions[i].r << "," << myRegions[i].g << "," << myRegions[i].b << "); stroke-width:1; stroke:rgb(" << myRegions[i].r << "," << myRegions[i].g << "," << myRegions[i].b << ") \" d = \"";	
+		}
 		else
 			cout << "<path fill=\"none\" d =\" ";
-		for(int j = 0; j < myRegions[i].numSurroundPaths; ++j)
+
+		for(int j = 0; j < myRegions[i].numClosedPaths + 1; ++j)
 		{
-			for(int k = 0; k < myRegions[i].closedPath[j]->length; ++k)
+			for(int k = 0; k < myRegions[i].pathCount[j]; ++k)
 			{
-				for(int l = 0; l < 3; ++l)
+				for(int m = 0; m < myRegions[i].closedPath[j][k]->length; ++m)
 				{
-					if(j == 0)
+					for(int l = 0; l < 3; ++l)
 					{
-						if(k == 0 && l == 0)
+						
+						if(k == 0 && l == 0 && m == 0)
 						{
-							cout << "M" << myRegions[i].closedPath[j]->start.x << " " << myRegions[i].closedPath[j]->start.y << " C";
+							cout << "M" << myRegions[i].closedPath[j][k]->start.x << " " << myRegions[i].closedPath[j][k]->start.y << " C";
 						}
+					
+						
+						cout << myRegions[i].closedPath[j][k]->c[m][l].x << "," << myRegions[i].closedPath[j][k]->c[m][l].y << " ";
 					}
-					else
-					{
-						if(k == 0 && l == 0)
-						{
-							//cout << "L" << myRegions[i].closedPath[j]->start.x << " " << myRegions[i].closedPath[j]->start.y << " C";
-						}
-					}
-					cout << myRegions[i].closedPath[j]->c[k][l].x << "," << myRegions[i].closedPath[j]->c[k][l].y << " ";
 				}
 			}
 		}
