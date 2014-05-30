@@ -47,10 +47,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/dhruv/bitmap2vector/src/code_image
+CMAKE_SOURCE_DIR = /home/dhruv/repos/Vectorization-of-brain-atlases/bitmap2vector/src/code_image
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/dhruv/bitmap2vector/src/code_image
+CMAKE_BINARY_DIR = /home/dhruv/repos/Vectorization-of-brain-atlases/bitmap2vector/src/code_image
 
 #=============================================================================
 # Target rules for target CMakeFiles/code_image.dir
@@ -59,7 +59,7 @@ CMAKE_BINARY_DIR = /home/dhruv/bitmap2vector/src/code_image
 CMakeFiles/code_image.dir/all:
 	$(MAKE) -f CMakeFiles/code_image.dir/build.make CMakeFiles/code_image.dir/depend
 	$(MAKE) -f CMakeFiles/code_image.dir/build.make CMakeFiles/code_image.dir/build
-	$(CMAKE_COMMAND) -E cmake_progress_report /home/dhruv/bitmap2vector/src/code_image/CMakeFiles  1
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/dhruv/repos/Vectorization-of-brain-atlases/bitmap2vector/src/code_image/CMakeFiles  1
 	@echo "Built target code_image"
 .PHONY : CMakeFiles/code_image.dir/all
 
@@ -69,9 +69,9 @@ all: CMakeFiles/code_image.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/code_image.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/dhruv/bitmap2vector/src/code_image/CMakeFiles 1
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/dhruv/repos/Vectorization-of-brain-atlases/bitmap2vector/src/code_image/CMakeFiles 1
 	$(MAKE) -f CMakeFiles/Makefile2 CMakeFiles/code_image.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/dhruv/bitmap2vector/src/code_image/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/dhruv/repos/Vectorization-of-brain-atlases/bitmap2vector/src/code_image/CMakeFiles 0
 .PHONY : CMakeFiles/code_image.dir/rule
 
 # Convenience name for target.

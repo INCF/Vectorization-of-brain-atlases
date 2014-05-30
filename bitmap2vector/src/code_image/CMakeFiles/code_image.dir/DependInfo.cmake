@@ -4,7 +4,7 @@ SET(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 SET(CMAKE_DEPENDS_CHECK_CXX
-  "/home/dhruv/bitmap2vector/src/code_image/code_image.cpp" "/home/dhruv/bitmap2vector/src/code_image/CMakeFiles/code_image.dir/code_image.cpp.o"
+  "/home/dhruv/repos/Vectorization-of-brain-atlases/bitmap2vector/src/code_image/code_image.cpp" "/home/dhruv/repos/Vectorization-of-brain-atlases/bitmap2vector/src/code_image/CMakeFiles/code_image.dir/code_image.cpp.o"
   )
 SET(CMAKE_CXX_COMPILER_ID "GNU")
 
