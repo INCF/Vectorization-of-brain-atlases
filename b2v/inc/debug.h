@@ -1,0 +1,13 @@
+#ifndef __DEBUG_H__
+#define __DEBUG_H__ 1
+#ifdef DEBUG 
+#define _TEST_1_
+#define _TEST_2_
+#define _TEST_3_
+#define _TEST_4_
+#define _TEST_5_
+#define _TEST_6_
+#define _TEST_7_
+#define _EVAL_1_
+#endif
+#endif

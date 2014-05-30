@@ -253,7 +253,9 @@ void move_to_island_node(Graph *graph, int to, vector<int>& temp, int from, int 
                     temp.assign(temp2.begin(), temp2.end());
                         
                     if(graph->array[temp[0]].isCntrlPoint)
+                    {
                         break;
+                    }
                     else
                         temp.push_back(node->dest);
                 }

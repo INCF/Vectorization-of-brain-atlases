@@ -35,10 +35,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/dhruv/bitmap2vector/src/code_image
+CMAKE_SOURCE_DIR = /home/dhruv/repos/Vectorization-of-brain-atlases/bitmap2vector/src/code_image
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/dhruv/bitmap2vector/src/code_image
+CMAKE_BINARY_DIR = /home/dhruv/repos/Vectorization-of-brain-atlases/bitmap2vector/src/code_image
 
 # Include any dependencies generated for this target.
 include CMakeFiles/code_image.dir/depend.make
@@ -51,17 +51,17 @@ include CMakeFiles/code_image.dir/flags.make
 
 CMakeFiles/code_image.dir/code_image.cpp.o: CMakeFiles/code_image.dir/flags.make
 CMakeFiles/code_image.dir/code_image.cpp.o: code_image.cpp
-	$(CMAKE_COMMAND) -E cmake_progress_report /home/dhruv/bitmap2vector/src/code_image/CMakeFiles $(CMAKE_PROGRESS_1)
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/dhruv/repos/Vectorization-of-brain-atlases/bitmap2vector/src/code_image/CMakeFiles $(CMAKE_PROGRESS_1)
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Building CXX object CMakeFiles/code_image.dir/code_image.cpp.o"
-	/usr/bin/c++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/code_image.dir/code_image.cpp.o -c /home/dhruv/bitmap2vector/src/code_image/code_image.cpp
+	/usr/bin/c++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/code_image.dir/code_image.cpp.o -c /home/dhruv/repos/Vectorization-of-brain-atlases/bitmap2vector/src/code_image/code_image.cpp
 
 CMakeFiles/code_image.dir/code_image.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/code_image.dir/code_image.cpp.i"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -E /home/dhruv/bitmap2vector/src/code_image/code_image.cpp > CMakeFiles/code_image.dir/code_image.cpp.i
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -E /home/dhruv/repos/Vectorization-of-brain-atlases/bitmap2vector/src/code_image/code_image.cpp > CMakeFiles/code_image.dir/code_image.cpp.i
 
 CMakeFiles/code_image.dir/code_image.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/code_image.dir/code_image.cpp.s"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -S /home/dhruv/bitmap2vector/src/code_image/code_image.cpp -o CMakeFiles/code_image.dir/code_image.cpp.s
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -S /home/dhruv/repos/Vectorization-of-brain-atlases/bitmap2vector/src/code_image/code_image.cpp -o CMakeFiles/code_image.dir/code_image.cpp.s
 
 CMakeFiles/code_image.dir/code_image.cpp.o.requires:
 .PHONY : CMakeFiles/code_image.dir/code_image.cpp.o.requires
@@ -136,6 +136,6 @@ CMakeFiles/code_image.dir/clean:
 .PHONY : CMakeFiles/code_image.dir/clean
 
 CMakeFiles/code_image.dir/depend:
-	cd /home/dhruv/bitmap2vector/src/code_image && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/dhruv/bitmap2vector/src/code_image /home/dhruv/bitmap2vector/src/code_image /home/dhruv/bitmap2vector/src/code_image /home/dhruv/bitmap2vector/src/code_image /home/dhruv/bitmap2vector/src/code_image/CMakeFiles/code_image.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/dhruv/repos/Vectorization-of-brain-atlases/bitmap2vector/src/code_image && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/dhruv/repos/Vectorization-of-brain-atlases/bitmap2vector/src/code_image /home/dhruv/repos/Vectorization-of-brain-atlases/bitmap2vector/src/code_image /home/dhruv/repos/Vectorization-of-brain-atlases/bitmap2vector/src/code_image /home/dhruv/repos/Vectorization-of-brain-atlases/bitmap2vector/src/code_image /home/dhruv/repos/Vectorization-of-brain-atlases/bitmap2vector/src/code_image/CMakeFiles/code_image.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/code_image.dir/depend
 
