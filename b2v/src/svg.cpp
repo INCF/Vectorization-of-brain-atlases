@@ -1,5 +1,6 @@
 #include "svg.h"
 #include <fstream>
+#include <string>
 
 SVG::SVG(uint h, uint w)
 {
@@ -14,7 +15,8 @@ SVG::~SVG()
 
 void SVG::writeDisjointLineSegments(std::vector<Curve> &v)
 {
-	std::ofstream ofsTest6("evaluation/eval_1_cpp.svg", std::ofstream::out);
+	std::string path = ROOT_DIR;
+	std::ofstream ofsTest6((path + "/check/eval_4_borders.svg").c_str(), std::ofstream::out);
 
 	ofsTest6 << "<svg height=\"" << imageHeight << "\" width=\"" << imageWidth << "\">" << std::endl << "<g>" << std::endl;
 

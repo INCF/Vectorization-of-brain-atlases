@@ -32,6 +32,7 @@ class Bitmap
 		int** pixToNodeMap;
 		uint numControlPoints;
 	public:
+		Bitmap();
 		Bitmap(std::string);
 		~Bitmap();
 		void del(ImageMatrix*);

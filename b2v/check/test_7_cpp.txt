@@ -1,0 +1,27 @@
+No. of regions13
+No. of curves assigned to region 0 : 3
+1 3 4 
+No. of curves assigned to region 1 : 0
+
+No. of curves assigned to region 2 : 5
+0 2 4 5 6 
+No. of curves assigned to region 3 : 0
+
+No. of curves assigned to region 4 : 2
+5 7 
+No. of curves assigned to region 5 : 0
+
+No. of curves assigned to region 6 : 2
+6 8 
+No. of curves assigned to region 7 : 0
+
+No. of curves assigned to region 8 : 1
+7 
+No. of curves assigned to region 9 : 0
+
+No. of curves assigned to region 10 : 1
+8 
+No. of curves assigned to region 11 : 2
+0 3 
+No. of curves assigned to region 12 : 2
+1 2 

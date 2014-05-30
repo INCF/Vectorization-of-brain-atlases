@@ -19,7 +19,7 @@ int main(int argc, char **argv)
 			outFileName.assign(argv[2]);
 			break;
 		default:
-			std::cout << "Usage: ./main filename.png [outputfileName.svg]" << std::endl;
+			std::cout << "Usage: " << ROOT_DIR << "/bin/b2v path_to_filename.png [path_to_outputfileName.svg]" << std::endl;
 			exit(1);
 			break;
 	}

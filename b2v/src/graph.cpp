@@ -5,8 +5,13 @@
 #include <algorithm>
 #include <iostream>
 #include <bitset>
+#include <string>
 
 std::vector<Point2> *ptStore = new std::vector<Point2>; //stores bezier points as they are genereted/streamed
+
+// LOOP: length of the loop from a control point to itself to make it to be considered as line segment
+#define LOOP 10
+
 
 void DrawBezierCurve(int n, BezierCurve curve)
 {
@@ -20,7 +25,7 @@ void DrawBezierCurve(int n, BezierCurve curve)
 }
 
 //Constructor
-Graph::Graph(uint h, uint w, std::vector<pixel> &v)
+Graph::Graph(uint h, uint w, std::vector<pixel> &v, ImageMatrix *x)
 {
 	V = 0;
 	imageHeight = h;
@@ -33,6 +38,8 @@ Graph::Graph(uint h, uint w, std::vector<pixel> &v)
 		tempRegion->col = v[i];
 		region.push_back(*tempRegion);
 	}
+
+	pop = x;
 }
 
 //Destructor
@@ -141,7 +148,8 @@ void Graph::formLineSegments()
 	}
 
 	#ifdef _TEST_5_
-	std::ofstream ofsTest5("testing/test_5_cpp.txt", std::ofstream::out);
+	std::string path = ROOT_DIR;
+	std::ofstream ofsTest5((path + "/check/test_5_cpp.txt").c_str(), std::ofstream::out);
 	ofsTest5 << lineSeg.size() + islandLineSeg.size() << std::endl;
 
 	ofsTest5 << "Line segments: " << std::endl;
@@ -179,7 +187,7 @@ void Graph::moveToNode(std::vector<uint> &v, uint to, uint from, uint startedFro
 	{
 		v.push_back(to);
 	}
-	else if(pass == 1 && checkCntrlPtAdj(to, startedFrom) && (!vertex[ind = getAdjCntrlPtInd(to, startedFrom)].isUsedUp.test(0) || len > 10))
+	else if(pass == 1 && checkCntrlPtAdj(to, startedFrom) && (!vertex[ind = getAdjCntrlPtInd(to, startedFrom)].isUsedUp.test(0) || len > LOOP))
 	{
 		v.push_back(ind);
 	}
@@ -344,6 +352,48 @@ void Graph::preprocessLineSegments()
 	tempLineSeg.clear();
 */
 
+	#ifdef _EVAL_3_
+	//generate some image
+	std::string path = ROOT_DIR;
+	std::vector<unsigned char> image;
+	image.resize(imageWidth * imageHeight * 4);
+	for(uint y = 0; y < imageHeight; y++)
+	{
+		for(uint x = 0; x < imageWidth; x++)
+		{
+			image[4 * imageWidth * y + 4 * x + 0] = pop->pixMap[y][x].r;
+			image[4 * imageWidth * y + 4 * x + 1] = pop->pixMap[y][x].g;
+			image[4 * imageWidth * y + 4 * x + 2] = pop->pixMap[y][x].b;
+			image[4 * imageWidth * y + 4 * x + 3] = 255;
+		}
+	}
+
+	for(uint i = 0; i < lineSeg.size(); ++i)
+	{
+		for(uint j = 0; j < lineSeg[i].path.size(); ++j)
+		{
+			image[4 * imageWidth * vertex[lineSeg[i].path[j]].x + 4 * vertex[lineSeg[i].path[j]].y + 0] = 0;
+			image[4 * imageWidth * vertex[lineSeg[i].path[j]].x + 4 * vertex[lineSeg[i].path[j]].y + 1] = 0;
+			image[4 * imageWidth * vertex[lineSeg[i].path[j]].x + 4 * vertex[lineSeg[i].path[j]].y + 2] = 0;
+			image[4 * imageWidth * vertex[lineSeg[i].path[j]].x + 4 * vertex[lineSeg[i].path[j]].y + 3] = 255;			
+		}
+	}
+
+	for(uint i = 0; i < islandLineSeg.size(); ++i)
+	{
+		for(uint j = 0; j < islandLineSeg[i].path.size(); ++j)
+		{
+			image[4 * imageWidth * vertex[islandLineSeg[i].path[j]].x + 4 * vertex[islandLineSeg[i].path[j]].y + 0] = 255;
+			image[4 * imageWidth * vertex[islandLineSeg[i].path[j]].x + 4 * vertex[islandLineSeg[i].path[j]].y + 1] = 0;
+			image[4 * imageWidth * vertex[islandLineSeg[i].path[j]].x + 4 * vertex[islandLineSeg[i].path[j]].y + 2] = 0;
+			image[4 * imageWidth * vertex[islandLineSeg[i].path[j]].x + 4 * vertex[islandLineSeg[i].path[j]].y + 3] = 255;			
+		}
+	}
+
+	encodeOneStep((path + "/check/eval_3_lineSeg.png").c_str(), image, imageWidth, imageHeight);
+	image.clear();
+	#endif
+
 }
 
 std::vector<uint> Graph::DouglasPeucker(std::vector<uint> &v, double epsilon)
@@ -448,7 +498,8 @@ void Graph::formCurves()
 	}
 
 	#ifdef _TEST_6_
-	std::ofstream ofsTest6("testing/test_6_cpp.txt", std::ofstream::out);
+	std::string path = ROOT_DIR;
+	std::ofstream ofsTest6((path + "/check/test_6_cpp.txt").c_str(), std::ofstream::out);
 	ofsTest6 << curve.size() << std::endl;
 
 	for(uint i = 0; i < curve.size(); ++i)
@@ -529,7 +580,8 @@ void Graph::assignCurveNumToRegion()
 	}
 
 	#ifdef _TEST_7_
-	std::ofstream ofsTest7("testing/test_7_cpp.txt", std::ofstream::out);
+	std::string path = ROOT_DIR;
+	std::ofstream ofsTest7((path + "/check/test_7_cpp.txt").c_str(), std::ofstream::out);
 	ofsTest7 << "No. of regions" << region.size() << std::endl;
 
 	for(uint i = 0; i < region.size(); ++i)
