@@ -2,9 +2,16 @@
 #include "fstream"
 #include "iostream"
 #include "debug.h"
+#include <string>
 
 
-// Constructor
+//Empty Constructor
+Bitmap::Bitmap()
+{
+
+}
+
+//Constructor
 Bitmap::Bitmap(std::string filename)
 {
 	uint h, w;
@@ -26,7 +33,8 @@ Bitmap::Bitmap(std::string filename)
 
 	#ifdef _TEST_1_
 	//file to store r g b values of each pixel in row major order under test 1
-	std::ofstream ofsTest1("testing/test_1_cpp.txt", std::ofstream::out);
+	std::string path = ROOT_DIR;
+	std::ofstream ofsTest1((path + "/check/test_1_cpp.txt").c_str(), std::ofstream::out);
 	ofsTest1 << h << std::endl;
 	ofsTest1 << w << std::endl;
 	#endif
@@ -59,8 +67,29 @@ void Bitmap::processImage()
 {
 	preprocess();
 	popoutBoundaries();
+
+	#ifdef _EVAL_1_
+	//generate some image
+	std::string path = ROOT_DIR;
+	std::vector<unsigned char> image;
+	image.resize(pop->width * pop->height * 4);
+	for(uint y = 0; y < pop->height; y++)
+	{
+		for(uint x = 0; x < pop->width; x++)
+		{
+			image[4 * pop->width * y + 4 * x + 0] = pop->pixMap[y][x].r;
+			image[4 * pop->width * y + 4 * x + 1] = pop->pixMap[y][x].g;
+			image[4 * pop->width * y + 4 * x + 2] = pop->pixMap[y][x].b;
+			image[4 * pop->width * y + 4 * x + 3] = 255;
+		}
+	}
+
+	encodeOneStep((path + "/check/eval_1_popout.png").c_str(), image, pop->width, pop->height);
+	image.clear();
+	#endif
+
 	codedImage = new CodeImage(pop);
-	graph = new Graph(pop->height, pop->width, *codedImage->getColCode());
+	graph = new Graph(pop->height, pop->width, *codedImage->getColCode(), pop);
 	detectControlPoints();
 	formAdjacencyList();
 	graph->formLineSegments();
@@ -222,7 +251,8 @@ void Bitmap::popoutBoundaries()
 
 	#ifdef _TEST_2_
 	//file to store r g b values of each pixel in row major order under test 2
-	std::ofstream ofsTest2("testing/test_2_cpp.txt", std::ofstream::out);
+	std::string path = ROOT_DIR;
+	std::ofstream ofsTest2((path + "/check/test_2_cpp.txt").c_str(), std::ofstream::out);
 	ofsTest2 << h << std::endl;
 	ofsTest2 << w << std::endl;
 
@@ -253,11 +283,18 @@ void Bitmap::detectControlPoints()
 	uint vertexCounter = 0;
 	std::vector<pixel> temp;
 	pixel whitePixel;
+
+	#ifdef _EVAL_3_
+	std::vector<unsigned char> image;
+	image.resize(w * h * 4);
+	#endif
+
 	whitePixel.r = whitePixel.g = whitePixel.b = 255;
 
 	#ifdef _TEST_4_
 	//file to store coordinate values of control points under test 4
-	std::ofstream ofsTest4("testing/test_4_cpp.txt", std::ofstream::out);
+	std::string path = ROOT_DIR;
+	std::ofstream ofsTest4((path + "/check/test_4_cpp.txt").c_str(), std::ofstream::out);
 	ofsTest4 << h << std::endl;
 	ofsTest4 << w << std::endl;
 	#endif
@@ -266,6 +303,13 @@ void Bitmap::detectControlPoints()
 	{
 		for(uint j = 1; j < w - 1; ++j)
 		{
+			#ifdef _EVAL_3_
+			image[4 * w * i + 4 * j + 0] = pop->pixMap[i][j].r;
+			image[4 * w * i + 4 * j + 1] = pop->pixMap[i][j].g;
+			image[4 * w * i + 4 * j + 2] = pop->pixMap[i][j].b;
+			image[4 * w * i + 4 * j + 3] = 255;
+			#endif
+
 			if(ifEqualPixel(pop->pixMap[i][j], whitePixel))
 			{
 				pixToNodeMap[i][j] = vertexCounter;
@@ -304,6 +348,12 @@ void Bitmap::detectControlPoints()
 					ofsTest4 << i << std::endl;
 					ofsTest4 << j << std::endl;
 					#endif
+					#ifdef _EVAL_3_
+					image[4 * w * i + 4 * j + 0] = 0;
+					image[4 * w * i + 4 * j + 1] = 0;
+					image[4 * w * i + 4 * j + 2] = 255;
+					image[4 * w * i + 4 * j + 3] = 255;
+					#endif
 				}
 
 				vertexCounter++;
@@ -318,6 +368,11 @@ void Bitmap::detectControlPoints()
 	#ifdef _TEST_4_
 	//close file
 	ofsTest4.close();
+	#endif
+
+	#ifdef _EVAL_3_
+	encodeOneStep((path + "/check/eval_2_controlPt.png").c_str(), image, w, h);
+	image.clear();
 	#endif
 
 	temp.clear();

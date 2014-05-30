@@ -9,5 +9,9 @@
 #define _TEST_6_
 #define _TEST_7_
 #define _EVAL_1_
+#define _EVAL_2_
+#define _EVAL_3_
+#define _EVAL_4_
+#define _EVAL_5_
 #endif
 #endif

@@ -61,4 +61,6 @@ struct AdjList
 //returns 1 if pixels have same rgb values else 0
 int ifEqualPixel(pixel, pixel);
 
+//The image argument has width * height RGBA pixels or width * height * 4 bytes
+void encodeOneStep(const char*, std::vector<uchar>&, uint, uint);
 #endif

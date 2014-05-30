@@ -1,6 +1,8 @@
 #include "codeImage.h"
 #include "debug.h"
 #include <fstream>
+#include "string"
+#include "bitmap.h"
 
 //Constructor
 CodeImage::CodeImage(ImageMatrix* m)
@@ -20,24 +22,25 @@ CodeImage::CodeImage(ImageMatrix* m)
 	numDisjointRegions = colorCode.size();
 
 	#ifdef _TEST_3_
-
-	//file to store r g b values of each pixel in row major order under test 3
-	std::ofstream ofsTest3("testing/test_3_cpp.txt", std::ofstream::out);
-	ofsTest3 << height << std::endl;
-	ofsTest3 << width << std::endl;
-
-	for(uint i = 0; i < height; ++i)
+	//generate some image
+	std::string path = ROOT_DIR;
+	std::vector<unsigned char> image;
+	image.resize(width * height * 4);
+	for(uint y = 0; y < height; y++)
 	{
-		for(uint j = 0; j < width; ++j)
+		for(uint x = 0; x < width; x++)
 		{
-			//print r g b int values in new lines
-			ofsTest3 << (int)colorCode[mat[i][j]].r << std::endl << (int)colorCode[mat[i][j]].g << std::endl << (int)colorCode[mat[i][j]].b << std::endl;
+			image[4 * width * y + 4 * x + 0] = colorCode[mat[y][x]].r;
+			image[4 * width * y + 4 * x + 1] = colorCode[mat[y][x]].g;
+			image[4 * width * y + 4 * x + 2] = colorCode[mat[y][x]].b;
+			image[4 * width * y + 4 * x + 3] = 255;
 		}
 	}
 
-	//close file
-	ofsTest3.close();
+	encodeOneStep((path + "/check/test_3_revertCoded.png").c_str(), image, width, height);
+	image.clear();
 	#endif
+
 }
 
 //Destructor

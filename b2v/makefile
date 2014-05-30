@@ -1,17 +1,21 @@
 CC=g++
 
+mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
+current_dir := $(notdir $(patsubst %/,%,$(dir $(mkfile_path))))
+ROOT_D := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
+
 ifeq ($(CFG),debug)
-	CXXFLAGS=-Wall -g -DDEBUG
+	CXXFLAGS=-Wall -g -DDEBUG -DROOT_DIR=\"$(ROOT_D)\"
 	LDFLAGS=-Wall -g -DDEBUG
 else
-	CXXFLAGS=-Wall
+	CXXFLAGS=-Wall -DROOT_DIR=\"$(ROOT_D)\"
 	LDFLAGS=-Wall
 endif
 
-INCPATH=inc
-SRCPATH=src
-OBJPATH=obj
-BINPATH=bin
+INCPATH=$(ROOT_D)/inc
+SRCPATH=$(ROOT_D)/src
+OBJPATH=$(ROOT_D)/obj
+BINPATH=$(ROOT_D)/bin
 
 SRC=$(SRCPATH)/util.cpp \
     $(SRCPATH)/lodepng.cpp \
@@ -33,7 +37,7 @@ OBJ=$(OBJPATH)/util.o \
     $(OBJPATH)/main.o
 EXEC=$(BINPATH)/b2v
 
-INCLUDES=-I ./$(INCPATH)
+INCLUDES=-I $(INCPATH)
 
 default: $(EXEC)
 

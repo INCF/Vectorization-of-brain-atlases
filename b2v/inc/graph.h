@@ -26,8 +26,9 @@ class Graph
 		SVG *outputSVG;
 		uint imageHeight;
 		uint imageWidth;
+		ImageMatrix *pop;
 	public:
-		Graph(uint, uint, std::vector<pixel>&);
+		Graph(uint, uint, std::vector<pixel>&, ImageMatrix*);
 		~Graph(); 
 		void addVertex(uint, uint, uint, bool, bool, bool);
 		void addEdge(uint, uint);
