@@ -93,8 +93,8 @@ void Bitmap::processImage()
 	detectControlPoints();
 	formAdjacencyList();
 	graph->formLineSegments();
-	graph->preprocessLineSegments();
 	graph->assignCurveNumToRegion();
+	graph->preprocessLineSegments();
 	graph->formCurves();
 	graph->processRegions();
 }
