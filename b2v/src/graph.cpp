@@ -17,6 +17,8 @@ std::vector<Point2> *ptStore = new std::vector<Point2>; //stores bezier points a
 #define JUMP 5
 //GAP: Net absolute change in the x and y direction of two pixels to be considered for a closed loop
 #define GAP 6
+//For douglas pecker algorithm
+#define EPSILON 1
 
 
 void DrawBezierCurve(int n, BezierCurve curve)
@@ -339,8 +341,9 @@ bool Graph::isAdjToFrom(uint from, uint dest)
 
 void Graph::preprocessLineSegments()
 {
-	//Preprocess 1: Removes L shaped sub segments
-	//Preprocess 2: Take points at an appropriate interval depending on the length of line segment
+	
+	//Preprocess : Take points at an appropriate interval depending on the length of line segment OR DouglasPeucker
+#if 1
 
 	std::vector<uint> tempLineSeg;
 	for(uint i = 0; i < lineSeg.size(); ++i)
@@ -382,15 +385,17 @@ void Graph::preprocessLineSegments()
 	}
 
 	tempLineSeg.clear();
-/*
-	uint jump = 1;
+
+	#endif
+	#if 0
+
 	std::vector<uint> tempLineSeg;
 	for(uint i = 0; i < lineSeg.size(); ++i)
 	{
 		tempLineSeg.clear();
-		if(lineSeg[i].path.size() > 20)// if line length is above 5 then only go in and preprocess 
+		if(lineSeg[i].path.size() > LIMIT)// if line length is above 5 then only go in and preprocess 
 		{
-			tempLineSeg = DouglasPeucker(lineSeg[i].path,0.00000001);
+			tempLineSeg = DouglasPeucker(lineSeg[i].path,EPSILON);
 
 			lineSeg[i].path.clear();
 			lineSeg[i].path.push_back(lineSeg[i].start);
@@ -402,11 +407,11 @@ void Graph::preprocessLineSegments()
 	for(uint i = 0; i < islandLineSeg.size(); ++i)
 	{
 		tempLineSeg.clear();
-		if(islandLineSeg[i].path.size() > 5)// if line length is above 5 then only go in and preprocess 
+		if(islandLineSeg[i].path.size() > LIMIT)// if line length is above 5 then only go in and preprocess 
 		{
 			tempLineSeg.push_back(islandLineSeg[i].path[0]);
 			tempLineSeg.push_back(islandLineSeg[i].path[1]);
-			for(uint j = 2; j < islandLineSeg[i].path.size() - 2; j = j + 1 + jump)
+			for(uint j = 2; j < islandLineSeg[i].path.size() - 2; j = j + 1 + JUMP)
 			{
 				tempLineSeg.push_back(islandLineSeg[i].path[j]);
 			}
@@ -419,7 +424,7 @@ void Graph::preprocessLineSegments()
 	}
 
 	tempLineSeg.clear();
-*/
+#endif
 
 	#ifdef _EVAL_3_
 	//generate some image
