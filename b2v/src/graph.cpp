@@ -9,8 +9,14 @@
 
 std::vector<Point2> *ptStore = new std::vector<Point2>; //stores bezier points as they are genereted/streamed
 
-// LOOP: length of the loop from a control point to itself to make it to be considered as line segment
+//LOOP: length of the loop from a control point to itself to make it to be considered as line segment
 #define LOOP 10
+//LIMIT: length of the segment to be considered for either DouglasPeuckar simplification or jump simplification
+#define LIMIT 10
+//JUMP: Number of pixels to be left while walking over the line segment
+#define JUMP 5
+//GAP: Net absolute change in the x and y direction of two pixels to be considered for a closed loop
+#define GAP 6
 
 
 void DrawBezierCurve(int n, BezierCurve curve)
@@ -109,11 +115,11 @@ void Graph::formLineSegments()
 {
 	//Pass 1: finds line segments from control point to control point
 	//Pass 2: finds islands and assign one point of that island as representative by setting isIslandPt
-	for(int pass = 1; pass <= 2; ++pass)
+	for(int pass = 1; pass <= 3; ++pass)
 	{
 		for(uint i = 0; i < V; ++i)
 		{
-			if((vertex[i].isCntrlPoint.test(0) && pass == 1) || (!vertex[i].isUsedUp.test(0) && pass == 2))
+			if((vertex[i].isCntrlPoint.test(0) && pass == 1) || (!vertex[i].isUsedUp.test(0) && (pass == 2||pass==3)))
 			{
 				if(pass == 1)
 					vertex[i].isUsedUp.set(0, true);
@@ -136,7 +142,7 @@ void Graph::formLineSegments()
 							temp->end = temp->path.back();
 							if(pass == 1)
 								lineSeg.push_back(*temp);
-							else if(pass == 2)
+							else 
 								islandLineSeg.push_back(*temp);
 						}
 					}
@@ -147,8 +153,8 @@ void Graph::formLineSegments()
 		}
 	}
 
-	#ifdef _TEST_5_
 	std::string path = ROOT_DIR;
+	#ifdef _TEST_5_
 	std::ofstream ofsTest5((path + "/check/test_5_cpp.txt").c_str(), std::ofstream::out);
 	ofsTest5 << lineSeg.size() + islandLineSeg.size() << std::endl;
 
@@ -178,16 +184,59 @@ void Graph::formLineSegments()
 
 	ofsTest5.close();
 	#endif
+
+	#ifdef _EVAL_3_
+	//generate some image
+	std::vector<unsigned char> image;
+	image.resize(imageWidth * imageHeight * 4);
+	for(uint y = 0; y < imageHeight; y++)
+	{
+		for(uint x = 0; x < imageWidth; x++)
+		{
+			image[4 * imageWidth * y + 4 * x + 0] = pop->pixMap[y][x].r;
+			image[4 * imageWidth * y + 4 * x + 1] = pop->pixMap[y][x].g;
+			image[4 * imageWidth * y + 4 * x + 2] = pop->pixMap[y][x].b;
+			image[4 * imageWidth * y + 4 * x + 3] = 255;
+		}
+	}
+
+	for(uint i = 0; i < lineSeg.size(); ++i)
+	{
+		for(uint j = 0; j < lineSeg[i].path.size(); ++j)
+		{
+			image[4 * imageWidth * vertex[lineSeg[i].path[j]].x + 4 * vertex[lineSeg[i].path[j]].y + 0] = 0;
+			image[4 * imageWidth * vertex[lineSeg[i].path[j]].x + 4 * vertex[lineSeg[i].path[j]].y + 1] = 0;
+			image[4 * imageWidth * vertex[lineSeg[i].path[j]].x + 4 * vertex[lineSeg[i].path[j]].y + 2] = 0;
+			image[4 * imageWidth * vertex[lineSeg[i].path[j]].x + 4 * vertex[lineSeg[i].path[j]].y + 3] = 255;			
+		}
+	}
+
+	for(uint i = 0; i < islandLineSeg.size(); ++i)
+	{
+		for(uint j = 0; j < islandLineSeg[i].path.size(); ++j)
+		{
+			image[4 * imageWidth * vertex[islandLineSeg[i].path[j]].x + 4 * vertex[islandLineSeg[i].path[j]].y + 0] = 255;
+			image[4 * imageWidth * vertex[islandLineSeg[i].path[j]].x + 4 * vertex[islandLineSeg[i].path[j]].y + 1] = 0;
+			image[4 * imageWidth * vertex[islandLineSeg[i].path[j]].x + 4 * vertex[islandLineSeg[i].path[j]].y + 2] = 0;
+			image[4 * imageWidth * vertex[islandLineSeg[i].path[j]].x + 4 * vertex[islandLineSeg[i].path[j]].y + 3] = 255;			
+		}
+	}
+
+	encodeOneStep((path + "/check/eval_3_lineSeg_beforeprocess.png").c_str(), image, imageWidth, imageHeight);
+	image.clear();
+	#endif
+
 }
 
 void Graph::moveToNode(std::vector<uint> &v, uint to, uint from, uint startedFrom, uint pass, uint len)
 {
 	uint ind;
+	bool emptyFlag = true;
 	if(pass == 2 && to == startedFrom)
 	{
 		v.push_back(to);
 	}
-	else if(pass == 1 && checkCntrlPtAdj(to, startedFrom) && (!vertex[ind = getAdjCntrlPtInd(to, startedFrom)].isUsedUp.test(0) || len > LOOP))
+	else if(pass == 1 && checkCntrlPtAdj(to, startedFrom) && ((!vertex[ind = getAdjCntrlPtInd(to, startedFrom)].isUsedUp.test(0)) || (len > LOOP && ind == startedFrom)))
 	{
 		v.push_back(ind);
 	}
@@ -209,8 +258,20 @@ void Graph::moveToNode(std::vector<uint> &v, uint to, uint from, uint startedFro
 					//else no need to add because starting point already pushed in
 					if(vertex[v[0]].isCntrlPoint.test(0))
 						break;
+					emptyFlag = false;
 				}
-
+				else if(pass == 2)
+				{
+					vertex[vertex[to].node[i]].isUsedUp.set(0, false);
+				}
+			}
+		}
+		if(emptyFlag && pass == 3 && len > LOOP)
+		{
+			if((abs(vertex[startedFrom].x - vertex[to].x) + abs(vertex[startedFrom].y - vertex[to].y)) <= GAP)
+			{
+				v.push_back(to);
+				std::cout << "PASS 3" << std::endl;
 			}
 		}
 	}
@@ -228,10 +289,21 @@ bool Graph::checkCntrlPtAdj(uint to, uint startedFrom)
 
 uint Graph::getAdjCntrlPtInd(uint to, uint startedFrom)
 {
+	std::vector<uint> v;
 	for(uint i = 0; i < vertex[to].node.size(); ++i)
 	{
 		if(vertex[vertex[to].node[i]].isCntrlPoint.test(0))
-			return vertex[to].node[i];
+			v.push_back(vertex[to].node[i]);
+	}
+	if(v.size() == 1)
+		return v[0];
+	else
+	{
+		for(uint i = 0; i < v.size(); ++i)
+		{
+			if(v[i] != startedFrom)
+				return v[i];
+		}
 	}
 	//Will never come at this point
 	std::cout << "Something BAD happened while retrieving control point at line segment formation step" << std::endl;
@@ -270,18 +342,15 @@ void Graph::preprocessLineSegments()
 	//Preprocess 1: Removes L shaped sub segments
 	//Preprocess 2: Take points at an appropriate interval depending on the length of line segment
 
-	uint limit = 5;
-	uint jump = 5;
-
 	std::vector<uint> tempLineSeg;
 	for(uint i = 0; i < lineSeg.size(); ++i)
 	{
 		tempLineSeg.clear();
-		if(lineSeg[i].path.size() > limit)// if line length is above 6 then only go in and preprocess 
+		if(lineSeg[i].path.size() > LIMIT)// if line length is above 6 then only go in and preprocess 
 		{
 			tempLineSeg.push_back(lineSeg[i].path[0]);
 			tempLineSeg.push_back(lineSeg[i].path[1]);
-			for(uint j = 2; j < lineSeg[i].path.size() - 2; j = j + 1 + jump)
+			for(uint j = 2; j < lineSeg[i].path.size() - 2; j = j + 1 + JUMP)
 			{
 				tempLineSeg.push_back(lineSeg[i].path[j]);
 			}
@@ -296,11 +365,11 @@ void Graph::preprocessLineSegments()
 	for(uint i = 0; i < islandLineSeg.size(); ++i)
 	{
 		tempLineSeg.clear();
-		if(islandLineSeg[i].path.size() > limit)// if line length is above 5 then only go in and preprocess 
+		if(islandLineSeg[i].path.size() > LIMIT)// if line length is above 5 then only go in and preprocess 
 		{
 			tempLineSeg.push_back(islandLineSeg[i].path[0]);
 			tempLineSeg.push_back(islandLineSeg[i].path[1]);
-			for(uint j = 2; j < islandLineSeg[i].path.size() - 2; j = j + 1 + jump)
+			for(uint j = 2; j < islandLineSeg[i].path.size() - 2; j = j + 1 + JUMP)
 			{
 				tempLineSeg.push_back(islandLineSeg[i].path[j]);
 			}
@@ -390,7 +459,7 @@ void Graph::preprocessLineSegments()
 		}
 	}
 
-	encodeOneStep((path + "/check/eval_3_lineSeg.png").c_str(), image, imageWidth, imageHeight);
+	encodeOneStep((path + "/check/eval_3_lineSeg_afterprocess.png").c_str(), image, imageWidth, imageHeight);
 	image.clear();
 	#endif
 

@@ -20,7 +20,7 @@ void SVG::writeDisjointLineSegments(std::vector<Curve> &v)
 
 	ofsTest6 << "<svg height=\"" << imageHeight << "\" width=\"" << imageWidth << "\">" << std::endl << "<g>" << std::endl;
 
-
+	ofsTest6 << "<rect width=\"" << imageWidth << "\" height=\"" << imageHeight << "\" style=\"fill:rgb(0,0,0);stroke-width:0;\" /> " << std::endl;
 	for(uint i = 0; i < v.size(); ++i)
 	{
 		ofsTest6 << "<path fill=\"none\" stroke=\"black\" stroke-width=\"0.5\" d =\" ";
@@ -59,6 +59,8 @@ void SVG::writeFinalOutput(std::vector<Region> &rgn, std::string outFileName)
 	std::ofstream ofsFinal(outFileName.c_str(), std::ofstream::out);
 	ofsFinal << "<svg height=\"" << imageHeight << "\" width=\"" << imageWidth << "\">" << std::endl << "<g>" << std::endl;
 
+	ofsFinal << "<rect width=\"" << imageWidth << "\" height=\"" << imageHeight << "\" style=\"fill:rgb(0,0,0);stroke-width:0;\" /> " << std::endl;
+
 	// Ouput final svg paths with bezier curves only
 	for(uint i = 0; i < rgn.size(); ++i)
 	{
@@ -78,10 +80,12 @@ void SVG::writeFinalOutput(std::vector<Region> &rgn, std::string outFileName)
 			{
 				for(uint m = 0; m < rgn[i].closedPath[j][k]->pt.size(); ++m)
 				{						
-					if(k == 0 && m == 0)
+					if(m == 0)
 					{
-						ofsFinal << "M" << rgn[i].closedPath[j][k]->start.x << " " << rgn[i].closedPath[j][k]->start.y << " C";
-					}					
+						if(k == 0)
+							ofsFinal << "M" << rgn[i].closedPath[j][k]->start.x << " " << rgn[i].closedPath[j][k]->start.y << " C";
+					}
+
 					ofsFinal << rgn[i].closedPath[j][k]->pt[m].x << "," << rgn[i].closedPath[j][k]->pt[m].y << " ";
 				}
 			}
