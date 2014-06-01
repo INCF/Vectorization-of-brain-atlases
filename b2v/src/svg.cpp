@@ -67,9 +67,9 @@ void SVG::writeFinalOutput(std::vector<Region> &rgn, std::string outFileName)
 		if(i != 0)
 		{
 			if(rgn[i].closedPath.size() == 1)
-				ofsFinal << "<path  style=\"fill:rgb(" << (int)rgn[i].col.r << "," << (int)rgn[i].col.g << "," << (int)rgn[i].col.b << "); stroke-width:0; stroke:rgb(" << (int)rgn[i].col.r << "," << (int)rgn[i].col.g << "," << (int)rgn[i].col.b << ") \" d = \"";
+				ofsFinal << "<path  style=\"fill:rgb(" << (int)rgn[i].col.r << "," << (int)rgn[i].col.g << "," << (int)rgn[i].col.b << "); stroke-width:0.5; stroke:rgb(" << (int)rgn[i].col.r << "," << (int)rgn[i].col.g << "," << (int)rgn[i].col.b << ") \" d = \"";
 			else
-				ofsFinal << "<path  style=\"fill-rule:evenodd;fill:rgb(" << (int)rgn[i].col.r << "," << (int)rgn[i].col.g << "," << (int)rgn[i].col.b << "); stroke-width:0; stroke:rgb(" << (int)rgn[i].col.r << "," << (int)rgn[i].col.g << "," << (int)rgn[i].col.b << ") \" d = \"";	
+				ofsFinal << "<path  style=\"fill-rule:evenodd;fill:rgb(" << (int)rgn[i].col.r << "," << (int)rgn[i].col.g << "," << (int)rgn[i].col.b << "); stroke-width:0.5; stroke:rgb(" << (int)rgn[i].col.r << "," << (int)rgn[i].col.g << "," << (int)rgn[i].col.b << ") \" d = \"";	
 		}
 		else
 			ofsFinal << "<path fill=\"none\" d =\" ";

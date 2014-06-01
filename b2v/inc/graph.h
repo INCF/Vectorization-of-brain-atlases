@@ -9,14 +9,25 @@
 typedef Point2 *BezierCurve;
 
 /*
-A class of Graph using adjacency list representation
-that adds vertices dynamically i.e. vertices (white pixels) are
-added as they are discovered.
+ * A class of Graph using adjacency list representation
+ * that adds vertices dynamically i.e. vertices (white pixels) are
+ * added as they are discovered.
+ * 
+ * V = Real time number of vertices (Not TOTAL until all vertices are added)
+ *
+ * vertex stores all the AdjList nodes = white vertices.
+ *
+ * lineSeg = stores line segments from control points to control points.
+ * islandLineSeg = stores line segments from NON control point to itself.
+ *
+ * curve stores bezier curve(svg data) of the line segments.
+ *
+ * region stores all the disjoint regions in the bitmap poppped out boundaries.
 */
 class Graph
 {
 	private:
-		uint V;	//Real time number of vertices (Not TOTAL until all vertices are added)
+		uint V;	
 		std::vector<AdjList> vertex;
 		std::vector<Line> lineSeg;
 		std::vector<Line> islandLineSeg;
@@ -28,6 +39,10 @@ class Graph
 		uint imageWidth;
 		ImageMatrix *pop;
 	public:
+		/*
+		 * Please refer corresponding src file graph.cpp for
+		 * the functioning of the following methods.
+		 */
 		Graph(uint, uint, std::vector<pixel>&, ImageMatrix*);
 		~Graph(); 
 		void addVertex(uint, uint, uint, bool, bool, bool);
@@ -37,7 +52,7 @@ class Graph
 		void setIslandPoint(uint, bool);
 		void formLineSegments();
 		void moveToNode(std::vector<uint>&, uint, uint, uint, uint, uint);
-		bool checkCntrlPtAdj(uint, uint);
+		bool checkCntrlPtAdj(uint);
 		uint getAdjCntrlPtInd(uint, uint);
 		bool equalSideRegions(uint, uint);
 		bool isAdjToFrom(uint, uint);
@@ -54,8 +69,14 @@ class Graph
 		void writeOuput(std::string);
 };
 
+/*
+ * Method to fit bezier curve to a series of points.
+ */
 void FitCurve(Point2 *d, int nPts,double error);
 
+/*
+ * Method to catch and store generated bezier curve points.
+ */
 void DrawBezierCurve(int n, BezierCurve curve);
 
 #endif

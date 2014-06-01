@@ -5,19 +5,27 @@
 #include <vector>
 
 /*
-Classs to create and store the coded image matrix
-i.e. assigning different unsigned integers to different
-/disjoint regions of image
-*/
+ * Classs to create and store the coded image matrix
+ * i.e. assigning different unsigned integers to different
+ * disjoint regions of image.
+ *
+ * mat stores image coded with ints from {0, 1, .. n}; n = number of regions.
+ *
+ * colorCode stores the rgb value value corresponding to the region/code.
+ */
 class CodeImage
 {
 	private:
-		int** mat;	//Stores image coded with ints from {0, 1, .. n}; n = number of regions
+		int** mat;	
 		uint height;
 		uint width;
 		uint numDisjointRegions;
-		std::vector<pixel> colorCode;	//Stores the rgb value value corresponding to the region/code
+		std::vector<pixel> colorCode;	
 	public:
+		/*
+		 * Please refer corresponding src file codeImage.cpp for
+		 * the functioning of the following methods.
+		 */
 		CodeImage(ImageMatrix*);
 		~CodeImage();
 		void codeImage(ImageMatrix*);

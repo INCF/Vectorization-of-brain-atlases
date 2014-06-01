@@ -8,6 +8,14 @@ typedef unsigned int uint;
 #include "GraphicsGems.h" 
 #include <bitset>
 
+/*
+ * Struct to store final bezier curve points corresponding to a line segment.
+ * There is 1-to-1 mapping of a line segment and its corresponding curve.
+ * reverse points to the reversed curve.
+ * Note: pt vector stores pts in order: SC1C2EC1C2E....C1C2E
+ * where S = Start point, C1 = control point 1, C2 = control point 2, E = endpoint of sub bezier curve.
+ * End point becomes the start point of successor bezier curve.
+ */
 struct Curve
 {
 	Curve* reverse;
@@ -16,6 +24,12 @@ struct Curve
 	Point2 end;
 };
 
+/*
+ * Struct to store line segments and island line segments specs.
+ * line segments = control point to control point
+ * island segment = Non control point to same point 
+ * path vector stores the nodes ids on the path.
+ */
 struct Line
 {
     uint start;
@@ -23,6 +37,9 @@ struct Line
     std::vector<uint> path;
 };
 
+/*
+ * pixel (r,g,b) alpha = 1f or 255 always
+ */
 struct pixel
 {
 	uchar r;
@@ -30,6 +47,14 @@ struct pixel
 	uchar b;
 };
 
+/*
+ * Struct to store region specs.
+ * closedPath vector stores a vector of pointer to curve.
+ * A single element of closed path contains pointers to all those curves
+ * which together form a closed path.
+ * curveNum stores the id = index of curves adjacent to the region.
+ * col represents a pixel of the region(stores the color of the region).
+ */
 struct Region
 {
 	std::vector< std::vector<Curve*> > closedPath;
@@ -37,7 +62,11 @@ struct Region
 	pixel col;
 };
 
-
+/*
+ * Struct to store bitmap specs.
+ * pixMap represents all the pixels of the bitmap.
+ * height and width of the bitmap.
+ */
 struct ImageMatrix
 {
 	pixel **pixMap;
@@ -45,7 +74,9 @@ struct ImageMatrix
 	uint width;
 };
  
-// A structure to represent an adjacency list
+/*
+ * A structure to represent an adjacency list node
+ */
 struct AdjList
 {
     std::vector<uint> node;  		//ids' of nodes adjacent to this node
