@@ -5,12 +5,6 @@
 #include <string>
 
 
-//Empty Constructor
-Bitmap::Bitmap()
-{
-
-}
-
 //Constructor
 Bitmap::Bitmap(std::string filename)
 {
@@ -31,7 +25,7 @@ Bitmap::Bitmap(std::string filename)
 	}
 	numControlPoints = 0;
 
-	#ifdef _TEST_1_
+	#ifdef _TEST_1_ //checks if file read crrectly
 	//file to store r g b values of each pixel in row major order under test 1
 	std::string path = ROOT_DIR;
 	std::ofstream ofsTest1((path + "/check/test_1_cpp.txt").c_str(), std::ofstream::out);
@@ -63,6 +57,9 @@ Bitmap::Bitmap(std::string filename)
 	#endif	
 }
 
+/*
+ * processes the orig image
+ */
 void Bitmap::processImage()
 {
 	preprocess();
@@ -99,6 +96,7 @@ void Bitmap::processImage()
 	graph->processRegions();
 }
 
+//writes svg output in outFileName by moving control to writeOutput method of graph
 void Bitmap::writeOuputSVG(std::string outFileName)
 {
 	graph->writeOuput(outFileName);
@@ -166,9 +164,9 @@ void Bitmap::intialize(ImageMatrix **m, uint h, uint w)
 }
 
 /*
-Appends row at top and bottom and col at left and right of 
-orig image of black (0,0,0) pixels
-*/
+ * Appends row at top and bottom and col at left and right of 
+ * orig image with black (0,0,0) pixels
+ */
 void Bitmap::preprocess()
 {
 	uint h = pre->height;
@@ -192,6 +190,9 @@ void Bitmap::preprocess()
 	}
 }
 
+/*
+ * Please refer doc for the algorithm for popping out boundaries.
+ */
 void Bitmap::popoutBoundaries()
 {
 	uint h = pop->height;
@@ -273,8 +274,8 @@ void Bitmap::popoutBoundaries()
 }
 
 /*
-1. Detects control points which are boundary(white) points where 3 or more regions meet
-2. Initializes a graph with its vertices
+ * Detects control points which are boundary(white) points where 3 or more regions meet
+ * Initializes the graph with its vertices
 */
 void Bitmap::detectControlPoints()
 {
@@ -310,13 +311,17 @@ void Bitmap::detectControlPoints()
 			image[4 * w * i + 4 * j + 3] = 255;
 			#endif
 
+			//if pixel at (i,j) is a white pixel
 			if(ifEqualPixel(pop->pixMap[i][j], whitePixel))
 			{
 				pixToNodeMap[i][j] = vertexCounter;
+				//adding a vertex in graph
 				graph->addVertex(vertexCounter, i, j, 0, 0, 0);
 				temp.clear();
+				//if pixel at (i,j-1) is a unique (newly found) adjacent region pixel
 				if(checkUniqueRegionPixel(pop->pixMap[i][j - 1], temp))
-					graph->addRegion(vertexCounter, codedImage->getMatrix()[i][j - 1]);
+					//adds adjacent region code to adjacent region vector of vertex in graph
+					graph->addRegion(vertexCounter, codedImage->getMatrix()[i][j - 1]);	
 
 				if(checkUniqueRegionPixel(pop->pixMap[i][j + 1], temp))
 					graph->addRegion(vertexCounter, codedImage->getMatrix()[i][j + 1]);
@@ -342,6 +347,7 @@ void Bitmap::detectControlPoints()
 
 				if(temp.size() >= 3)
 				{
+					//set node with index = vertex counter = a control point in graph
 					graph->setControlPoint(vertexCounter, 1);
 					#ifdef _TEST_4_
 					//print coordinates of control point
@@ -360,6 +366,7 @@ void Bitmap::detectControlPoints()
 			}
 			else
 			{
+				//not a white pixel
 				pixToNodeMap[i][j] = -1;
 			}
 		}
@@ -378,6 +385,11 @@ void Bitmap::detectControlPoints()
 	temp.clear();
 }
 
+/*
+ * Returns 1 if pixel "a" is not a white pixel and is not contained in vector v.
+ * vector v contains the region pixels adjacent to a node = white vertex detected yet.
+ * if "a" is also a unique region pixel adjacent to the node then returns 1 else 0. 
+ */
 int Bitmap::checkUniqueRegionPixel(pixel a, std::vector<pixel> &v)
 {
 	int ret = 0;
@@ -402,6 +414,14 @@ int Bitmap::checkUniqueRegionPixel(pixel a, std::vector<pixel> &v)
 	return ret;
 }
 
+/*
+ * forms adjacency list in graph.
+ * connects two vertices if they are adjacent.
+ * the connection is bidirectional(undirected garph).
+ * Since only white pixels are nodes/vertices, we loop over all the pixels,
+ * check if the pixel is white,
+ * if yes: then connects this pixel/vertex with any adjacent white pixel/vertex
+ */
 void Bitmap::formAdjacencyList()
 {
 	uint h = pop->height;

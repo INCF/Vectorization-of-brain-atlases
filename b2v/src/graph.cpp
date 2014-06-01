@@ -17,10 +17,18 @@ std::vector<Point2> *ptStore = new std::vector<Point2>; //stores bezier points a
 #define JUMP 5
 //GAP: Net absolute change in the x and y direction of two pixels to be considered for a closed loop
 #define GAP 6
-//For douglas pecker algorithm
+//EPSILON: For douglas pecker algorithm
 #define EPSILON 1
+//FIT_TOLERANCE: Fittiing tolerated error
+#define FIT_TOLERANCE 0
 
-
+/*
+ * Method which is called whenever a bezier curve is generated.
+ * A bezier curve will have 4 pts. S, C1, C2, E.
+ * To catch all Bezier curves assosciated with a line segment, 
+ * ptStore global variable is used.
+ * n = number of points generated(at start 4 then 3).
+ */
 void DrawBezierCurve(int n, BezierCurve curve)
 {
     for(int i = 0; i < n; ++i)
@@ -92,31 +100,37 @@ void Graph::addVertex(uint id, uint x, uint y, bool isUsedUp = 0, bool isCntrlPo
 // Adds an edge to graph
 void Graph::addEdge(uint src, uint dest)
 {
-    // Add an edge from src to dest.  A new node is added to the adjacency
-    // list of src.
+    // Add an edge from src to dest.  A new node is added to the adjacency list of src.
     vertex[src].node.push_back(dest);
 }
 
-//Adds the code of adjacent region to the adjacent region vector of source vertex
+//Adds the code of adjacent region(ind) to the adjacent region vector of source vertex(src)
 void Graph::addRegion(uint src, uint ind)
 {
 	vertex[src].adjRegion.push_back(ind);
 }
 
+//Sets isControlPoint flag of vertex[a]
 void Graph::setControlPoint(uint a, bool b)
 {
 	vertex[a].isCntrlPoint.set(0,b);
 }
 
+//Sets isIslandPoint flag of vertex[a]
 void Graph::setIslandPoint(uint a, bool b)
 {
 	vertex[a].isIslandPoint.set(0,b);
 }
 
+/*
+ * Forms line segments.
+ * Please refer the doc for the complete algorithm.
+ */
 void Graph::formLineSegments()
 {
-	//Pass 1: finds line segments from control point to control point
-	//Pass 2: finds islands and assign one point of that island as representative by setting isIslandPt
+	//Pass 1: finds line segments from control point to control point.
+	//Pass 2: finds islands and assign one point of that island as representative by setting isIslandPt.
+	//Pass 3: Form any remaining islands.
 	for(int pass = 1; pass <= 3; ++pass)
 	{
 		for(uint i = 0; i < V; ++i)
@@ -230,6 +244,10 @@ void Graph::formLineSegments()
 
 }
 
+/*
+ * Moves to a node.
+ * Please refer the doc for the complete algorithm.
+ */
 void Graph::moveToNode(std::vector<uint> &v, uint to, uint from, uint startedFrom, uint pass, uint len)
 {
 	uint ind;
@@ -238,7 +256,7 @@ void Graph::moveToNode(std::vector<uint> &v, uint to, uint from, uint startedFro
 	{
 		v.push_back(to);
 	}
-	else if(pass == 1 && checkCntrlPtAdj(to, startedFrom) && ((!vertex[ind = getAdjCntrlPtInd(to, startedFrom)].isUsedUp.test(0)) || (len > LOOP && ind == startedFrom)))
+	else if(pass == 1 && checkCntrlPtAdj(to) && ((!vertex[ind = getAdjCntrlPtInd(to, startedFrom)].isUsedUp.test(0)) || (len > LOOP && ind == startedFrom)))
 	{
 		v.push_back(ind);
 	}
@@ -279,16 +297,24 @@ void Graph::moveToNode(std::vector<uint> &v, uint to, uint from, uint startedFro
 	}
 }
 
-bool Graph::checkCntrlPtAdj(uint to, uint startedFrom)
+/*
+ * Returns 1 if there is an adjacent control point to vertex[a]
+ */
+bool Graph::checkCntrlPtAdj(uint a)
 {
-	for(uint i = 0; i < vertex[to].node.size(); ++i)
+	for(uint i = 0; i < vertex[a].node.size(); ++i)
 	{
-		if(vertex[vertex[to].node[i]].isCntrlPoint.test(0))
+		if(vertex[vertex[a].node[i]].isCntrlPoint.test(0))
 			return true;
 	}
 	return false;
 }
 
+/*
+ * Returns the index of the adjacent control point
+ * if more than two adjacent control points then returns index other than startedfrom
+ * vertex[startedfrom] is always a control point here
+ */
 uint Graph::getAdjCntrlPtInd(uint to, uint startedFrom)
 {
 	std::vector<uint> v;
@@ -308,10 +334,14 @@ uint Graph::getAdjCntrlPtInd(uint to, uint startedFrom)
 		}
 	}
 	//Will never come at this point
-	std::cout << "Something BAD happened while retrieving control point at line segment formation step" << std::endl;
+	std::cout << "Something BAD happened while retrieving control point index at line segment formation step" << std::endl;
 	exit(1);
 }
 
+/*
+ * Checks if the regions adjacent to vertex[a] and vertex[b]
+ * are equal.
+ */
 bool Graph::equalSideRegions(uint a, uint b)
 {
 	if(vertex[a].adjRegion.size() != vertex[b].adjRegion.size())
@@ -329,6 +359,9 @@ bool Graph::equalSideRegions(uint a, uint b)
 	return true;
 }
 
+/*
+ * returns 1 if vertex[dest] is adjacent to vertex[from]
+ */
 bool Graph::isAdjToFrom(uint from, uint dest)
 {
 	for(uint i = 0; i < vertex[from].node.size(); ++i)
@@ -339,6 +372,10 @@ bool Graph::isAdjToFrom(uint from, uint dest)
 	return false;
 }
 
+/*
+ * Preprocesses line segments with either taking points at equal intervals on a line segment
+ * OR using Douglas Peucker algorithm
+ */
 void Graph::preprocessLineSegments()
 {
 	
@@ -519,9 +556,11 @@ double Graph::shortestDistanceToSegment(uint i, uint j, uint k)
 	return abs((y1 - m * x1 - c) / (sqrt(1 + m * m)));
 }
 
+/*
+ * Form curves by fitting line segments to bezier curve
+ */
 void Graph::formCurves()
 {
-	tolerance = 0;
 	for(uint i = 0; i < lineSeg.size(); ++i)
 	{
 		Point2 *d = new Point2[lineSeg[i].path.size() + 2];
@@ -537,7 +576,7 @@ void Graph::formCurves()
 
 		Curve *tempCurve = new Curve[1];
 		tempCurve->reverse = new Curve[1];
-		FitCurve(d, lineSeg[i].path.size() + 2, tolerance);
+		FitCurve(d, lineSeg[i].path.size() + 2, FIT_TOLERANCE);
 		tempCurve->pt.assign(ptStore->begin(), ptStore->end());
 		tempCurve->start = ptStore->front();
 		tempCurve->end = ptStore->back();
@@ -562,7 +601,7 @@ void Graph::formCurves()
 
 		Curve *tempCurve = new Curve[1];
 		tempCurve->reverse = new Curve[1];
-		FitCurve(d, islandLineSeg[i].path.size() + 2, tolerance);
+		FitCurve(d, islandLineSeg[i].path.size() + 2, FIT_TOLERANCE);
 		tempCurve->pt.assign(ptStore->begin(), ptStore->end());
 		tempCurve->start = ptStore->front();
 		tempCurve->end = ptStore->back();
@@ -595,6 +634,9 @@ void Graph::formCurves()
 	#endif
 }
 
+/*
+ * Reverses a curve
+ */
 Curve* Graph::reverseCurve(Curve *x)
 {
 	Curve *p =  new Curve[1];
@@ -615,6 +657,9 @@ Curve* Graph::reverseCurve(Curve *x)
 	return p;
 }
 
+/*
+ * assigns the indices of those curves to a region adjacent to that region
+ */
 void Graph::assignCurveNumToRegion()
 {
 	for(uint i = 0; i < lineSeg.size(); ++i)
@@ -672,6 +717,9 @@ void Graph::assignCurveNumToRegion()
 	#endif
 }
 
+/*
+ * processes all regions
+ */
 void Graph::processRegions()
 {
 	for(uint i = 0; i < region.size(); ++i)
@@ -680,11 +728,17 @@ void Graph::processRegions()
 	}
 }
 
+/*
+ * write output svg to outFileName by transferring control to writeFinalOutput method of SVG class.
+ */
 void Graph::writeOuput(std::string outFileName)
 {
 	outputSVG->writeFinalOutput(region, outFileName);
 }
 
+/*
+ * Please refer doc for the complete algorithm.
+ */
 void Graph::assignClosedPaths(Region &rgn)
 {
 	bool firstTime = true;
@@ -738,6 +792,9 @@ void Graph::assignClosedPaths(Region &rgn)
 		rgn.closedPath.push_back(*tempPath);
 }
 
+/*
+ * gets next path index whose start or end point is near to the point b
+ */
 int Graph::getNextPathIndex(std::vector<uint> &v, Point2 b)
 {
 	double val = 1000;  //No distance will exceed this disatance
@@ -765,6 +822,10 @@ int Graph::getNextPathIndex(std::vector<uint> &v, Point2 b)
 	return ind;
 }
 
+/*
+ * checks if start point is near to b or end point
+ * if start point then return 1 else 0
+ */
 bool Graph::ifForwardDirection(int focus, Point2 b)
 {
 	double val1;
