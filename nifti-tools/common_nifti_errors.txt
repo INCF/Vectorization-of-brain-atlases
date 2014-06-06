@@ -1,0 +1,30 @@
+A very brief guide to common orientation errors in Nifti1 files
+===============================================================
+
+A volumetric brain coordinate system generally has three axes:
+
+1. The Left-Right axis -> X
+2. The Posterior-Anterior axis (back to front) -> Y
+3. The Inferior-Superior axis (bottom to top) -> Z
+
+In a NIFTI file, the raw data is stored as a three dimensional matrix, where the i, j and k indices correspond to the above 
+three axes, but not necessarily in that order. So i may correspond to -Y, j to +Z and k to -X, for example.
+
+A NIFTI file also stores two affine transformation matrices, called sform and qform.
+The NIFTI standard requires that these matrices (if present) transform the data to standard axes, which is the above order 
+and called RAS: Right-Anterior-Superior. The reason for having both qform and sform is that they could encode two slightly
+different transformations, into two different standard spaces for example. It is advised to keep qform and sform identical, 
+because many software packages do not distinguish them well.
+
+A problem that I often encounter is that Atlas makers produce NIFTI files that do not adhere to the standard. This is quite
+problematic: it is easy to see from the data what is top-bottom and back-front, but there usually is no way to see what is 
+left and right. I produced two Python scripts to deal with such files: nii2snapshot.py produces an HTML page that shows a 
+few cross sections from which you can check whether the NIFTI file has a proper RAS orientation. The next, nii_reorient.py 
+can fix the orientation a NIFTI file. It does not touch the data, only the qform and sform. You specify the requested 
+permutation, like -r="-k-i+j" and it will permute the affine matrices accordingly.
+
+A second common problem is that neither qform or sform are present. That can mean two things:
+1. the NIFTI file was produced in a quick and dirty way, so you have to figure out the orientation yourself and will not 
+know what is Left and Right
+2. the NIFTI file is a direct copy of an older file format called ANALYZE.
+In that case, the raw data are stored in LAS orientation.
