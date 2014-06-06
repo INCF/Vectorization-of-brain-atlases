@@ -4,15 +4,13 @@ import argparse, sys, os, numpy, subprocess
 import os.path as op
 import re
 
-SliceDirs = {'x':'saggital','y':'coronal','z':'axial'}
-
 def argument_parser():
   """ Define the argument parser and return the parser object. """
   parser = argparse.ArgumentParser(
     description='description',
     formatter_class=argparse.RawTextHelpFormatter)
   parser.add_argument('-i','--nifti_src', type=str, help="Input Nifti file", required=True)
-  parser.add_argument('-r','--reorient', type=str, default='+X+Y+Z', help="Requested flipping and permutation")
+  parser.add_argument('-r','--reorient', type=str, default='+i+j+k', help="Requested flipping and permutation")
   return parser
 
 def parse_arguments(raw=None):
@@ -24,7 +22,7 @@ def parse_arguments(raw=None):
     print 'Nifti file "{}" not found.'.format(args.nifti_src)
     exit(0)
     
-  args.reorient = args.reorient.upper()
+  args.reorient = args.reorient.lower()
 
   return args
            
@@ -40,10 +38,10 @@ def run(args):
     
     perm_str = args.reorient
     if len(perm_str) is not 2*len(dims):
-      raise Exception('Permutation string must be twice the length of the data, e.g. "+x+y+z"')
+      raise Exception('Permutation string must be twice the length of the data, e.g. "+i+j+k"')
     
     Multiply = {'+':1,'-':-1}
-    DirIndex = {'X':0,'Y':1,'Z':2}
+    DirIndex = {'i':0,'j':1,'k':2}
     flip = []
     perm = []
     odd = True
