@@ -60,7 +60,7 @@ Bitmap::Bitmap(std::string filename)
 /*
  * processes the orig image
  */
-void Bitmap::processImage()
+void Bitmap::processImage(uint tolerance)
 {
 	preprocess();
 	popoutBoundaries();
@@ -92,7 +92,7 @@ void Bitmap::processImage()
 	graph->formLineSegments();
 	graph->assignCurveNumToRegion();
 	graph->preprocessLineSegments();
-	graph->formCurves();
+	graph->formCurves(tolerance);
 	graph->processRegions();
 }
 

@@ -38,7 +38,7 @@ static Vector2 V2ScaleIII(Vector2,double);
 static Vector2 V2SubII(Vector2, Vector2);
 void DrawBezierCurve(int n, BezierCurve curve);
 
-#define MAXPOINTS   1000        /* The most points you can have */                     
+#define MAXPOINTS   1000       /* The most points you can have */                     
 
 /*
  *  FitCurve :
