@@ -20,7 +20,7 @@ void SVG::writeDisjointLineSegments(std::vector<Curve> &v)
 
 	ofsTest6 << "<svg height=\"" << imageHeight << "\" width=\"" << imageWidth << "\">" << std::endl << "<g>" << std::endl;
 
-	ofsTest6 << "<rect width=\"" << imageWidth << "\" height=\"" << imageHeight << "\" style=\"fill:rgb(0,0,0);stroke-width:0;\" /> " << std::endl;
+	ofsTest6 << "<rect width=\"" << imageWidth << "\" height=\"" << imageHeight << "\" fill=\"#000000\" stroke-width=\"0\" /> " << std::endl;
 	for(uint i = 0; i < v.size(); ++i)
 	{
 		ofsTest6 << "<path fill=\"none\" stroke=\"black\" stroke-width=\"0.5\" d =\" ";
@@ -59,17 +59,19 @@ void SVG::writeFinalOutput(std::vector<Region> &rgn, std::string outFileName)
 	std::ofstream ofsFinal(outFileName.c_str(), std::ofstream::out);
 	ofsFinal << "<svg height=\"" << imageHeight << "\" width=\"" << imageWidth << "\">" << std::endl << "<g>" << std::endl;
 
-	ofsFinal << "<rect width=\"" << imageWidth << "\" height=\"" << imageHeight << "\" style=\"fill:rgb(0,0,0);stroke-width:0;\" /> " << std::endl;
+	ofsFinal << "<rect width=\"" << imageWidth << "\" height=\"" << imageHeight << "\" fill=\"#000000\" stroke-width=\"0\" /> " << std::endl;
 
 	// Ouput final svg paths with bezier curves only
 	for(uint i = 0; i < rgn.size(); ++i)
 	{
+		if(rgn[i].closedPath.size() == 0)
+			continue;
 		if(i != 0)
 		{
 			if(rgn[i].closedPath.size() == 1)
-				ofsFinal << "<path  style=\"fill:rgb(" << (int)rgn[i].col.r << "," << (int)rgn[i].col.g << "," << (int)rgn[i].col.b << "); stroke-width:0; stroke:rgb(" << (int)rgn[i].col.r << "," << (int)rgn[i].col.g << "," << (int)rgn[i].col.b << ") \" d = \"";
+				ofsFinal << "<path  fill=\"" << RGBToHex((uint)rgn[i].col.r, (int)rgn[i].col.g, (int)rgn[i].col.b) << "\" stroke-width=\"0\" stroke=\"" << RGBToHex((uint)rgn[i].col.r, (int)rgn[i].col.g, (int)rgn[i].col.b) << "\" d = \"";
 			else
-				ofsFinal << "<path  style=\"fill-rule:evenodd;fill:rgb(" << (int)rgn[i].col.r << "," << (int)rgn[i].col.g << "," << (int)rgn[i].col.b << "); stroke-width:0; stroke:rgb(" << (int)rgn[i].col.r << "," << (int)rgn[i].col.g << "," << (int)rgn[i].col.b << ") \" d = \"";	
+				ofsFinal << "<path  fill-rule=\"evenodd\" fill=\"" << RGBToHex((uint)rgn[i].col.r, (int)rgn[i].col.g, (int)rgn[i].col.b) << "\" stroke-width=\"0\" stroke=\"" << RGBToHex((uint)rgn[i].col.r, (int)rgn[i].col.g, (int)rgn[i].col.b) << "\" d = \"";	
 		}
 		else
 			ofsFinal << "<path fill=\"none\" d =\" ";

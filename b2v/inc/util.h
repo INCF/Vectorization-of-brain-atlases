@@ -5,6 +5,7 @@ typedef unsigned char uchar;
 typedef unsigned int uint;
 
 #include <vector>
+#include <string>
 #include "GraphicsGems.h" 
 #include <bitset>
 
@@ -94,4 +95,7 @@ int ifEqualPixel(pixel, pixel);
 
 //The image argument has width * height RGBA pixels or width * height * 4 bytes
 void encodeOneStep(const char*, std::vector<uchar>&, uint, uint);
+
+std::string RGBToHex(uint, uint, uint);
+
 #endif
