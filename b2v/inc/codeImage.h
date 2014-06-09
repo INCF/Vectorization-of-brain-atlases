@@ -29,7 +29,6 @@ class CodeImage
 		CodeImage(ImageMatrix*);
 		~CodeImage();
 		void codeImage(ImageMatrix*);
-		void moveTo(ImageMatrix*, int, int, uint);
 		int **getMatrix();
 		std::vector<pixel>* getColCode();
 };
