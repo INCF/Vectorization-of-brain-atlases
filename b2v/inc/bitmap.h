@@ -54,7 +54,7 @@ class Bitmap
 		void detectControlPoints();
 		int checkUniqueRegionPixel(pixel, std::vector<pixel>&);
 		void formAdjacencyList();
-		void processImage();
+		void processImage(uint);
 		void writeOuputSVG(std::string);
 };
 

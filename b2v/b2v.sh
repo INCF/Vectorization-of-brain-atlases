@@ -1,6 +1,8 @@
+ulimit -s unlimited
+
 if [ $# -eq 0 ]
   then
-    echo "Usage: b2v path_to_filename.png [path_to_outputfileName.svg]"
+    echo "[for help]:./b2v -h"
 fi
 
 if [ $# -eq 1 ]

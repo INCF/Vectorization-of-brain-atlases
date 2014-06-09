@@ -57,7 +57,7 @@ class Graph
 		bool equalSideRegions(uint, uint);
 		bool isAdjToFrom(uint, uint);
 		void preprocessLineSegments();
-		void formCurves();
+		void formCurves(uint);
 		Curve* reverseCurve(Curve*);
 		void assignCurveNumToRegion();
 		void processRegions();

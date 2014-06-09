@@ -7,6 +7,7 @@
 #include <bitset>
 #include <string>
 
+
 std::vector<Point2> *ptStore = new std::vector<Point2>; //stores bezier points as they are genereted/streamed
 
 //LOOP: length of the loop from a control point to itself to make it to be considered as line segment
@@ -19,8 +20,8 @@ std::vector<Point2> *ptStore = new std::vector<Point2>; //stores bezier points a
 #define GAP 6
 //EPSILON: For douglas pecker algorithm
 #define EPSILON 1
-//FIT_TOLERANCE: Fittiing tolerated error
-#define FIT_TOLERANCE 0
+
+
 
 /*
  * Method which is called whenever a bezier curve is generated.
@@ -559,7 +560,7 @@ double Graph::shortestDistanceToSegment(uint i, uint j, uint k)
 /*
  * Form curves by fitting line segments to bezier curve
  */
-void Graph::formCurves()
+void Graph::formCurves(uint tolerance)
 {
 	for(uint i = 0; i < lineSeg.size(); ++i)
 	{
@@ -576,7 +577,7 @@ void Graph::formCurves()
 
 		Curve *tempCurve = new Curve[1];
 		tempCurve->reverse = new Curve[1];
-		FitCurve(d, lineSeg[i].path.size() + 2, FIT_TOLERANCE);
+		FitCurve(d, lineSeg[i].path.size() + 2, tolerance);
 		tempCurve->pt.assign(ptStore->begin(), ptStore->end());
 		tempCurve->start = ptStore->front();
 		tempCurve->end = ptStore->back();
@@ -601,7 +602,7 @@ void Graph::formCurves()
 
 		Curve *tempCurve = new Curve[1];
 		tempCurve->reverse = new Curve[1];
-		FitCurve(d, islandLineSeg[i].path.size() + 2, FIT_TOLERANCE);
+		FitCurve(d, islandLineSeg[i].path.size() + 2, tolerance);
 		tempCurve->pt.assign(ptStore->begin(), ptStore->end());
 		tempCurve->start = ptStore->front();
 		tempCurve->end = ptStore->back();
