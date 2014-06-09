@@ -3,6 +3,8 @@
 #include <fstream>
 #include "string"
 #include "bitmap.h"
+#include <queue>
+#include <utility>
 
 //Constructor
 CodeImage::CodeImage(ImageMatrix* m)
@@ -57,103 +59,109 @@ CodeImage::~CodeImage()
 void CodeImage::codeImage(ImageMatrix *m)
 {
 	uint counter = 0;
-	for(uint i = 0; i < height; ++i)
+	for(uint ix = 0; ix < height; ++ix)
 	{
-		for(uint j = 0; j < width; ++j)
+		for(uint jy = 0; jy < width; ++jy)
 		{
 			//if pixel at (i,j) is not yet coded
-			if(mat[i][j] == -1)
+			if(mat[ix][jy] == -1)
 			{
-				mat[i][j] = counter;
+				mat[ix][jy] = counter;
 
 				pixel *myPixel = new pixel[1];
-				myPixel->r = m->pixMap[i][j].r;
-				myPixel->g = m->pixMap[i][j].g;
-				myPixel->b = m->pixMap[i][j].b;
+				myPixel->r = m->pixMap[ix][jy].r;
+				myPixel->g = m->pixMap[ix][jy].g;
+				myPixel->b = m->pixMap[ix][jy].b;
 				colorCode.push_back(*myPixel);
 
 				//move to pixel(i,j) and flood fill
-				moveTo(m, i, j, counter);
+				//moveTo(m, i, j, counter);
+
+				std::queue< std::pair<int, int> >Q;
+				
+				Q.push(std::make_pair(ix,jy));
+				while(!Q.empty())
+				{
+					int i = Q.front().first;
+					int j = Q.front().second;
+
+					Q.pop();
+
+					if(j - 1 >= 0)
+					{
+						if(mat[i][j - 1] == -1 && ifEqualPixel(m->pixMap[i][j], m->pixMap[i][j - 1]))
+						{
+							mat[i][j - 1] = counter;
+							Q.push(std::make_pair(i,j-1));
+						}
+					}
+
+					if(j + 1 <= (int)width - 1)
+					{
+						if(mat[i][j + 1] == -1 && ifEqualPixel(m->pixMap[i][j], m->pixMap[i][j + 1]))
+						{
+							mat[i][j + 1] = counter;
+							Q.push(std::make_pair(i,j+1));
+						}
+					}
+
+					if(i - 1 >= 0)
+					{
+						if(mat[i - 1][j] == -1 && ifEqualPixel(m->pixMap[i][j], m->pixMap[i - 1][j]))
+						{
+							mat[i - 1][j] = counter;
+							Q.push(std::make_pair(i-1,j));
+						}
+
+						if(j - 1 >= 0)
+						{
+							if(mat[i - 1][j - 1] == -1 && ifEqualPixel(m->pixMap[i][j], m->pixMap[i - 1][j - 1]))
+							{
+								mat[i - 1][j - 1] = counter;
+								Q.push(std::make_pair(i-1,j-1));
+							}
+						}
+
+						if(j + 1 <= (int)width- 1)
+						{
+							if(mat[i - 1][j + 1] == -1 && ifEqualPixel(m->pixMap[i][j], m->pixMap[i - 1][j + 1]))
+							{
+								mat[i - 1][j + 1] = counter;
+								Q.push(std::make_pair(i-1,j+1));
+							}
+						}
+					}
+
+					if(i + 1 <= (int)height - 1)
+					{
+						if(mat[i + 1][j] == -1 && ifEqualPixel(m->pixMap[i][j], m->pixMap[i + 1][j]))
+						{
+							mat[i + 1][j] = counter;
+							Q.push(std::make_pair(i+1,j));
+						}
+
+						if(j - 1 >= 0)
+						{
+							if(mat[i + 1][j - 1] == -1 && ifEqualPixel(m->pixMap[i][j], m->pixMap[i + 1][j - 1]))
+							{
+								mat[i + 1][j - 1] = counter;
+								Q.push(std::make_pair(i+1,j-1));
+							}
+						}
+
+						if(j + 1 <= (int)width - 1)
+						{
+							if(mat[i + 1][j + 1] == -1 && ifEqualPixel(m->pixMap[i][j], m->pixMap[i + 1][j + 1]))
+							{
+								mat[i + 1][j + 1] = counter;
+								Q.push(std::make_pair(i+1,j+1));
+							}
+						}
+					}
+
+				}
+
 				counter = counter + 1;
-			}
-		}
-	}
-}
-
-/*
-Move to pixel(i,j) and do an operation like bfs and assign counter value to
-all the adjacent pixels of same color
-*/
-void CodeImage::moveTo(ImageMatrix *m, int i, int j, uint counter)
-{
-	if(j - 1 >= 0)
-	{
-		if(mat[i][j - 1] == -1 && ifEqualPixel(m->pixMap[i][j], m->pixMap[i][j - 1]))
-		{
-			mat[i][j - 1] = counter;
-			moveTo(m, i, j - 1, counter);
-		}
-	}
-
-	if(j + 1 <= (int)width - 1)
-	{
-		if(mat[i][j + 1] == -1 && ifEqualPixel(m->pixMap[i][j], m->pixMap[i][j + 1]))
-		{
-			mat[i][j + 1] = counter;
-			moveTo(m, i, j + 1, counter);
-		}
-	}
-
-	if(i - 1 >= 0)
-	{
-		if(mat[i - 1][j] == -1 && ifEqualPixel(m->pixMap[i][j], m->pixMap[i - 1][j]))
-		{
-			mat[i - 1][j] = counter;
-			moveTo(m, i - 1, j, counter);
-		}
-
-		if(j - 1 >= 0)
-		{
-			if(mat[i - 1][j - 1] == -1 && ifEqualPixel(m->pixMap[i][j], m->pixMap[i - 1][j - 1]))
-			{
-				mat[i - 1][j - 1] = counter;
-				moveTo(m, i - 1, j - 1, counter);
-			}
-		}
-
-		if(j + 1 <= (int)width- 1)
-		{
-			if(mat[i - 1][j + 1] == -1 && ifEqualPixel(m->pixMap[i][j], m->pixMap[i - 1][j + 1]))
-			{
-				mat[i - 1][j + 1] = counter;
-				moveTo(m, i - 1, j + 1, counter);
-			}
-		}
-	}
-
-	if(i + 1 <= (int)height - 1)
-	{
-		if(mat[i + 1][j] == -1 && ifEqualPixel(m->pixMap[i][j], m->pixMap[i + 1][j]))
-		{
-			mat[i + 1][j] = counter;
-			moveTo(m, i + 1, j, counter);
-		}
-
-		if(j - 1 >= 0)
-		{
-			if(mat[i + 1][j - 1] == -1 && ifEqualPixel(m->pixMap[i][j], m->pixMap[i + 1][j - 1]))
-			{
-				mat[i + 1][j - 1] = counter;
-				moveTo(m, i + 1, j - 1, counter);
-			}
-		}
-
-		if(j + 1 <= (int)width - 1)
-		{
-			if(mat[i + 1][j + 1] == -1 && ifEqualPixel(m->pixMap[i][j], m->pixMap[i + 1][j + 1]))
-			{
-				mat[i + 1][j + 1] = counter;
-				moveTo(m, i + 1, j + 1, counter);
 			}
 		}
 	}
