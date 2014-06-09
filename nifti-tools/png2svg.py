@@ -56,10 +56,7 @@ def run(args):
       outputFile =  op.join(svgFolder,svgFile)
       
       # generate and save svg with b2v
-      ret1 = subprocess.call(["chmod +x /home/dhruv/bitmap2vector_cpp/nifti/b2v.sh"], shell=True)
-      if ret1==1:
-        print 'Error: Permission required to change mode of b2v.sh'
-      ret2 = subprocess.call(["/home/dhruv/bitmap2vector_cpp/nifti/b2v.sh "+inputFile+" "+outputFile], shell=True)
+      ret2 = subprocess.call(["/home/dhruv/bitmap2vector_cpp/nifti/b2v -i "+inputFile+" -o "+outputFile+" -t 0"], shell=True)
       if ret2==1:
         print 'Error: Unsuccessful PNG to SVG conversion'
       else:
