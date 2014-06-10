@@ -56,7 +56,7 @@ def run(args):
       outputFile =  op.join(svgFolder,svgFile)
       
       # generate and save svg with b2v
-      ret2 = subprocess.call(["/home/dhruv/bitmap2vector_cpp/nifti/b2v -i "+inputFile+" -o "+outputFile+" -t 0"], shell=True)
+      ret2 = subprocess.call(["/home/dhruv/bitmap2vector_cpp/copy/Vectorization-of-brain-atlases/nifti-tools/b2v -i "+inputFile+" -o "+outputFile+" -t 0"], shell=True)
       if ret2==1:
         print 'Error: Unsuccessful PNG to SVG conversion'
       else:

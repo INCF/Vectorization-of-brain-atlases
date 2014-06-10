@@ -565,15 +565,15 @@ void Graph::formCurves(uint tolerance)
 	for(uint i = 0; i < lineSeg.size(); ++i)
 	{
 		Point2 *d = new Point2[lineSeg[i].path.size() + 2];
-		d[0].x = vertex[lineSeg[i].path[0]].y;
-		d[0].y = vertex[lineSeg[i].path[0]].x;
+		d[0].x = (vertex[lineSeg[i].path[0]].y-1)*0.5;
+		d[0].y = (vertex[lineSeg[i].path[0]].x-1)*0.5;
 		for(uint j = 0; j < lineSeg[i].path.size(); ++j)
 		{
-			d[j+1].x = vertex[lineSeg[i].path[j]].y;
-			d[j+1].y = vertex[lineSeg[i].path[j]].x;
+			d[j+1].x = (vertex[lineSeg[i].path[j]].y-1)*0.5;
+			d[j+1].y = (vertex[lineSeg[i].path[j]].x-1)*0.5;
 		}
-		d[lineSeg[i].path.size()+1].x = vertex[lineSeg[i].path[lineSeg[i].path.size()-1]].y;
-		d[lineSeg[i].path.size()+1].y = vertex[lineSeg[i].path[lineSeg[i].path.size()-1]].x;
+		d[lineSeg[i].path.size()+1].x = (vertex[lineSeg[i].path[lineSeg[i].path.size()-1]].y-1)*0.5;
+		d[lineSeg[i].path.size()+1].y = (vertex[lineSeg[i].path[lineSeg[i].path.size()-1]].x-1)*0.5;
 
 		Curve *tempCurve = new Curve[1];
 		tempCurve->reverse = new Curve[1];
@@ -589,16 +589,16 @@ void Graph::formCurves(uint tolerance)
 	for(uint i = 0; i < islandLineSeg.size(); ++i)
 	{
 		Point2 *d = new Point2[islandLineSeg[i].path.size() + 2];
-		d[0].x = vertex[islandLineSeg[i].path[0]].y;
-		d[0].y = vertex[islandLineSeg[i].path[0]].x;
+		d[0].x = (vertex[islandLineSeg[i].path[0]].y-1)*0.5;
+		d[0].y = (vertex[islandLineSeg[i].path[0]].x-1)*0.5;
 
 		for(uint j = 0; j < islandLineSeg[i].path.size(); ++j)
 		{
-			d[j+1].x = vertex[islandLineSeg[i].path[j]].y;
-			d[j+1].y = vertex[islandLineSeg[i].path[j]].x;
+			d[j+1].x = (vertex[islandLineSeg[i].path[j]].y-1)*0.5;
+			d[j+1].y = (vertex[islandLineSeg[i].path[j]].x-1)*0.5;
 		}
-		d[islandLineSeg[i].path.size()+1].x = vertex[islandLineSeg[i].path[islandLineSeg[i].path.size()-1]].y;
-		d[islandLineSeg[i].path.size()+1].y = vertex[islandLineSeg[i].path[islandLineSeg[i].path.size()-1]].x;
+		d[islandLineSeg[i].path.size()+1].x = (vertex[islandLineSeg[i].path[islandLineSeg[i].path.size()-1]].y-1)*0.5;
+		d[islandLineSeg[i].path.size()+1].y = (vertex[islandLineSeg[i].path[islandLineSeg[i].path.size()-1]].x-1)*0.5;
 
 		Curve *tempCurve = new Curve[1];
 		tempCurve->reverse = new Curve[1];
