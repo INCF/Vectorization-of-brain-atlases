@@ -171,6 +171,7 @@ void Bitmap::preprocess()
 {
 	uint h = pre->height;
 	uint w = pre->width;
+	int M[3][256] = {{0}};
 
 	for(uint i = 0; i < h; ++i)
 	{
@@ -185,8 +186,41 @@ void Bitmap::preprocess()
 				pre->pixMap[i][j].r = orig->pixMap[i - 1][j - 1].r;
 				pre->pixMap[i][j].g = orig->pixMap[i - 1][j - 1].g;
 				pre->pixMap[i][j].b = orig->pixMap[i - 1][j - 1].b;
+				M[0][orig->pixMap[i - 1][j - 1].r] = -1;
+				M[0][orig->pixMap[i - 1][j - 1].g] = -1;
+				M[0][orig->pixMap[i - 1][j - 1].b] = -1;				
 			}
 		}
+	}
+
+	bool outOfLoop = false;
+	for(uint i = 0; i < 3; ++i)
+	{
+		for(uint j = 0; j < 256; ++j)
+		{
+			if(M[i][j] != -1)
+			{
+				switch(i)
+				{
+					case 0:
+						boundaryPixel.r = j;
+						boundaryPixel.g = boundaryPixel.b = 255;
+						break;
+					case 1:
+						boundaryPixel.g = j;
+						boundaryPixel.r = boundaryPixel.b = 255;
+						break;
+					case 2:
+						boundaryPixel.b = j;
+						boundaryPixel.g = boundaryPixel.r = 255;
+						break;
+				}
+				outOfLoop = true;
+				break;
+			}
+		}
+		if(outOfLoop)
+			break;
 	}
 }
 
@@ -219,7 +253,9 @@ void Bitmap::popoutBoundaries()
 
 			if(!ifEqualPixel(pre->pixMap[i][j], pre->pixMap[i][j - 1]))
 			{
-				pop->pixMap[focus_i][focus_j - 1].r = pop->pixMap[focus_i][focus_j - 1].g = pop->pixMap[focus_i][focus_j - 1].b = 255;
+				pop->pixMap[focus_i][focus_j - 1].r = boundaryPixel.r;
+				pop->pixMap[focus_i][focus_j - 1].g = boundaryPixel.g;
+				pop->pixMap[focus_i][focus_j - 1].b = boundaryPixel.b;
 			}
 			else
 			{
@@ -229,7 +265,9 @@ void Bitmap::popoutBoundaries()
 			}
 			if(!ifEqualPixel(pre->pixMap[i][j], pre->pixMap[i - 1][j - 1]))
 			{
-				pop->pixMap[focus_i - 1][focus_j - 1].r = pop->pixMap[focus_i - 1][focus_j - 1].g = pop->pixMap[focus_i - 1][focus_j - 1].b = 255;
+				pop->pixMap[focus_i - 1][focus_j - 1].r = boundaryPixel.r;
+				pop->pixMap[focus_i - 1][focus_j - 1].g = boundaryPixel.g;
+				pop->pixMap[focus_i - 1][focus_j - 1].b = boundaryPixel.b;
 			}
 			else
 			{
@@ -239,7 +277,9 @@ void Bitmap::popoutBoundaries()
 			}
 			if(!ifEqualPixel(pre->pixMap[i][j], pre->pixMap[i - 1][j]))
 			{
-				pop->pixMap[focus_i - 1][focus_j].r = pop->pixMap[focus_i - 1][focus_j].g = pop->pixMap[focus_i - 1][focus_j].b = 255;
+				pop->pixMap[focus_i - 1][focus_j].r = boundaryPixel.r;
+				pop->pixMap[focus_i - 1][focus_j].g = boundaryPixel.g;
+				pop->pixMap[focus_i - 1][focus_j].b = boundaryPixel.b;
 			}
 			else
 			{
@@ -283,14 +323,11 @@ void Bitmap::detectControlPoints()
 	uint w = pop->width;
 	uint vertexCounter = 0;
 	std::vector<pixel> temp;
-	pixel whitePixel;
 
 	#ifdef _EVAL_3_
 	std::vector<unsigned char> image;
 	image.resize(w * h * 4);
 	#endif
-
-	whitePixel.r = whitePixel.g = whitePixel.b = 255;
 
 	#ifdef _TEST_4_
 	//file to store coordinate values of control points under test 4
@@ -312,7 +349,7 @@ void Bitmap::detectControlPoints()
 			#endif
 
 			//if pixel at (i,j) is a white pixel
-			if(ifEqualPixel(pop->pixMap[i][j], whitePixel))
+			if(ifEqualPixel(pop->pixMap[i][j], boundaryPixel))
 			{
 				pixToNodeMap[i][j] = vertexCounter;
 				//adding a vertex in graph
@@ -393,7 +430,7 @@ void Bitmap::detectControlPoints()
 int Bitmap::checkUniqueRegionPixel(pixel a, std::vector<pixel> &v)
 {
 	int ret = 0;
-	if(!(a.r == 255 && a.g == 255 && a.b == 255))
+	if(!(a.r == boundaryPixel.r && a.g == boundaryPixel.g && a.b == boundaryPixel.b))
 	{
 		uint flag = 0;
 		for(uint i = 0; i < v.size(); ++i)
@@ -426,37 +463,35 @@ void Bitmap::formAdjacencyList()
 {
 	uint h = pop->height;
 	uint w = pop->width;
-	pixel whitePixel;
-	whitePixel.r = whitePixel.g = whitePixel.b = 255;
 
 	for(uint i = 1; i < h - 1; ++i)
 	{
 		for(uint j = 1; j < w - 1; ++j)
 		{
-			if(ifEqualPixel(pop->pixMap[i][j], whitePixel))
+			if(ifEqualPixel(pop->pixMap[i][j], boundaryPixel))
 			{
-				if(ifEqualPixel(pop->pixMap[i - 1][j], whitePixel))
+				if(ifEqualPixel(pop->pixMap[i - 1][j], boundaryPixel))
 					graph->addEdge(pixToNodeMap[i][j], pixToNodeMap[i - 1][j]);
 
-				if(ifEqualPixel(pop->pixMap[i + 1][j], whitePixel))
+				if(ifEqualPixel(pop->pixMap[i + 1][j], boundaryPixel))
 					graph->addEdge(pixToNodeMap[i][j], pixToNodeMap[i + 1][j]);
 
-				if(ifEqualPixel(pop->pixMap[i - 1][j - 1], whitePixel))
+				if(ifEqualPixel(pop->pixMap[i - 1][j - 1], boundaryPixel))
 					graph->addEdge(pixToNodeMap[i][j], pixToNodeMap[i - 1][j - 1]);
 
-				if(ifEqualPixel(pop->pixMap[i - 1][j + 1], whitePixel))
+				if(ifEqualPixel(pop->pixMap[i - 1][j + 1], boundaryPixel))
 					graph->addEdge(pixToNodeMap[i][j], pixToNodeMap[i - 1][j + 1]);
 
-				if(ifEqualPixel(pop->pixMap[i + 1][j - 1], whitePixel))
+				if(ifEqualPixel(pop->pixMap[i + 1][j - 1], boundaryPixel))
 					graph->addEdge(pixToNodeMap[i][j], pixToNodeMap[i + 1][j - 1]);
 
-				if(ifEqualPixel(pop->pixMap[i + 1][j + 1], whitePixel))
+				if(ifEqualPixel(pop->pixMap[i + 1][j + 1], boundaryPixel))
 					graph->addEdge(pixToNodeMap[i][j], pixToNodeMap[i + 1][j + 1]);
 
-				if(ifEqualPixel(pop->pixMap[i][j - 1], whitePixel))
+				if(ifEqualPixel(pop->pixMap[i][j - 1], boundaryPixel))
 					graph->addEdge(pixToNodeMap[i][j], pixToNodeMap[i][j - 1]);
 
-				if(ifEqualPixel(pop->pixMap[i][j + 1], whitePixel))
+				if(ifEqualPixel(pop->pixMap[i][j + 1], boundaryPixel))
 					graph->addEdge(pixToNodeMap[i][j], pixToNodeMap[i][j + 1]);
 			}
 		}

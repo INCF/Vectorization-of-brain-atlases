@@ -39,6 +39,7 @@ class Bitmap
 		Graph *graph;
 		int** pixToNodeMap;
 		uint numControlPoints;
+		pixel boundaryPixel;
 	public:
 		/*
 		 * Please refer corresponding src file bitmap.cpp for
