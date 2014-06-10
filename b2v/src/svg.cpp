@@ -4,8 +4,8 @@
 
 SVG::SVG(uint h, uint w)
 {
-	imageHeight = h;
-	imageWidth = w;
+	imageHeight = (h-4)*0.5;
+	imageWidth = (w-4)*0.5;
 }
 
 SVG::~SVG()
