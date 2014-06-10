@@ -6,7 +6,7 @@
 #include <iostream>
 #include <bitset>
 #include <string>
-#include <climits>
+
 
 std::vector<Point2> *ptStore = new std::vector<Point2>; //stores bezier points as they are genereted/streamed
 
@@ -210,17 +210,10 @@ void Graph::formLineSegments()
 	{
 		for(uint x = 0; x < imageWidth; x++)
 		{
-		if(pop->pixMap[y][x].r != UINT_MAX && pop->pixMap[y][x].g != UINT_MAX && pop->pixMap[y][x].b != UINT_MAX)
-			{
-				image[4 * pop->width * y + 4 * x + 0] = pop->pixMap[y][x].r;
-				image[4 * pop->width * y + 4 * x + 1] = pop->pixMap[y][x].g;
-				image[4 * pop->width * y + 4 * x + 2] = pop->pixMap[y][x].b;
-				image[4 * pop->width * y + 4 * x + 3] = 255;
-			}
-			else
-			{
-				image[4 * pop->width * y + 4 * x + 0] =	image[4 * pop->width * y + 4 * x + 1] =	image[4 * pop->width * y + 4 * x + 2] =	image[4 * pop->width * y + 4 * x + 3] = 255;
-			}
+			image[4 * imageWidth * y + 4 * x + 0] = pop->pixMap[y][x].r;
+			image[4 * imageWidth * y + 4 * x + 1] = pop->pixMap[y][x].g;
+			image[4 * imageWidth * y + 4 * x + 2] = pop->pixMap[y][x].b;
+			image[4 * imageWidth * y + 4 * x + 3] = 255;
 		}
 	}
 
@@ -480,17 +473,10 @@ void Graph::preprocessLineSegments()
 	{
 		for(uint x = 0; x < imageWidth; x++)
 		{
-			if(pop->pixMap[y][x].r != UINT_MAX && pop->pixMap[y][x].g != UINT_MAX && pop->pixMap[y][x].b != UINT_MAX)
-			{
-				image[4 * pop->width * y + 4 * x + 0] = pop->pixMap[y][x].r;
-				image[4 * pop->width * y + 4 * x + 1] = pop->pixMap[y][x].g;
-				image[4 * pop->width * y + 4 * x + 2] = pop->pixMap[y][x].b;
-				image[4 * pop->width * y + 4 * x + 3] = 255;
-			}
-			else
-			{
-				image[4 * pop->width * y + 4 * x + 0] =	image[4 * pop->width * y + 4 * x + 1] =	image[4 * pop->width * y + 4 * x + 2] =	image[4 * pop->width * y + 4 * x + 3] = 255;
-			}
+			image[4 * imageWidth * y + 4 * x + 0] = pop->pixMap[y][x].r;
+			image[4 * imageWidth * y + 4 * x + 1] = pop->pixMap[y][x].g;
+			image[4 * imageWidth * y + 4 * x + 2] = pop->pixMap[y][x].b;
+			image[4 * imageWidth * y + 4 * x + 3] = 255;
 		}
 	}
 
