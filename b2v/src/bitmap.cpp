@@ -3,6 +3,7 @@
 #include "iostream"
 #include "debug.h"
 #include <string>
+#include <climits>
 
 
 //Constructor
@@ -74,10 +75,17 @@ void Bitmap::processImage(uint tolerance)
 	{
 		for(uint x = 0; x < pop->width; x++)
 		{
-			image[4 * pop->width * y + 4 * x + 0] = pop->pixMap[y][x].r;
-			image[4 * pop->width * y + 4 * x + 1] = pop->pixMap[y][x].g;
-			image[4 * pop->width * y + 4 * x + 2] = pop->pixMap[y][x].b;
-			image[4 * pop->width * y + 4 * x + 3] = 255;
+			if(pop->pixMap[y][x].r != UINT_MAX && pop->pixMap[y][x].g != UINT_MAX && pop->pixMap[y][x].b != UINT_MAX)
+			{
+				image[4 * pop->width * y + 4 * x + 0] = pop->pixMap[y][x].r;
+				image[4 * pop->width * y + 4 * x + 1] = pop->pixMap[y][x].g;
+				image[4 * pop->width * y + 4 * x + 2] = pop->pixMap[y][x].b;
+				image[4 * pop->width * y + 4 * x + 3] = 255;
+			}
+			else
+			{
+				image[4 * pop->width * y + 4 * x + 0] =	image[4 * pop->width * y + 4 * x + 1] =	image[4 * pop->width * y + 4 * x + 2] =	image[4 * pop->width * y + 4 * x + 3] = 255;
+			}
 		}
 	}
 
@@ -171,7 +179,6 @@ void Bitmap::preprocess()
 {
 	uint h = pre->height;
 	uint w = pre->width;
-	int M[3][256] = {{0}};
 
 	for(uint i = 0; i < h; ++i)
 	{
@@ -185,43 +192,12 @@ void Bitmap::preprocess()
 			{
 				pre->pixMap[i][j].r = orig->pixMap[i - 1][j - 1].r;
 				pre->pixMap[i][j].g = orig->pixMap[i - 1][j - 1].g;
-				pre->pixMap[i][j].b = orig->pixMap[i - 1][j - 1].b;
-				M[0][orig->pixMap[i - 1][j - 1].r] = -1;
-				M[0][orig->pixMap[i - 1][j - 1].g] = -1;
-				M[0][orig->pixMap[i - 1][j - 1].b] = -1;				
+				pre->pixMap[i][j].b = orig->pixMap[i - 1][j - 1].b;				
 			}
 		}
 	}
 
-	bool outOfLoop = false;
-	for(uint i = 0; i < 3; ++i)
-	{
-		for(uint j = 0; j < 256; ++j)
-		{
-			if(M[i][j] != -1)
-			{
-				switch(i)
-				{
-					case 0:
-						boundaryPixel.r = j;
-						boundaryPixel.g = boundaryPixel.b = 255;
-						break;
-					case 1:
-						boundaryPixel.g = j;
-						boundaryPixel.r = boundaryPixel.b = 255;
-						break;
-					case 2:
-						boundaryPixel.b = j;
-						boundaryPixel.g = boundaryPixel.r = 255;
-						break;
-				}
-				outOfLoop = true;
-				break;
-			}
-		}
-		if(outOfLoop)
-			break;
-	}
+	boundaryPixel.r = boundaryPixel.g = boundaryPixel.b = UINT_MAX;
 }
 
 /*
@@ -236,7 +212,9 @@ void Bitmap::popoutBoundaries()
 	{
 		for(uint j = 0; j < w; ++j)
 		{
-			pop->pixMap[i][j].r = pop->pixMap[i][j].g = pop->pixMap[i][j].b = 0;
+			pop->pixMap[i][j].r = 0;
+			pop->pixMap[i][j].g = 0;
+			pop->pixMap[i][j].b = 0;
 		}
 	}
 
@@ -394,6 +372,15 @@ void Bitmap::detectControlPoints()
 					#ifdef _EVAL_3_
 					image[4 * w * i + 4 * j + 0] = 0;
 					image[4 * w * i + 4 * j + 1] = 0;
+					image[4 * w * i + 4 * j + 2] = 255;
+					image[4 * w * i + 4 * j + 3] = 255;
+					#endif
+				}
+				else
+				{
+					#ifdef _EVAL_3_
+					image[4 * w * i + 4 * j + 0] = 255;
+					image[4 * w * i + 4 * j + 1] = 255;
 					image[4 * w * i + 4 * j + 2] = 255;
 					image[4 * w * i + 4 * j + 3] = 255;
 					#endif

@@ -59,7 +59,7 @@ void SVG::writeFinalOutput(std::vector<Region> &rgn, std::string outFileName)
 	std::ofstream ofsFinal(outFileName.c_str(), std::ofstream::out);
 	ofsFinal << "<svg height=\"" << imageHeight << "\" width=\"" << imageWidth << "\">" << std::endl << "<g>" << std::endl;
 
-	ofsFinal << "<rect width=\"" << imageWidth << "\" height=\"" << imageHeight << "\" fill=\"#000000\" stroke-width=\"0\" /> " << std::endl;
+	ofsFinal << "<rect width=\"" << imageWidth << "\" height=\"" << imageHeight << "\" fill=\"" << RGBToHex((uint)rgn[0].col.r, (int)rgn[0].col.g, (int)rgn[0].col.b) <<"\" stroke-width=\"0\" /> " << std::endl;
 
 	// Ouput final svg paths with bezier curves only
 	for(uint i = 0; i < rgn.size(); ++i)
