@@ -5,10 +5,10 @@ current_dir := $(notdir $(patsubst %/,%,$(dir $(mkfile_path))))
 ROOT_D := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 
 ifeq ($(CFG),debug)
-	CXXFLAGS=-Wall -g -DDEBUG -DROOT_DIR=\"$(ROOT_D)\"
+	CXXFLAGS=-Wall -O2 -g -DDEBUG -DROOT_DIR=\"$(ROOT_D)\"
 	LDFLAGS=-Wall -g -DDEBUG
 else
-	CXXFLAGS=-Wall -DROOT_DIR=\"$(ROOT_D)\"
+	CXXFLAGS=-Wall -O2 -DROOT_DIR=\"$(ROOT_D)\"
 	LDFLAGS=-Wall
 endif
 

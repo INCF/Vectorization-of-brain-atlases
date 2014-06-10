@@ -28,17 +28,8 @@ std::string RGBToHex(uint rNum, uint gNum, uint bNum)
 
     result.append("#");
 
-    char r[255];   
-    sprintf(r, "%.2X", rNum);
-    result.append(r );
-
-    char g[255];   
-    sprintf(g, "%.2X", gNum);
-    result.append(g );
-
-    char b[255];   
-    sprintf(b, "%.2X", bNum);
-    result.append(b ); 
-
+    char buff[16];
+    sprintf(buff, "%02X%02X%02X",rNum,gNum,bNum);
+    result.append(buff);
     return result;
 }
