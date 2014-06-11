@@ -67,6 +67,7 @@ class Graph
 		std::vector<uint> DouglasPeucker(std::vector<uint>&, double);
 		double shortestDistanceToSegment(uint, uint, uint);
 		void writeOuput(std::string, pixel);
+		bool checkIfCntrlPt(uint);
 };
 
 /*

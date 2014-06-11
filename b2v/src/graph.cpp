@@ -171,8 +171,15 @@ void Graph::formLineSegments()
 		}
 	}
 
+	//for debugging mode
 	std::string path = ROOT_DIR;
-	#ifdef _TEST_5_
+
+/******************************************************************/
+/***********************TEST 5:DEBUGGING MODE**********************/
+/******************************************************************/
+
+#ifdef _TEST_5_
+
 	std::ofstream ofsTest5((path + "/check/test_5_cpp.txt").c_str(), std::ofstream::out);
 	ofsTest5 << lineSeg.size() + islandLineSeg.size() << std::endl;
 
@@ -201,9 +208,19 @@ void Graph::formLineSegments()
 	}
 
 	ofsTest5.close();
-	#endif
 
-	#ifdef _EVAL_3_
+#endif
+
+/******************************************************************/
+/***********************TEST 5:DEBUGGING MODE END******************/
+/******************************************************************/
+
+/******************************************************************/
+/***********************EVAL 3:DEBUGGING MODE**********************/
+/******************************************************************/
+
+#ifdef _EVAL_3_
+
 	//generate some image
 	std::vector<unsigned char> image;
 	image.resize(imageWidth * imageHeight * 4);
@@ -242,7 +259,12 @@ void Graph::formLineSegments()
 
 	encodeOneStep((path + "/check/eval_3_lineSeg_beforeprocess.png").c_str(), image, imageWidth, imageHeight);
 	image.clear();
-	#endif
+
+#endif
+
+/******************************************************************/
+/***********************EVAL 3:DEBUGGING MODE END******************/
+/******************************************************************/
 
 }
 
@@ -335,8 +357,8 @@ uint Graph::getAdjCntrlPtInd(uint to, uint startedFrom)
 				return v[i];
 		}
 	}
-	//Will never come at this point
-	std::cout << "Something BAD happened while retrieving control point index at line segment formation step" << std::endl;
+	//Will never come at this point because it is already checked that there is an adjacent control point
+	std::cout << "Error while retrieving adjacent control point: Graph::getAdjCntrlPtInd" << std::endl;
 	exit(1);
 }
 
@@ -383,50 +405,51 @@ void Graph::preprocessLineSegments()
 	
 	//Preprocess : Take points at an appropriate interval depending on the length of line segment OR DouglasPeucker
 #if 1
-
-	std::vector<uint> tempLineSeg;
-	for(uint i = 0; i < lineSeg.size(); ++i)
+	if(JUMP != 0)
 	{
-		tempLineSeg.clear();
-		if(lineSeg[i].path.size() > LIMIT)// if line length is above 6 then only go in and preprocess 
+		std::vector<uint> tempLineSeg;
+		for(uint i = 0; i < lineSeg.size(); ++i)
 		{
-			tempLineSeg.push_back(lineSeg[i].path[0]);
-			tempLineSeg.push_back(lineSeg[i].path[1]);
-			for(uint j = 2; j < lineSeg[i].path.size() - 2; j = j + 1 + JUMP)
+			tempLineSeg.clear();
+			if(lineSeg[i].path.size() > LIMIT)// if line length is above 6 then only go in and preprocess 
 			{
-				tempLineSeg.push_back(lineSeg[i].path[j]);
+				tempLineSeg.push_back(lineSeg[i].path[0]);
+				tempLineSeg.push_back(lineSeg[i].path[1]);
+				for(uint j = 2; j < lineSeg[i].path.size() - 2; j = j + 1 + JUMP)
+				{
+					tempLineSeg.push_back(lineSeg[i].path[j]);
+				}
+				tempLineSeg.push_back(lineSeg[i].path[lineSeg[i].path.size() - 2]);
+				tempLineSeg.push_back(lineSeg[i].path[lineSeg[i].path.size() - 1]);
+
+				lineSeg[i].path.clear();
+				lineSeg[i].path.assign(tempLineSeg.begin(), tempLineSeg.end());
 			}
-			tempLineSeg.push_back(lineSeg[i].path[lineSeg[i].path.size() - 2]);
-			tempLineSeg.push_back(lineSeg[i].path[lineSeg[i].path.size() - 1]);
-
-			lineSeg[i].path.clear();
-			lineSeg[i].path.assign(tempLineSeg.begin(), tempLineSeg.end());
 		}
-	}
 
-	for(uint i = 0; i < islandLineSeg.size(); ++i)
-	{
-		tempLineSeg.clear();
-		if(islandLineSeg[i].path.size() > LIMIT)// if line length is above 5 then only go in and preprocess 
+		for(uint i = 0; i < islandLineSeg.size(); ++i)
 		{
-			tempLineSeg.push_back(islandLineSeg[i].path[0]);
-			tempLineSeg.push_back(islandLineSeg[i].path[1]);
-			for(uint j = 2; j < islandLineSeg[i].path.size() - 2; j = j + 1 + JUMP)
+			tempLineSeg.clear();
+			if(islandLineSeg[i].path.size() > LIMIT)// if line length is above 5 then only go in and preprocess 
 			{
-				tempLineSeg.push_back(islandLineSeg[i].path[j]);
+				tempLineSeg.push_back(islandLineSeg[i].path[0]);
+				tempLineSeg.push_back(islandLineSeg[i].path[1]);
+				for(uint j = 2; j < islandLineSeg[i].path.size() - 2; j = j + 1 + JUMP)
+				{
+					tempLineSeg.push_back(islandLineSeg[i].path[j]);
+				}
+				tempLineSeg.push_back(islandLineSeg[i].path[islandLineSeg[i].path.size() - 2]);
+				tempLineSeg.push_back(islandLineSeg[i].path[islandLineSeg[i].path.size() - 1]);
+
+				islandLineSeg[i].path.clear();
+				islandLineSeg[i].path.assign(tempLineSeg.begin(), tempLineSeg.end());
 			}
-			tempLineSeg.push_back(islandLineSeg[i].path[islandLineSeg[i].path.size() - 2]);
-			tempLineSeg.push_back(islandLineSeg[i].path[islandLineSeg[i].path.size() - 1]);
-
-			islandLineSeg[i].path.clear();
-			islandLineSeg[i].path.assign(tempLineSeg.begin(), tempLineSeg.end());
 		}
+
+		tempLineSeg.clear();
 	}
-
-	tempLineSeg.clear();
-
-	#endif
-	#if 0
+#endif
+#if 0
 
 	std::vector<uint> tempLineSeg;
 	for(uint i = 0; i < lineSeg.size(); ++i)
@@ -465,7 +488,13 @@ void Graph::preprocessLineSegments()
 	tempLineSeg.clear();
 #endif
 
-	#ifdef _EVAL_3_
+
+/******************************************************************/
+/***********************EVAL 3:DEBUGGING MODE**********************/
+/******************************************************************/
+
+#ifdef _EVAL_3_
+
 	//generate some image
 	std::string path = ROOT_DIR;
 	std::vector<unsigned char> image;
@@ -505,7 +534,12 @@ void Graph::preprocessLineSegments()
 
 	encodeOneStep((path + "/check/eval_3_lineSeg_afterprocess.png").c_str(), image, imageWidth, imageHeight);
 	image.clear();
-	#endif
+
+#endif
+
+/******************************************************************/
+/***********************EVAL 3:DEBUGGING MODE END******************/
+/******************************************************************/
 
 }
 
@@ -608,7 +642,13 @@ void Graph::formCurves(uint tolerance)
 		curve.push_back(*tempCurve);
 	}
 
-	#ifdef _TEST_6_
+
+/******************************************************************/
+/***********************TEST 6:DEBUGGING MODE**********************/
+/******************************************************************/
+
+#ifdef _TEST_6_
+
 	std::string path = ROOT_DIR;
 	std::ofstream ofsTest6((path + "/check/test_6_cpp.txt").c_str(), std::ofstream::out);
 	ofsTest6 << curve.size() << std::endl;
@@ -625,11 +665,27 @@ void Graph::formCurves(uint tolerance)
 	}
 
 	ofsTest6.close();
-	#endif
 
-	#ifdef _EVAL_4_
+#endif
+
+/******************************************************************/
+/***********************TEST 6:DEBUGGING MODE END******************/
+/******************************************************************/
+
+
+/******************************************************************/
+/***********************EVAL 4:DEBUGGING MODE**********************/
+/******************************************************************/
+
+#ifdef _EVAL_4_
+
 	outputSVG->writeDisjointLineSegments(curve);
-	#endif
+
+#endif
+
+/******************************************************************/
+/***********************EVAL 4:DEBUGGING MODE END******************/
+/******************************************************************/
 }
 
 /*
@@ -643,8 +699,10 @@ Curve* Graph::reverseCurve(Curve *x)
 	p->start = x->end;
 	p->end = x->start;
 
+	//Cannot come here because each line segment contains atleast 1 point
+	//and hence the corresponding bezier curve will have atleast 3 control points
 	if(x->pt.size() < 3)
-		std::cout << "MAYBE AN ERROR" << std::endl;
+		std::cout << "Error: Curve has less than 3 control points: Graph::reverseCurve" << std::endl;
 
 	for(int i = x->pt.size()-1; i >= 0; --i)
 	{
@@ -673,7 +731,9 @@ void Graph::assignCurveNumToRegion()
 				}
 				else
 				{
-					std::cout << "Something wrong: Not a COntrol Point but still 3 or more adjacent regions" << std::endl;
+					//Not a control point will have only 2 adjacent regions
+					std::cout << "Something wrong: Not a Control Point but still 3 or more adjacent regions: Graph::assignCurveNumToRegion" << std::endl;
+					exit(1);
 				}
 			}
 		}
@@ -690,12 +750,20 @@ void Graph::assignCurveNumToRegion()
 			}
 			else
 			{
-				std::cout << "Something wrong: Not a Control Point but still 3 or more adjacent regions" << std::endl;
+				//Not a control point will have only 2 adjacent regions
+				std::cout << "Something wrong: Not a Control Point but still 3 or more adjacent regions: Graph::assignCurveNumToRegion" << std::endl;
+				exit(1);
 			}
 		}
 	}
 
-	#ifdef _TEST_7_
+
+/******************************************************************/
+/***********************TEST 7:DEBUGGING MODE**********************/
+/******************************************************************/
+
+#ifdef _TEST_7_
+
 	std::string path = ROOT_DIR;
 	std::ofstream ofsTest7((path + "/check/test_7_cpp.txt").c_str(), std::ofstream::out);
 	ofsTest7 << "No. of regions" << region.size() << std::endl;
@@ -711,7 +779,13 @@ void Graph::assignCurveNumToRegion()
 	}
 
 	ofsTest7.close();
-	#endif
+	
+#endif
+
+/******************************************************************/
+/***********************TEST 7:DEBUGGING MODE END******************/
+/******************************************************************/
+
 }
 
 /*
@@ -765,7 +839,7 @@ void Graph::assignClosedPaths(Region &rgn)
 			{
 				focus = getNextPathIndex(rgn.curveNum, tempPath->back()->end);
 				if(focus == -1)
-					std::cout << "focus = - 1 i.e. empty still in :ERROR" << std::endl;
+					std::cout << "Error: focus = - 1 i.e. rgn.curveNum is empty still in the loop : Graph::assignClosedPaths" << std::endl;
 				else
 				{
 					//Erasing the corresponding curve number
@@ -834,4 +908,9 @@ bool Graph::ifForwardDirection(int focus, Point2 b)
 		return true;
 	else
 		return false;
+}
+
+bool Graph::checkIfCntrlPt(uint ind)
+{
+	return vertex[ind].isCntrlPoint.test(0);
 }
