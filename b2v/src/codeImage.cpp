@@ -53,9 +53,14 @@ CodeImage::~CodeImage()
 		delete[] mat[i];
 	}
 	delete[] mat;
+
+	colorCode.clear();
 }
 
-//codes the input image using operation similar to flood fill
+/*
+ * codes the input image using operation similar to flood fill
+ * please refer the doc for the complete algorithm
+ */
 void CodeImage::codeImage(ImageMatrix *m)
 {
 	uint counter = 0;
@@ -74,9 +79,7 @@ void CodeImage::codeImage(ImageMatrix *m)
 				myPixel->b = m->pixMap[ix][jy].b;
 				colorCode.push_back(*myPixel);
 
-				//move to pixel(i,j) and flood fill
-				//moveTo(m, i, j, counter);
-
+				//similar to flood fill
 				std::queue< std::pair<int, int> >Q;
 				
 				Q.push(std::make_pair(ix,jy));
@@ -167,11 +170,13 @@ void CodeImage::codeImage(ImageMatrix *m)
 	}
 }
 
+//returns the coded image matrix
 int** CodeImage::getMatrix()
 {
 	return mat;
 }
 
+//returns the vector of colors of unique regions
 std::vector<pixel>* CodeImage::getColCode()
 {
 	return &colorCode;

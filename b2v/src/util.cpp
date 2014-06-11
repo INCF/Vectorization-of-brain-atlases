@@ -22,6 +22,7 @@ void encodeOneStep(const char* filename, std::vector<unsigned char>& image, unsi
   if(error) std::cout << "encoder error " << error << ": "<< lodepng_error_text(error) << std::endl;
 }
 
+//r,g,b values are the aregument and return value is corresponding hexcode
 std::string RGBToHex(uint rNum, uint gNum, uint bNum)
 {
     std::string result;
