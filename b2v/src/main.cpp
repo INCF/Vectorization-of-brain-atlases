@@ -18,6 +18,8 @@ int main(int argc, char **argv)
 	std::string outFileName = "";
 	uint tolerance = 0;
 
+
+	//parsing arguments
 	int i = argc;
 	while(i > 1)
 	{
@@ -62,7 +64,7 @@ int main(int argc, char **argv)
 
 	if(tolerance < 0)
 	{
-		std::cout << "invalid tolerance" << std::endl;
+		std::cout << "invalid tolerance: must be greater than zero" << std::endl;
 		exit(1);
 	}
 
@@ -73,7 +75,7 @@ int main(int argc, char **argv)
 
 	if(filename == "")
 	{
-		std::cout << "input file not provided" << std::endl;
+		std::cout << "input file not provided: use -i filename.png" << std::endl;
 		exit(1);
 	}
 

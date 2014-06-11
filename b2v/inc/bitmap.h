@@ -40,6 +40,7 @@ class Bitmap
 		int** pixToNodeMap;
 		uint numControlPoints;
 		pixel boundaryPixel;
+		pixel borderPixel;
 	public:
 		/*
 		 * Please refer corresponding src file bitmap.cpp for

@@ -193,34 +193,69 @@ void Bitmap::preprocess()
 		}
 	}
 
-	bool outOfLoop = false;
+	int outOfLoop = 0;
 	for(uint i = 0; i < 3; ++i)
 	{
 		for(uint j = 0; j < 256; ++j)
 		{
 			if(M[i][j] != -1)
 			{
-				switch(i)
+				if(outOfLoop == 0)
 				{
-					case 0:
-						boundaryPixel.r = j;
-						boundaryPixel.g = boundaryPixel.b = 255;
-						break;
-					case 1:
-						boundaryPixel.g = j;
-						boundaryPixel.r = boundaryPixel.b = 255;
-						break;
-					case 2:
-						boundaryPixel.b = j;
-						boundaryPixel.g = boundaryPixel.r = 255;
-						break;
+					switch(i)
+					{
+						case 0:
+							boundaryPixel.r = j;
+							boundaryPixel.g = boundaryPixel.b = 255;
+							break;
+						case 1:
+							boundaryPixel.g = j;
+							boundaryPixel.r = boundaryPixel.b = 255;
+							break;
+						case 2:
+							boundaryPixel.b = j;
+							boundaryPixel.g = boundaryPixel.r = 255;
+							break;
+					}
 				}
-				outOfLoop = true;
-				break;
+				else
+				{
+					switch(i)
+					{
+						case 0:
+							borderPixel.r = j;
+							borderPixel.g = borderPixel.b = 254;
+							break;
+						case 1:
+							borderPixel.g = j;
+							borderPixel.r = borderPixel.b = 254;
+							break;
+						case 2:
+							borderPixel.b = j;
+							borderPixel.g = borderPixel.r = 254;
+							break;
+					}
+				}
+				outOfLoop++;
+				if(outOfLoop == 2)
+					break;
 			}
 		}
-		if(outOfLoop)
+		if(outOfLoop == 2)
 			break;
+	}
+
+	for(uint i = 0; i < h; ++i)
+	{
+		for(uint j = 0; j < w; ++j)
+		{
+			if(i == 0 || j == 0 || i == h - 1 || j == w - 1)
+			{
+				pre->pixMap[i][j].r = borderPixel.r;
+				pre->pixMap[i][j].g = borderPixel.g;
+				pre->pixMap[i][j].b = borderPixel.b;
+			}
+		}
 	}
 }
 
@@ -236,7 +271,9 @@ void Bitmap::popoutBoundaries()
 	{
 		for(uint j = 0; j < w; ++j)
 		{
-			pop->pixMap[i][j].r = pop->pixMap[i][j].g = pop->pixMap[i][j].b = 0;
+			pop->pixMap[i][j].r = borderPixel.r;
+			pop->pixMap[i][j].g = borderPixel.g;
+			pop->pixMap[i][j].b = borderPixel.b;
 		}
 	}
 
@@ -324,7 +361,7 @@ void Bitmap::detectControlPoints()
 	uint vertexCounter = 0;
 	std::vector<pixel> temp;
 
-	#ifdef _EVAL_3_
+	#ifdef _EVAL_2_
 	std::vector<unsigned char> image;
 	image.resize(w * h * 4);
 	#endif
@@ -341,7 +378,7 @@ void Bitmap::detectControlPoints()
 	{
 		for(uint j = 1; j < w - 1; ++j)
 		{
-			#ifdef _EVAL_3_
+			#ifdef _EVAL_2_
 			image[4 * w * i + 4 * j + 0] = pop->pixMap[i][j].r;
 			image[4 * w * i + 4 * j + 1] = pop->pixMap[i][j].g;
 			image[4 * w * i + 4 * j + 2] = pop->pixMap[i][j].b;
@@ -391,7 +428,7 @@ void Bitmap::detectControlPoints()
 					ofsTest4 << i << std::endl;
 					ofsTest4 << j << std::endl;
 					#endif
-					#ifdef _EVAL_3_
+					#ifdef _EVAL_2_
 					image[4 * w * i + 4 * j + 0] = 0;
 					image[4 * w * i + 4 * j + 1] = 0;
 					image[4 * w * i + 4 * j + 2] = 255;
@@ -414,7 +451,7 @@ void Bitmap::detectControlPoints()
 	ofsTest4.close();
 	#endif
 
-	#ifdef _EVAL_3_
+	#ifdef _EVAL_2_
 	encodeOneStep((path + "/check/eval_2_controlPt.png").c_str(), image, w, h);
 	image.clear();
 	#endif

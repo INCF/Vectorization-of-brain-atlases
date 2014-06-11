@@ -21,14 +21,12 @@ std::vector<Point2> ptStore; //stores bezier points as they are genereted/stream
 //EPSILON: For douglas pecker algorithm
 #define EPSILON 1
 
-
-
 /*
  * Method which is called whenever a bezier curve is generated.
  * A bezier curve will have 4 pts. S, C1, C2, E.
  * To catch all Bezier curves assosciated with a line segment, 
  * ptStore global variable is used.
- * n = number of points generated(at start 4 then 3). NO ALWAYS 3
+ * n = number of points generated ALWAYS 3
  */
 void DrawBezierCurve(int n, BezierCurve curve)
 {
@@ -628,7 +626,7 @@ void Graph::formCurves(uint tolerance)
 	ofsTest6.close();
 	#endif
 
-	#ifdef _EVAL_1_
+	#ifdef _EVAL_4_
 	outputSVG->writeDisjointLineSegments(curve);
 	#endif
 }

@@ -13,18 +13,27 @@ SVG::~SVG()
 
 }
 
-// Forward and Reverse Must overlap
+/*
+ * Writes an svg with curves only.
+ * Both forward and reverse curve are written and the resultant
+ * svg is expected with only red curves which overlap black curves
+ * NOTE: This method will be called only if _EVAL_4_ is defined
+ */
 void SVG::writeDisjointLineSegments(std::vector<Curve> &v)
 {
 	std::string path = ROOT_DIR;
 	std::ofstream ofsTest6((path + "/check/eval_4_borders.svg").c_str(), std::ofstream::out);
 
 	ofsTest6 << "<svg height=\"" << imageHeight << "\" width=\"" << imageWidth << "\">" << std::endl << "<g>" << std::endl;
-
+	//white backgoround
 	ofsTest6 << "<rect width=\"" << imageWidth << "\" height=\"" << imageHeight << "\" fill=\"#ffffff\" stroke-width=\"0\" /> " << std::endl;
+
+	//iterate over all curves
 	for(uint i = 0; i < v.size(); ++i)
 	{
 		ofsTest6 << "<path fill=\"none\" stroke=\"black\" stroke-width=\"0.5\" d =\" ";
+
+		//print forward curve path
 		for(uint j = 0;j < v[i].pt.size(); ++j)
 		{
 			if(j == 0)
@@ -37,9 +46,12 @@ void SVG::writeDisjointLineSegments(std::vector<Curve> &v)
 		ofsTest6 << " \" />" << std::endl;
 	}
 
+	//iterate over all curves
 	for(uint i = 0; i < v.size(); ++i)
 	{
 		ofsTest6 << "<path fill=\"none\" stroke=\"red\" stroke-width=\"0.5\" d =\" ";
+
+		//print reverse curve path
 		for(uint j = 0;j < v[i].reverse->pt.size(); ++j)
 		{
 			if(j == 0)
@@ -57,17 +69,20 @@ void SVG::writeDisjointLineSegments(std::vector<Curve> &v)
 	ofsTest6.close();
 }
 
+/*
+ * Writes Final SVG corresponding to original image
+ * Arguments: Vector of regions in the image and output File name
+ */
 void SVG::writeFinalOutput(std::vector<Region> &rgn, std::string outFileName)
 {
 	std::ofstream ofsFinal(outFileName.c_str(), std::ofstream::out);
 	ofsFinal << "<svg height=\"" << imageHeight << "\" width=\"" << imageWidth << "\">" << std::endl << "<g>" << std::endl;
-
-	ofsFinal << "<rect width=\"" << imageWidth << "\" height=\"" << imageHeight << "\" fill=\"#000000\" stroke-width=\"0\" /> " << std::endl;
-
+	
 	// Ouput final svg paths with bezier curves only
 	for(uint i = 0; i < rgn.size(); ++i)
 	{
-		if(rgn[i].closedPath.size() == 0)
+		//No printing of empty paths
+		if(rgn[i].closedPath.empty())
 			continue;
 		if(i != 0)
 		{
@@ -79,14 +94,18 @@ void SVG::writeFinalOutput(std::vector<Region> &rgn, std::string outFileName)
 		else
 			ofsFinal << "<path fill=\"none\" d =\" ";
 
+		//iterate over the closedpaths surrounding the region
 		for(uint j = 0; j < rgn[i].closedPath.size(); ++j)
 		{
+			//iterate over the curves in a closed path
 			for(uint k = 0; k < rgn[i].closedPath[j].size(); ++k)
 			{
+				//iterate over the points in the curve
 				for(uint m = 0; m < rgn[i].closedPath[j][k]->pt.size(); ++m)
 				{						
 					if(m == 0)
 					{
+						//print starting point of first curve in a closed path
 						if(k == 0)
 							ofsFinal << "M" << rgn[i].closedPath[j][k]->start.x << " " << rgn[i].closedPath[j][k]->start.y << " C";
 					}

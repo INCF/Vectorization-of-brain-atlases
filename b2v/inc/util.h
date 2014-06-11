@@ -76,7 +76,7 @@ struct ImageMatrix
 };
  
 /*
- * A structure to represent an adjacency list node
+ * Struct that represents an adjacency list node
  */
 struct AdjList
 {
@@ -96,6 +96,7 @@ int ifEqualPixel(pixel, pixel);
 //The image argument has width * height RGBA pixels or width * height * 4 bytes
 void encodeOneStep(const char*, std::vector<uchar>&, uint, uint);
 
+//Converts RGB to hexcode and return a string of hexcode
 std::string RGBToHex(uint, uint, uint);
 
 #endif
