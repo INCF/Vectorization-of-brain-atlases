@@ -19,20 +19,14 @@ Bitmap::Bitmap(std::string filename, pixel bgColor, bool bgColorProvided)
 	intialize(&orig, h, w);
 	intialize(&pre, h + 2, w + 2);
 	intialize(&pop, 2 * (h + 2), 2 * (w + 2));
+
 	pixToNodeMap = new int*[2 * (h + 2)];
 	for(uint i = 0; i < 2 * (h + 2); ++i)
 	{
 		pixToNodeMap[i] = new int[2 * (w + 2)];
 	}
-	numControlPoints = 0;
 
-	#ifdef _TEST_1_ //checks if file read crrectly
-	//file to store r g b values of each pixel in row major order under test 1
-	std::string path = ROOT_DIR;
-	std::ofstream ofsTest1((path + "/check/test_1_cpp.txt").c_str(), std::ofstream::out);
-	ofsTest1 << h << std::endl;
-	ofsTest1 << w << std::endl;
-	#endif
+	numControlPoints = 0;
 
 	//Assigning values to the pixels of original image matrix
 	for(uint i = 0; i < h; ++i)
@@ -42,31 +36,17 @@ Bitmap::Bitmap(std::string filename, pixel bgColor, bool bgColorProvided)
 			orig->pixMap[i][j].r = v[4 * (i * w + j)];
 			orig->pixMap[i][j].g = v[4 * (i * w + j) + 1];
 			orig->pixMap[i][j].b = v[4 * (i * w + j) + 2];
-
-			#ifdef _TEST_1_
-			//print r g b int values in new lines
-			ofsTest1 << (uint)v[4 * (i * w + j)] << std::endl; 
-			ofsTest1 << (uint)v[4 * (i * w + j) + 1] << std::endl;
-			ofsTest1 << (uint)v[4 * (i * w + j) + 2] << std::endl;
-			#endif
 		}
 	}
-
-	#ifdef _TEST_1_
-	//close test_1_cpp.txt file
-	ofsTest1.close();
-	#endif	
 
 	//borderPixel initialization
 	if(bgColorProvided)
 	{
-		borderPixel.r = bgColor.r;
-		borderPixel.g = bgColor.g;
-		borderPixel.b = bgColor.b;
+		borderPixel = bgColor;
 	}
 	else
 	{
-		//median of 4 corners of original image
+		//median of 4 corners of original image and then interpolation
 		uint a[4];
 		a[0] = orig->pixMap[0][0].r + orig->pixMap[0][0].g * 256 + orig->pixMap[0][0].b * 256 * 256;
 		a[1] = orig->pixMap[0][w-1].r + orig->pixMap[0][w-1].g * 256 + orig->pixMap[0][w-1].b * 256 * 256;
@@ -76,12 +56,46 @@ Bitmap::Bitmap(std::string filename, pixel bgColor, bool bgColorProvided)
 		std::sort(a, a+4);
 		double med = (a[1] + a[2])*0.5;
 		uint median = floor(med);
+
+		//interpolation
 		borderPixel.b = median/(256*256);
 		median = median - borderPixel.b * 256 * 256;
 		borderPixel.g = median/256;
 		median = median - borderPixel.g * 256;
 		borderPixel.r = median;
 	}
+
+/******************************************************************/
+/***********************TEST 1:DEBUGGING MODE**********************/
+/******************************************************************/
+
+#ifdef _TEST_1_ 
+
+	//file to store r g b values of each pixel in row major order under test 1
+	std::string path = ROOT_DIR;
+	std::ofstream ofsTest1((path + "/check/test_1_cpp.txt").c_str(), std::ofstream::out);
+	ofsTest1 << h << std::endl;
+	ofsTest1 << w << std::endl;
+	
+	for(uint i = 0; i < h; ++i)
+	{
+		for(uint j = 0; j < w; ++j)
+		{
+			//print r g b int values in new lines
+			ofsTest1 << (uint)orig->pixMap[i][j].r << std::endl; 
+			ofsTest1 << (uint)orig->pixMap[i][j].g << std::endl;
+			ofsTest1 << (uint)orig->pixMap[i][j].b << std::endl;
+		}
+	}
+
+	//close test_1_cpp.txt file
+	ofsTest1.close();
+
+#endif	
+
+/******************************************************************/
+/***********************TEST 1:DEBUGGING MODE END******************/
+/******************************************************************/
 }
 
 /*
@@ -92,30 +106,13 @@ void Bitmap::processImage(uint tolerance)
 	preprocess();
 	popoutBoundaries();
 
-	#ifdef _EVAL_1_
-	//generate some image
-	std::string path = ROOT_DIR;
-	std::vector<unsigned char> image;
-	image.resize(pop->width * pop->height * 4);
-	for(uint y = 0; y < pop->height; y++)
-	{
-		for(uint x = 0; x < pop->width; x++)
-		{
-			image[4 * pop->width * y + 4 * x + 0] = pop->pixMap[y][x].r;
-			image[4 * pop->width * y + 4 * x + 1] = pop->pixMap[y][x].g;
-			image[4 * pop->width * y + 4 * x + 2] = pop->pixMap[y][x].b;
-			image[4 * pop->width * y + 4 * x + 3] = 255;
-		}
-	}
-
-	encodeOneStep((path + "/check/eval_1_popout.png").c_str(), image, pop->width, pop->height);
-	image.clear();
-	#endif
-
 	codedImage = new CodeImage(pop);
+
 	graph = new Graph(pop->height, pop->width, *codedImage->getColCode(), pop);
+
 	detectControlPoints();
 	formAdjacencyList();
+
 	graph->formLineSegments();
 	graph->assignCurveNumToRegion();
 	graph->preprocessLineSegments();
@@ -206,23 +203,17 @@ void Bitmap::preprocess()
 		{
 			if(i == 0 || j == 0 || i == h - 1 || j == w - 1)
 			{
-				pre->pixMap[i][j].r = borderPixel.r;
-				pre->pixMap[i][j].g = borderPixel.g;
-				pre->pixMap[i][j].b = borderPixel.b;
+				pre->pixMap[i][j] = borderPixel;
 			}
 			else
 			{
-				pre->pixMap[i][j].r = orig->pixMap[i - 1][j - 1].r;
-				pre->pixMap[i][j].g = orig->pixMap[i - 1][j - 1].g;
-				pre->pixMap[i][j].b = orig->pixMap[i - 1][j - 1].b;
-				M[0][orig->pixMap[i - 1][j - 1].r] = -1;
-				M[0][orig->pixMap[i - 1][j - 1].g] = -1;
-				M[0][orig->pixMap[i - 1][j - 1].b] = -1;				
+				pre->pixMap[i][j] = orig->pixMap[i - 1][j - 1];
+				M[0][orig->pixMap[i - 1][j - 1].r] = M[0][orig->pixMap[i - 1][j - 1].g] = M[0][orig->pixMap[i - 1][j - 1].b] = -1;				
 			}
 		}
 	}
 
-	//Getting unique borderPixel and boundaryPixel
+	//Getting unique boundaryPixel
 	bool outOfLoop = false;
 	for(uint i = 0; i < 3; ++i)
 	{
@@ -266,9 +257,7 @@ void Bitmap::popoutBoundaries()
 	{
 		for(uint j = 0; j < w; ++j)
 		{
-			pop->pixMap[i][j].r = borderPixel.r;
-			pop->pixMap[i][j].g = borderPixel.g;
-			pop->pixMap[i][j].b = borderPixel.b;
+			pop->pixMap[i][j] = borderPixel;
 		}
 	}
 
@@ -279,52 +268,45 @@ void Bitmap::popoutBoundaries()
 		{
 			uint focus_j = 2 * j + 1;
 
-			pop->pixMap[focus_i][focus_j].r = pre->pixMap[i][j].r;
-			pop->pixMap[focus_i][focus_j].g = pre->pixMap[i][j].g;
-			pop->pixMap[focus_i][focus_j].b = pre->pixMap[i][j].b;
+			pop->pixMap[focus_i][focus_j] = pre->pixMap[i][j];
 
 			if(!ifEqualPixel(pre->pixMap[i][j], pre->pixMap[i][j - 1]))
 			{
-				pop->pixMap[focus_i][focus_j - 1].r = boundaryPixel.r;
-				pop->pixMap[focus_i][focus_j - 1].g = boundaryPixel.g;
-				pop->pixMap[focus_i][focus_j - 1].b = boundaryPixel.b;
+				pop->pixMap[focus_i][focus_j - 1] = boundaryPixel;
 			}
 			else
 			{
-				pop->pixMap[focus_i][focus_j - 1].r = pre->pixMap[i][j - 1].r;
-				pop->pixMap[focus_i][focus_j - 1].g = pre->pixMap[i][j - 1].g;
-				pop->pixMap[focus_i][focus_j - 1].b = pre->pixMap[i][j - 1].b;
+				pop->pixMap[focus_i][focus_j - 1] = pre->pixMap[i][j - 1];
 			}
 			if(!ifEqualPixel(pre->pixMap[i][j], pre->pixMap[i - 1][j - 1]))
 			{
-				pop->pixMap[focus_i - 1][focus_j - 1].r = boundaryPixel.r;
-				pop->pixMap[focus_i - 1][focus_j - 1].g = boundaryPixel.g;
-				pop->pixMap[focus_i - 1][focus_j - 1].b = boundaryPixel.b;
+				pop->pixMap[focus_i - 1][focus_j - 1] = boundaryPixel;
 			}
 			else
 			{
-				pop->pixMap[focus_i - 1][focus_j - 1].r = pre->pixMap[i - 1][j - 1].r;
-				pop->pixMap[focus_i - 1][focus_j - 1].g = pre->pixMap[i - 1][j - 1].g;
-				pop->pixMap[focus_i - 1][focus_j - 1].b = pre->pixMap[i - 1][j - 1].b;
+				pop->pixMap[focus_i - 1][focus_j - 1] = pre->pixMap[i - 1][j - 1];
 			}
 			if(!ifEqualPixel(pre->pixMap[i][j], pre->pixMap[i - 1][j]))
 			{
-				pop->pixMap[focus_i - 1][focus_j].r = boundaryPixel.r;
-				pop->pixMap[focus_i - 1][focus_j].g = boundaryPixel.g;
-				pop->pixMap[focus_i - 1][focus_j].b = boundaryPixel.b;
+				pop->pixMap[focus_i - 1][focus_j] = boundaryPixel;
 			}
 			else
 			{
-				pop->pixMap[focus_i - 1][focus_j].r = pre->pixMap[i - 1][j].r;
-				pop->pixMap[focus_i - 1][focus_j].g = pre->pixMap[i - 1][j].g;
-				pop->pixMap[focus_i - 1][focus_j].b = pre->pixMap[i - 1][j].b;
+				pop->pixMap[focus_i - 1][focus_j] = pre->pixMap[i - 1][j];
 			}
 		}
 	}
 
-	#ifdef _TEST_2_
-	//file to store r g b values of each pixel in row major order under test 2
+	//used in debugging mode
 	std::string path = ROOT_DIR;
+
+/******************************************************************/
+/***********************TEST 2:DEBUGGING MODE**********************/
+/******************************************************************/
+
+#ifdef _TEST_2_
+
+	//file to store r g b values of each pixel in row major order under test 2
 	std::ofstream ofsTest2((path + "/check/test_2_cpp.txt").c_str(), std::ofstream::out);
 	ofsTest2 << h << std::endl;
 	ofsTest2 << w << std::endl;
@@ -342,7 +324,42 @@ void Bitmap::popoutBoundaries()
 
 	//close test_2_cpp.txt file
 	ofsTest2.close();
-	#endif
+
+#endif
+
+/******************************************************************/
+/***********************TEST 2:DEBUGGING MODE END******************/
+/******************************************************************/
+
+/******************************************************************/
+/***********************EVAL 1:DEBUGGING MODE**********************/
+/******************************************************************/
+
+#ifdef _EVAL_1_
+
+	//generate some image
+	std::vector<unsigned char> image;
+	image.resize(pop->width * pop->height * 4);
+	for(uint y = 0; y < pop->height; y++)
+	{
+		for(uint x = 0; x < pop->width; x++)
+		{
+			image[4 * pop->width * y + 4 * x + 0] = pop->pixMap[y][x].r;
+			image[4 * pop->width * y + 4 * x + 1] = pop->pixMap[y][x].g;
+			image[4 * pop->width * y + 4 * x + 2] = pop->pixMap[y][x].b;
+			image[4 * pop->width * y + 4 * x + 3] = 255;
+		}
+	}
+
+	encodeOneStep((path + "/check/eval_1_popout.png").c_str(), image, pop->width, pop->height);
+	image.clear();
+
+#endif
+
+/******************************************************************/
+/***********************EVAL 1:DEBUGGING MODE END******************/
+/******************************************************************/
+
 }
 
 /*
@@ -356,30 +373,10 @@ void Bitmap::detectControlPoints()
 	uint vertexCounter = 0;
 	std::vector<pixel> temp;
 
-	#ifdef _EVAL_2_
-	std::vector<unsigned char> image;
-	image.resize(w * h * 4);
-	#endif
-
-	#ifdef _TEST_4_
-	//file to store coordinate values of control points under test 4
-	std::string path = ROOT_DIR;
-	std::ofstream ofsTest4((path + "/check/test_4_cpp.txt").c_str(), std::ofstream::out);
-	ofsTest4 << h << std::endl;
-	ofsTest4 << w << std::endl;
-	#endif
-
 	for(uint i = 1; i < h - 1; ++i)
 	{
 		for(uint j = 1; j < w - 1; ++j)
 		{
-			#ifdef _EVAL_2_
-			image[4 * w * i + 4 * j + 0] = pop->pixMap[i][j].r;
-			image[4 * w * i + 4 * j + 1] = pop->pixMap[i][j].g;
-			image[4 * w * i + 4 * j + 2] = pop->pixMap[i][j].b;
-			image[4 * w * i + 4 * j + 3] = 255;
-			#endif
-
 			//if pixel at (i,j) is a white pixel
 			if(ifEqualPixel(pop->pixMap[i][j], boundaryPixel))
 			{
@@ -418,17 +415,6 @@ void Bitmap::detectControlPoints()
 				{
 					//set node with index = vertex counter = a control point in graph
 					graph->setControlPoint(vertexCounter, 1);
-					#ifdef _TEST_4_
-					//print coordinates of control point
-					ofsTest4 << i << std::endl;
-					ofsTest4 << j << std::endl;
-					#endif
-					#ifdef _EVAL_2_
-					image[4 * w * i + 4 * j + 0] = 0;
-					image[4 * w * i + 4 * j + 1] = 0;
-					image[4 * w * i + 4 * j + 2] = 255;
-					image[4 * w * i + 4 * j + 3] = 255;
-					#endif
 				}
 
 				vertexCounter++;
@@ -441,28 +427,92 @@ void Bitmap::detectControlPoints()
 		}
 	}
 
-	#ifdef _TEST_4_
-	//close file
-	ofsTest4.close();
-	#endif
+	temp.clear();
 
-	#ifdef _EVAL_2_
+	//for debugging mode
+	std::string path = ROOT_DIR;
+
+/******************************************************************/
+/***********************EVAL 2:DEBUGGING MODE**********************/
+/******************************************************************/
+
+#ifdef _EVAL_2_
+	
+	std::vector<unsigned char> image;
+	image.resize(w * h * 4);
+
+	for(uint i = 1; i < h - 1; ++i)
+	{
+		for(uint j = 1; j < w - 1; ++j)
+		{
+
+			image[4 * w * i + 4 * j + 0] = pop->pixMap[i][j].r;
+			image[4 * w * i + 4 * j + 1] = pop->pixMap[i][j].g;
+			image[4 * w * i + 4 * j + 2] = pop->pixMap[i][j].b;
+			image[4 * w * i + 4 * j + 3] = 255;
+
+			if(pixToNodeMap[i][j] != -1 && graph->checkIfCntrlPt(pixToNodeMap[i][j]))
+			{
+				image[4 * w * i + 4 * j + 0] = 0;
+				image[4 * w * i + 4 * j + 1] = 0;
+				image[4 * w * i + 4 * j + 2] = 255;
+				image[4 * w * i + 4 * j + 3] = 255;
+			}
+		}
+	}
+
 	encodeOneStep((path + "/check/eval_2_controlPt.png").c_str(), image, w, h);
 	image.clear();
-	#endif
 
-	temp.clear();
+#endif
+
+/******************************************************************/
+/***********************EVAL 2:DEBUGGING MODE END******************/
+/******************************************************************/
+
+/******************************************************************/
+/***********************TEST 4:DEBUGGING MODE**********************/
+/******************************************************************/
+
+#ifdef _TEST_4_
+	
+	//file to store coordinate values of control points under test 4
+	std::ofstream ofsTest4((path + "/check/test_4_cpp.txt").c_str(), std::ofstream::out);
+	ofsTest4 << h << std::endl;
+	ofsTest4 << w << std::endl;
+	for(uint i = 1; i < h - 1; ++i)
+	{
+		for(uint j = 1; j < w - 1; ++j)
+		{
+			if(pixToNodeMap[i][j] != -1 && graph->checkIfCntrlPt(pixToNodeMap[i][j]))
+			{
+				//print coordinates of control point
+				ofsTest4 << i << std::endl;
+				ofsTest4 << j << std::endl;
+			}
+		}
+	}
+
+	//close file
+	ofsTest4.close();
+
+#endif
+
+/******************************************************************/
+/***********************TEST 4:DEBUGGING MODE END******************/
+/******************************************************************/
+
 }
 
 /*
- * Returns 1 if pixel "a" is not a white pixel and is not contained in vector v.
- * vector v contains the region pixels adjacent to a node = white vertex detected yet.
+ * Returns 1 if pixel "a" is not a boundary pixel and is not contained in vector v.
+ * vector v contains the region pixels adjacent to a node = boundary pixel color vertex, yet detected.
  * if "a" is also a unique region pixel adjacent to the node then returns 1 else 0. 
  */
 int Bitmap::checkUniqueRegionPixel(pixel a, std::vector<pixel> &v)
 {
 	int ret = 0;
-	if(!(a.r == boundaryPixel.r && a.g == boundaryPixel.g && a.b == boundaryPixel.b))
+	if(!ifEqualPixel(a, boundaryPixel))
 	{
 		uint flag = 0;
 		for(uint i = 0; i < v.size(); ++i)
@@ -479,7 +529,7 @@ int Bitmap::checkUniqueRegionPixel(pixel a, std::vector<pixel> &v)
 			ret = 1;
 		}
 	}
-	
+
 	return ret;
 }
 
@@ -487,9 +537,9 @@ int Bitmap::checkUniqueRegionPixel(pixel a, std::vector<pixel> &v)
  * forms adjacency list in graph.
  * connects two vertices if they are adjacent.
  * the connection is bidirectional(undirected garph).
- * Since only white pixels are nodes/vertices, we loop over all the pixels,
- * check if the pixel is white,
- * if yes: then connects this pixel/vertex with any adjacent white pixel/vertex
+ * Since only boundary pixels are nodes/vertices, we loop over all the pixels,
+ * check if the pixel is boundary pixel,
+ * if yes: then connects this pixel/vertex with any adjacent boundary pixel/vertex
  */
 void Bitmap::formAdjacencyList()
 {

@@ -23,7 +23,13 @@ CodeImage::CodeImage(ImageMatrix* m)
 	codeImage(m);
 	numDisjointRegions = colorCode.size();
 
-	#ifdef _TEST_3_
+
+/******************************************************************/
+/***********************TEST 3:DEBUGGING MODE**********************/
+/******************************************************************/
+
+#ifdef _TEST_3_
+
 	//generate some image
 	std::string path = ROOT_DIR;
 	std::vector<unsigned char> image;
@@ -41,8 +47,12 @@ CodeImage::CodeImage(ImageMatrix* m)
 
 	encodeOneStep((path + "/check/test_3_revertCoded.png").c_str(), image, width, height);
 	image.clear();
-	#endif
 
+#endif
+
+/******************************************************************/
+/***********************TEST 3:DEBUGGING MODE END******************/
+/******************************************************************/
 }
 
 //Destructor
