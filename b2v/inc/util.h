@@ -99,4 +99,10 @@ void encodeOneStep(const char*, std::vector<uchar>&, uint, uint);
 //Converts RGB to hexcode and return a string of hexcode
 std::string RGBToHex(uint, uint, uint);
 
+//Converts Hexcode to RGB pixel
+pixel hexToRGB(std::string);
+
+//Converts rgb(R,G,B) to pixel
+pixel parseRGB(std::string);
+
 #endif
