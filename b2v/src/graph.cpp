@@ -6,6 +6,7 @@
 #include <iostream>
 #include <bitset>
 #include <string>
+#include "util.h"
 
 
 std::vector<Point2> ptStore; //stores bezier points as they are genereted/streamed
@@ -727,9 +728,9 @@ void Graph::processRegions()
 /*
  * write output svg to outFileName by transferring control to writeFinalOutput method of SVG class.
  */
-void Graph::writeOuput(std::string outFileName)
+void Graph::writeOuput(std::string outFileName, pixel bg)
 {
-	outputSVG->writeFinalOutput(region, outFileName);
+	outputSVG->writeFinalOutput(region, outFileName, bg);
 }
 
 /*

@@ -3,10 +3,11 @@
 #include "iostream"
 #include "debug.h"
 #include <string>
-
+#include <algorithm>
+#include <cmath>
 
 //Constructor
-Bitmap::Bitmap(std::string filename)
+Bitmap::Bitmap(std::string filename, pixel bgColor, bool bgColorProvided)
 {
 	uint h, w;
 	std::vector<uchar> v;	//the raww pixel
@@ -55,6 +56,32 @@ Bitmap::Bitmap(std::string filename)
 	//close test_1_cpp.txt file
 	ofsTest1.close();
 	#endif	
+
+	//borderPixel initialization
+	if(bgColorProvided)
+	{
+		borderPixel.r = bgColor.r;
+		borderPixel.g = bgColor.g;
+		borderPixel.b = bgColor.b;
+	}
+	else
+	{
+		//median of 4 corners of original image
+		uint a[4];
+		a[0] = orig->pixMap[0][0].r + orig->pixMap[0][0].g * 256 + orig->pixMap[0][0].b * 256 * 256;
+		a[1] = orig->pixMap[0][w-1].r + orig->pixMap[0][w-1].g * 256 + orig->pixMap[0][w-1].b * 256 * 256;
+		a[2] = orig->pixMap[h-1][0].r + orig->pixMap[h-1][0].g * 256 + orig->pixMap[h-1][0].b * 256 * 256;
+		a[3]= orig->pixMap[h-1][w-1].r + orig->pixMap[h-1][w-1].g * 256 + orig->pixMap[h-1][w-1].b * 256 * 256;
+
+		std::sort(a, a+4);
+		double med = (a[1] + a[2])*0.5;
+		uint median = floor(med);
+		borderPixel.b = median/(256*256);
+		median = median - borderPixel.b * 256 * 256;
+		borderPixel.g = median/256;
+		median = median - borderPixel.g * 256;
+		borderPixel.r = median;
+	}
 }
 
 /*
@@ -99,7 +126,7 @@ void Bitmap::processImage(uint tolerance)
 //writes svg output in outFileName by moving control to writeOutput method of graph
 void Bitmap::writeOuputSVG(std::string outFileName)
 {
-	graph->writeOuput(outFileName);
+	graph->writeOuput(outFileName, borderPixel);
 }
 
 //Destructor
@@ -179,7 +206,9 @@ void Bitmap::preprocess()
 		{
 			if(i == 0 || j == 0 || i == h - 1 || j == w - 1)
 			{
-				pre->pixMap[i][j].r = pre->pixMap[i][j].g = pre->pixMap[i][j].b = 0;
+				pre->pixMap[i][j].r = borderPixel.r;
+				pre->pixMap[i][j].g = borderPixel.g;
+				pre->pixMap[i][j].b = borderPixel.b;
 			}
 			else
 			{
@@ -193,69 +222,35 @@ void Bitmap::preprocess()
 		}
 	}
 
-	int outOfLoop = 0;
+	//Getting unique borderPixel and boundaryPixel
+	bool outOfLoop = false;
 	for(uint i = 0; i < 3; ++i)
 	{
 		for(uint j = 0; j < 256; ++j)
 		{
 			if(M[i][j] != -1)
 			{
-				if(outOfLoop == 0)
+				switch(i)
 				{
-					switch(i)
-					{
-						case 0:
-							boundaryPixel.r = j;
-							boundaryPixel.g = boundaryPixel.b = 255;
-							break;
-						case 1:
-							boundaryPixel.g = j;
-							boundaryPixel.r = boundaryPixel.b = 255;
-							break;
-						case 2:
-							boundaryPixel.b = j;
-							boundaryPixel.g = boundaryPixel.r = 255;
-							break;
-					}
+					case 0:
+						boundaryPixel.r = j;
+						boundaryPixel.g = boundaryPixel.b = 255;
+						break;
+					case 1:
+						boundaryPixel.g = j;
+						boundaryPixel.r = boundaryPixel.b = 255;
+						break;
+					case 2:
+						boundaryPixel.b = j;
+						boundaryPixel.g = boundaryPixel.r = 255;
+						break;
 				}
-				else
-				{
-					switch(i)
-					{
-						case 0:
-							borderPixel.r = j;
-							borderPixel.g = borderPixel.b = 254;
-							break;
-						case 1:
-							borderPixel.g = j;
-							borderPixel.r = borderPixel.b = 254;
-							break;
-						case 2:
-							borderPixel.b = j;
-							borderPixel.g = borderPixel.r = 254;
-							break;
-					}
-				}
-				outOfLoop++;
-				if(outOfLoop == 2)
-					break;
+				outOfLoop = true;
+				break;
 			}
 		}
-		if(outOfLoop == 2)
+		if(outOfLoop)
 			break;
-	}
-
-	for(uint i = 0; i < h; ++i)
-	{
-		for(uint j = 0; j < w; ++j)
-		{
-			if(i == 0 || j == 0 || i == h - 1 || j == w - 1)
-			{
-				pre->pixMap[i][j].r = borderPixel.r;
-				pre->pixMap[i][j].g = borderPixel.g;
-				pre->pixMap[i][j].b = borderPixel.b;
-			}
-		}
 	}
 }
 

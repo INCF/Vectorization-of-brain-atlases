@@ -23,7 +23,7 @@ class SVG
 		SVG(uint, uint);
 		~SVG();
 		void writeDisjointLineSegments(std::vector<Curve>&);
-		void writeFinalOutput(std::vector<Region>&, std::string);
+		void writeFinalOutput(std::vector<Region>&, std::string, pixel);
 };
 
 #endif

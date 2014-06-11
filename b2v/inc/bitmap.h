@@ -46,7 +46,7 @@ class Bitmap
 		 * Please refer corresponding src file bitmap.cpp for
 		 * the functioning of the following methods.
 		 */
-		Bitmap(std::string);
+		Bitmap(std::string, pixel, bool);
 		~Bitmap();
 		void del(ImageMatrix*);
 		void decodeOneStep(const char*, uint&, uint&, std::vector<uchar>&);
