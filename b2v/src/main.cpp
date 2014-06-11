@@ -98,7 +98,7 @@ int main(int argc, char **argv)
 		}
 		else if(temp == "-h")
 		{
-			std::cout << "b2v: Transforms bitmaps to vector graphics\n\nusage: " << ROOT_DIR << "/bin/b2v [-h] -i BITMAP_SRC [-o SVG_DEST] [-t FIT_TOLERANCE]\n\ndescription\n\narguments: \n-h, --help \n\t\t show this help message and exit\n-i BITMAP_SRC \n\t\t Path to input PNG Bitmap image\n-o SVG_DEST \n\t\t Destination of output SVG with desired name of file(default=ouput.svg)\n-t FIT_TOLERANCE \n\t\t Fitting tolerance(default=0)\n" << std::endl;
+			std::cout << "b2v: Transforms bitmaps to vector graphics\n\nusage: " << ROOT_DIR << "/bin/b2v [-h] -i BITMAP_SRC [-o SVG_DEST] [-t FIT_TOLERANCE] [-c BG_COLOR_R BG_COLOR_G BG_COLOR_B]\n\ndescription\n\narguments: \n-h, --help \n\t\t show this help message and exit\n-i BITMAP_SRC \n\t\t Path to input PNG Bitmap image\n-o SVG_DEST \n\t\t Destination of output SVG with desired name of file(default=ouput.svg)\n-t FIT_TOLERANCE \n\t\t Fitting tolerance(default=0)\n-c BG_COLOR_R BG_COLOR_G BG_COLOR_B \n\t\t Background Color R G B values(default=based on median of four corner points of input image)" << std::endl;
 			exit(1);
 		}
 		i--;
