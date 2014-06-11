@@ -15,7 +15,7 @@ std::vector<Point2> ptStore; //stores bezier points as they are genereted/stream
 //LIMIT: length of the segment to be considered for either DouglasPeuckar simplification or jump simplification
 #define LIMIT 10
 //JUMP: Number of pixels to be left while walking over the line segment
-#define JUMP 5
+#define JUMP 0
 //GAP: Net absolute change in the x and y direction of two pixels to be considered for a closed loop
 #define GAP 6
 //EPSILON: For douglas pecker algorithm
