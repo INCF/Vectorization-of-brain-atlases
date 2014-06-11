@@ -13,6 +13,7 @@ SVG::~SVG()
 
 }
 
+// Forward and Reverse Must overlap
 void SVG::writeDisjointLineSegments(std::vector<Curve> &v)
 {
 	std::string path = ROOT_DIR;
@@ -20,7 +21,7 @@ void SVG::writeDisjointLineSegments(std::vector<Curve> &v)
 
 	ofsTest6 << "<svg height=\"" << imageHeight << "\" width=\"" << imageWidth << "\">" << std::endl << "<g>" << std::endl;
 
-	ofsTest6 << "<rect width=\"" << imageWidth << "\" height=\"" << imageHeight << "\" fill=\"#000000\" stroke-width=\"0\" /> " << std::endl;
+	ofsTest6 << "<rect width=\"" << imageWidth << "\" height=\"" << imageHeight << "\" fill=\"#ffffff\" stroke-width=\"0\" /> " << std::endl;
 	for(uint i = 0; i < v.size(); ++i)
 	{
 		ofsTest6 << "<path fill=\"none\" stroke=\"black\" stroke-width=\"0.5\" d =\" ";
@@ -30,7 +31,8 @@ void SVG::writeDisjointLineSegments(std::vector<Curve> &v)
 			{
 				ofsTest6 << "M" << v[i].start.x << " " << v[i].start.y << " C";
 			}
-			ofsTest6 << v[i].pt[j].x << "," << v[i].pt[j].y << " ";
+			else
+				ofsTest6 << v[i].pt[j].x << "," << v[i].pt[j].y << " ";
 		}
 		ofsTest6 << " \" />" << std::endl;
 	}
@@ -44,7 +46,8 @@ void SVG::writeDisjointLineSegments(std::vector<Curve> &v)
 			{
 				ofsTest6 << "M" << v[i].reverse->start.x << " " << v[i].reverse->start.y << " C";
 			}
-			ofsTest6 << v[i].reverse->pt[j].x << "," << v[i].reverse->pt[j].y << " ";
+			else
+				ofsTest6 << v[i].reverse->pt[j].x << "," << v[i].reverse->pt[j].y << " ";
 		}
 		ofsTest6 << " \" />" << std::endl;
 	}
@@ -69,9 +72,9 @@ void SVG::writeFinalOutput(std::vector<Region> &rgn, std::string outFileName)
 		if(i != 0)
 		{
 			if(rgn[i].closedPath.size() == 1)
-				ofsFinal << "<path  fill=\"" << RGBToHex((uint)rgn[i].col.r, (int)rgn[i].col.g, (int)rgn[i].col.b) << "\" stroke-width=\"0\" stroke=\"" << RGBToHex((uint)rgn[i].col.r, (int)rgn[i].col.g, (int)rgn[i].col.b) << "\" d = \"";
+				ofsFinal << "<path  fill=\"" << RGBToHex((uint)rgn[i].col.r, (uint)rgn[i].col.g, (uint)rgn[i].col.b) << "\" stroke-width=\"0\" stroke=\"" << RGBToHex((uint)rgn[i].col.r, (uint)rgn[i].col.g, (uint)rgn[i].col.b) << "\" d = \"";
 			else
-				ofsFinal << "<path  fill-rule=\"evenodd\" fill=\"" << RGBToHex((uint)rgn[i].col.r, (int)rgn[i].col.g, (int)rgn[i].col.b) << "\" stroke-width=\"0\" stroke=\"" << RGBToHex((uint)rgn[i].col.r, (int)rgn[i].col.g, (int)rgn[i].col.b) << "\" d = \"";	
+				ofsFinal << "<path  fill-rule=\"evenodd\" fill=\"" << RGBToHex((uint)rgn[i].col.r, (uint)rgn[i].col.g, (uint)rgn[i].col.b) << "\" stroke-width=\"0\" stroke=\"" << RGBToHex((uint)rgn[i].col.r, (uint)rgn[i].col.g, (uint)rgn[i].col.b) << "\" d = \"";	
 		}
 		else
 			ofsFinal << "<path fill=\"none\" d =\" ";
@@ -87,8 +90,8 @@ void SVG::writeFinalOutput(std::vector<Region> &rgn, std::string outFileName)
 						if(k == 0)
 							ofsFinal << "M" << rgn[i].closedPath[j][k]->start.x << " " << rgn[i].closedPath[j][k]->start.y << " C";
 					}
-
-					ofsFinal << rgn[i].closedPath[j][k]->pt[m].x << "," << rgn[i].closedPath[j][k]->pt[m].y << " ";
+					else
+						ofsFinal << rgn[i].closedPath[j][k]->pt[m].x << "," << rgn[i].closedPath[j][k]->pt[m].y << " ";
 				}
 			}
 		}

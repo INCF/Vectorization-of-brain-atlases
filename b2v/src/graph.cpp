@@ -8,7 +8,7 @@
 #include <string>
 
 
-std::vector<Point2> *ptStore = new std::vector<Point2>; //stores bezier points as they are genereted/streamed
+std::vector<Point2> ptStore; //stores bezier points as they are genereted/streamed
 
 //LOOP: length of the loop from a control point to itself to make it to be considered as line segment
 #define LOOP 10
@@ -28,17 +28,19 @@ std::vector<Point2> *ptStore = new std::vector<Point2>; //stores bezier points a
  * A bezier curve will have 4 pts. S, C1, C2, E.
  * To catch all Bezier curves assosciated with a line segment, 
  * ptStore global variable is used.
- * n = number of points generated(at start 4 then 3).
+ * n = number of points generated(at start 4 then 3). NO ALWAYS 3
  */
 void DrawBezierCurve(int n, BezierCurve curve)
 {
-    for(int i = 0; i < n; ++i)
-    {
-    	Point2* temp = new Point2[1];
-    	temp->x = curve[i].x;
-    	temp->y = curve[i].y;
-        ptStore->push_back(*temp);
-    }
+  // only the first three points are stored (S C1 C2),
+  // the end point is the start of the next curve
+  for(int i = 0; i < n; ++i) {
+    Point2 temp = {
+      .x = curve[i].x,
+      .y = curve[i].y
+    };
+    ptStore.push_back(temp);
+  }
 }
 
 //Constructor
@@ -564,49 +566,45 @@ void Graph::formCurves(uint tolerance)
 {
 	for(uint i = 0; i < lineSeg.size(); ++i)
 	{
-		Point2 *d = new Point2[lineSeg[i].path.size() + 2];
-		d[0].x = (vertex[lineSeg[i].path[0]].y)*0.5-1;
-		d[0].y = (vertex[lineSeg[i].path[0]].x)*0.5-1;
+		Point2 *d = new Point2[lineSeg[i].path.size()];
+
 		for(uint j = 0; j < lineSeg[i].path.size(); ++j)
 		{
-			d[j+1].x = (vertex[lineSeg[i].path[j]].y)*0.5-1;
-			d[j+1].y = (vertex[lineSeg[i].path[j]].x)*0.5-1;
+			d[j].x = (vertex[lineSeg[i].path[j]].y)*0.5-1;
+			d[j].y = (vertex[lineSeg[i].path[j]].x)*0.5-1;
 		}
-		d[lineSeg[i].path.size()+1].x = (vertex[lineSeg[i].path[lineSeg[i].path.size()-1]].y)*0.5-1;
-		d[lineSeg[i].path.size()+1].y = (vertex[lineSeg[i].path[lineSeg[i].path.size()-1]].x)*0.5-1;
 
+		ptStore.clear();
 		Curve *tempCurve = new Curve[1];
 		tempCurve->reverse = new Curve[1];
-		FitCurve(d, lineSeg[i].path.size() + 2, tolerance);
-		tempCurve->pt.assign(ptStore->begin(), ptStore->end());
-		tempCurve->start = ptStore->front();
-		tempCurve->end = ptStore->back();
-		ptStore->clear();
+		FitCurve(d, lineSeg[i].path.size(), tolerance);
+		ptStore.push_back(d[lineSeg[i].path.size()-1]);
+		tempCurve->pt = ptStore; // this is a copy by value
+		tempCurve->start = ptStore.front();
+		tempCurve->end = ptStore.back();
 		tempCurve->reverse = reverseCurve(tempCurve);
 		curve.push_back(*tempCurve);
 	}
 
 	for(uint i = 0; i < islandLineSeg.size(); ++i)
 	{
-		Point2 *d = new Point2[islandLineSeg[i].path.size() + 2];
-		d[0].x = (vertex[islandLineSeg[i].path[0]].y)*0.5-1;
-		d[0].y = (vertex[islandLineSeg[i].path[0]].x)*0.5-1;
+		Point2 *d = new Point2[islandLineSeg[i].path.size()];
 
 		for(uint j = 0; j < islandLineSeg[i].path.size(); ++j)
 		{
-			d[j+1].x = (vertex[islandLineSeg[i].path[j]].y)*0.5-1;
-			d[j+1].y = (vertex[islandLineSeg[i].path[j]].x)*0.5-1;
+			d[j].x = (vertex[islandLineSeg[i].path[j]].y)*0.5-1;
+			d[j].y = (vertex[islandLineSeg[i].path[j]].x)*0.5-1;
 		}
-		d[islandLineSeg[i].path.size()+1].x = (vertex[islandLineSeg[i].path[islandLineSeg[i].path.size()-1]].y)*0.5-1;
-		d[islandLineSeg[i].path.size()+1].y = (vertex[islandLineSeg[i].path[islandLineSeg[i].path.size()-1]].x)*0.5-1;
 
+
+		ptStore.clear();
 		Curve *tempCurve = new Curve[1];
 		tempCurve->reverse = new Curve[1];
-		FitCurve(d, islandLineSeg[i].path.size() + 2, tolerance);
-		tempCurve->pt.assign(ptStore->begin(), ptStore->end());
-		tempCurve->start = ptStore->front();
-		tempCurve->end = ptStore->back();
-		ptStore->clear();
+		FitCurve(d, islandLineSeg[i].path.size(), tolerance);
+		ptStore.push_back(d[islandLineSeg[i].path.size()-1]);
+		tempCurve->pt = ptStore; // this is a copy by value
+		tempCurve->start = ptStore.front();
+		tempCurve->end = ptStore.back();
 		tempCurve->reverse = reverseCurve(tempCurve);
 		curve.push_back(*tempCurve);
 	}
@@ -649,11 +647,10 @@ Curve* Graph::reverseCurve(Curve *x)
 	if(x->pt.size() < 3)
 		std::cout << "MAYBE AN ERROR" << std::endl;
 
-	for(int i = x->pt.size() - 2; i >= 0; --i)
+	for(int i = x->pt.size()-1; i >= 0; --i)
 	{
 		p->pt.push_back(x->pt[i]);
 	}
-	p->pt.push_back(x->start);
 
 	return p;
 }

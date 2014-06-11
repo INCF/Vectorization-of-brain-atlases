@@ -7,9 +7,11 @@ ROOT_D := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 ifeq ($(CFG),debug)
 	CXXFLAGS=-Wall -O2 -g -DDEBUG -DROOT_DIR=\"$(ROOT_D)\"
 	LDFLAGS=-Wall -g -DDEBUG
+	EXEC=$(BINPATH)/b2vDebug
 else
 	CXXFLAGS=-Wall -O2 -DROOT_DIR=\"$(ROOT_D)\"
 	LDFLAGS=-Wall
+	EXEC=$(BINPATH)/b2v
 endif
 
 INCPATH=$(ROOT_D)/inc
@@ -35,7 +37,6 @@ OBJ=$(OBJPATH)/util.o \
     $(OBJPATH)/codeImage.o \
     $(OBJPATH)/bitmap.o \
     $(OBJPATH)/main.o
-EXEC=$(BINPATH)/b2v
 
 INCLUDES=-I $(INCPATH)
 
@@ -53,4 +54,4 @@ clean:
 	rm -f $(OBJPATH)/*.o
 
 cleanall: clean
-	rm -f $(EXEC)
+	rm -f $(BINPATH)/*
