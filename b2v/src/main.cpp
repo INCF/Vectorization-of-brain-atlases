@@ -18,6 +18,7 @@ int main(int argc, char **argv)
 	std::string filename = "";
 	std::string outFileName = "";
 	uint tolerance = 0;
+	std::string color;
 	pixel bgColor;
 	bool bgColorProvided = false;
 
@@ -68,37 +69,33 @@ int main(int argc, char **argv)
 		}
 		else if(temp == "-c")
 		{
-			if(argc != i && argc != i + 1 && argc != i + 2)
+			if(argc != i)
 			{
-				for(int k = i; k < i + 3; ++k)
+				color = argv[i];
+				if(color.substr(0, 1) == "#")
 				{
-					int x = atoi(argv[k]);
-					if(x > 255 || x < 0)
-					{
-						std::cout << "invalid background color: R G B values must be in [0,255]" << std::endl;
-						exit(1);
-					}
-					else
-					{
-						if(k == i)
-							bgColor.r = x;
-						else if(k == i + 1)
-							bgColor.g = x;
-						else
-							bgColor.b = x;
-					}
+					bgColor = hexToRGB(color);
+				}
+				else if(color.substr(0, 3) == "rgb")
+				{
+					bgColor = parseRGB(color);
+				}
+				else
+				{
+					std::cout << "invalid background color: Either #RRGGBB or rgb(R,G,B) must be provided" << std::endl;
+					exit(1);
 				}
 				bgColorProvided = true;
 			}
 			else
 			{
-				std::cout << "invalid background color: R G B values must be provided" << std::endl;
+				std::cout << "invalid background color: Either #RRGGBB or rgb(R,G,B) must be provided" << std::endl;
 				exit(1);
 			}
 		}
 		else if(temp == "-h")
 		{
-			std::cout << "b2v: Transforms bitmaps to vector graphics\n\nusage: " << ROOT_DIR << "/bin/b2v [-h] -i BITMAP_SRC [-o SVG_DEST] [-t FIT_TOLERANCE] [-c BG_COLOR_R BG_COLOR_G BG_COLOR_B]\n\ndescription\n\narguments: \n-h, --help \n\t\t show this help message and exit\n-i BITMAP_SRC \n\t\t Path to input PNG Bitmap image\n-o SVG_DEST \n\t\t Destination of output SVG with desired name of file(default=ouput.svg)\n-t FIT_TOLERANCE \n\t\t Fitting tolerance(default=0)\n-c BG_COLOR_R BG_COLOR_G BG_COLOR_B \n\t\t Background Color R G B values(default=based on median of four corner points of input image)" << std::endl;
+			std::cout << "b2v: Transforms bitmaps to vector graphics\n\nusage: " << ROOT_DIR << "/bin/b2v [-h] -i BITMAP_SRC [-o SVG_DEST] [-t FIT_TOLERANCE] [-c \"#RRGGBB\"] [-c \"rgb(R,G,B)\"]\n\ndescription\n\narguments: \n-h, --help \n\t\t show this help message and exit\n-i BITMAP_SRC \n\t\t Path to input PNG Bitmap image\n-o SVG_DEST \n\t\t Destination of output SVG with desired name of file(default=ouput.svg)\n-t FIT_TOLERANCE \n\t\t Fitting tolerance(default=0)\n-c \"#RRGGBB\" OR \"rgb(R,G,B)\" \n\t\t Background Color rgb values in base 10 or 16(default=based on median of four corner points of input image)" << std::endl;
 			exit(1);
 		}
 		i--;
