@@ -66,7 +66,7 @@ class Graph
 		bool ifForwardDirection(int, Point2);
 		std::vector<uint> DouglasPeucker(std::vector<uint>&, double);
 		double shortestDistanceToSegment(uint, uint, uint);
-		void writeOuput(std::string);
+		void writeOuput(std::string, pixel);
 };
 
 /*

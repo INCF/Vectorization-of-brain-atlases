@@ -73,26 +73,25 @@ void SVG::writeDisjointLineSegments(std::vector<Curve> &v)
  * Writes Final SVG corresponding to original image
  * Arguments: Vector of regions in the image and output File name
  */
-void SVG::writeFinalOutput(std::vector<Region> &rgn, std::string outFileName)
+void SVG::writeFinalOutput(std::vector<Region> &rgn, std::string outFileName, pixel bgColor)
 {
 	std::ofstream ofsFinal(outFileName.c_str(), std::ofstream::out);
 	ofsFinal << "<svg height=\"" << imageHeight << "\" width=\"" << imageWidth << "\">" << std::endl << "<g>" << std::endl;
 	
+	//background
+	ofsFinal << "<rect width=\"" << imageWidth << "\" height=\"" << imageHeight << "\" fill=\"" << RGBToHex((uint)bgColor.r, (uint)bgColor.g, (uint)bgColor.b) << "\"  stroke-width=\"0\" /> " << std::endl;
+
 	// Ouput final svg paths with bezier curves only
 	for(uint i = 0; i < rgn.size(); ++i)
 	{
 		//No printing of empty paths
 		if(rgn[i].closedPath.empty())
 			continue;
-		if(i != 0)
-		{
-			if(rgn[i].closedPath.size() == 1)
-				ofsFinal << "<path  fill=\"" << RGBToHex((uint)rgn[i].col.r, (uint)rgn[i].col.g, (uint)rgn[i].col.b) << "\" stroke-width=\"0\" stroke=\"" << RGBToHex((uint)rgn[i].col.r, (uint)rgn[i].col.g, (uint)rgn[i].col.b) << "\" d = \"";
-			else
-				ofsFinal << "<path  fill-rule=\"evenodd\" fill=\"" << RGBToHex((uint)rgn[i].col.r, (uint)rgn[i].col.g, (uint)rgn[i].col.b) << "\" stroke-width=\"0\" stroke=\"" << RGBToHex((uint)rgn[i].col.r, (uint)rgn[i].col.g, (uint)rgn[i].col.b) << "\" d = \"";	
-		}
+		
+		if(rgn[i].closedPath.size() == 1)
+			ofsFinal << "<path  fill=\"" << RGBToHex((uint)rgn[i].col.r, (uint)rgn[i].col.g, (uint)rgn[i].col.b) << "\" stroke-width=\"0\" stroke=\"" << RGBToHex((uint)rgn[i].col.r, (uint)rgn[i].col.g, (uint)rgn[i].col.b) << "\" d = \"";
 		else
-			ofsFinal << "<path fill=\"none\" d =\" ";
+			ofsFinal << "<path  fill-rule=\"evenodd\" fill=\"" << RGBToHex((uint)rgn[i].col.r, (uint)rgn[i].col.g, (uint)rgn[i].col.b) << "\" stroke-width=\"0\" stroke=\"" << RGBToHex((uint)rgn[i].col.r, (uint)rgn[i].col.g, (uint)rgn[i].col.b) << "\" d = \"";	
 
 		//iterate over the closedpaths surrounding the region
 		for(uint j = 0; j < rgn[i].closedPath.size(); ++j)
