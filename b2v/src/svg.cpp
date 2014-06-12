@@ -1,6 +1,7 @@
 #include "svg.h"
 #include <fstream>
 #include <string>
+#include "util.h"
 
 SVG::SVG(uint h, uint w)
 {
@@ -100,16 +101,48 @@ void SVG::writeFinalOutput(std::vector<Region> &rgn, std::string outFileName, pi
 			for(uint k = 0; k < rgn[i].closedPath[j].size(); ++k)
 			{
 				//iterate over the points in the curve
+				int count = 0;
+				bool cToBePlaced = false;
 				for(uint m = 0; m < rgn[i].closedPath[j][k]->pt.size(); ++m)
-				{						
+				{	
+					count = count % 3;					
 					if(m == 0)
 					{
 						//print starting point of first curve in a closed path
 						if(k == 0)
-							ofsFinal << "M" << rgn[i].closedPath[j][k]->start.x << " " << rgn[i].closedPath[j][k]->start.y << " C";
+						{
+							if(count == 0 && m+4 <= rgn[i].closedPath[j][k]->pt.size() && ifEqualPoint2(rgn[i].closedPath[j][k]->pt[m], rgn[i].closedPath[j][k]->pt[m+1]) && ifEqualPoint2(rgn[i].closedPath[j][k]->pt[m+2], rgn[i].closedPath[j][k]->pt[m+3]))
+							{
+								ofsFinal << "M" << rgn[i].closedPath[j][k]->start.x << " " << rgn[i].closedPath[j][k]->start.y << " L";
+								m = m + 2;
+								cToBePlaced = true;
+							}
+							else
+							{
+								ofsFinal << "M" << rgn[i].closedPath[j][k]->start.x << " " << rgn[i].closedPath[j][k]->start.y << " C";
+								count = count + 1;
+								cToBePlaced = false;
+							}
+						}
 					}
 					else
-						ofsFinal << rgn[i].closedPath[j][k]->pt[m].x << "," << rgn[i].closedPath[j][k]->pt[m].y << " ";
+					{
+						if(count == 0 && m+4 <= rgn[i].closedPath[j][k]->pt.size() && ifEqualPoint2(rgn[i].closedPath[j][k]->pt[m], rgn[i].closedPath[j][k]->pt[m+1]) && ifEqualPoint2(rgn[i].closedPath[j][k]->pt[m+2], rgn[i].closedPath[j][k]->pt[m+3]))
+						{
+							ofsFinal << rgn[i].closedPath[j][k]->pt[m].x << "," << rgn[i].closedPath[j][k]->pt[m].y << " L";
+							m = m + 2;
+							cToBePlaced = true;
+						}
+						else
+						{
+							if(cToBePlaced)
+								ofsFinal << rgn[i].closedPath[j][k]->pt[m].x << "," << rgn[i].closedPath[j][k]->pt[m].y << " C";
+							else
+								ofsFinal << rgn[i].closedPath[j][k]->pt[m].x << "," << rgn[i].closedPath[j][k]->pt[m].y << " ";
+							count = count + 1;
+							cToBePlaced = false;
+						}
+					}
 				}
 			}
 		}

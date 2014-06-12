@@ -106,3 +106,11 @@ pixel parseRGB(std::string rgb)
 
     return ret;
 }
+
+bool ifEqualPoint2(Point2 a, Point2 b)
+{
+  if(a.x == b.x && a.y == b.y)
+    return true;
+  else
+    return false;
+}

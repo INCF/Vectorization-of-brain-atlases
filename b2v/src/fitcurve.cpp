@@ -75,6 +75,18 @@ static void FitCubic(Point2 *d, int first, int last, Vector2 tHat1, Vector2 tHat
     iterationError = error * error;
     nPts = last - first + 1;
 
+    u = ChordLengthParameterize(d, first, last);
+    bezCurve = (Point2 *)malloc(4 * sizeof(Point2));
+    bezCurve[0] = bezCurve[1] = d[first];
+    bezCurve[2] = bezCurve[3] = d[last];
+    maxError = ComputeMaxError(d, first, last, bezCurve, u, &splitPoint);
+    if (maxError < error) {
+        DrawBezierCurve(3, bezCurve);
+        free((void *)u);
+        free((void *)bezCurve);
+        return;
+    }
+
     /*  Use heuristic if region only has two points in it */
     if (nPts == 2) {
         double dist = V2DistanceBetween2Points(&d[last], &d[first]) / 3.0;
@@ -90,7 +102,6 @@ static void FitCubic(Point2 *d, int first, int last, Vector2 tHat1, Vector2 tHat
     }
 
     /*  Parameterize points, and attempt to fit curve */
-    u = ChordLengthParameterize(d, first, last);
     bezCurve = GenerateBezier(d, first, last, u, tHat1, tHat2);
 
     /*  Find max deviation of points to fitted curve */
