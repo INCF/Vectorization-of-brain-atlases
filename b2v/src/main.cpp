@@ -17,7 +17,8 @@ int main(int argc, char **argv)
 {
 	std::string filename = "";
 	std::string outFileName = "";
-	uint tolerance = 0;
+	double toleranceCurve = 0;
+	double toleranceLine = 0;
 	std::string color;
 	pixel bgColor;
 	bool bgColorProvided = false;
@@ -50,20 +51,20 @@ int main(int argc, char **argv)
 		else if(temp == "-t")
 		{
 			if(argc != i)
-				tolerance = atoi(argv[i]);
+				toleranceCurve = atoi(argv[i]);
 			else
 			{
-				std::cout << "invalid tolerance" << std::endl;
+				std::cout << "invalid tolerance for Curve" << std::endl;
 				exit(1);
 			}
 		}
-		else if(temp == "-t")
+		else if(temp == "-s")
 		{
 			if(argc != i)
-				tolerance = atoi(argv[i]);
+				toleranceLine = atoi(argv[i]);
 			else
 			{
-				std::cout << "invalid tolerance" << std::endl;
+				std::cout << "invalid tolerance for Line" << std::endl;
 				exit(1);
 			}
 		}
@@ -95,15 +96,21 @@ int main(int argc, char **argv)
 		}
 		else if(temp == "-h")
 		{
-			std::cout << "b2v: Transforms bitmaps to vector graphics\n\nusage: " << ROOT_DIR << "/bin/b2v [-h] -i BITMAP_SRC [-o SVG_DEST] [-t FIT_TOLERANCE] [-c \"#RRGGBB\"] [-c \"rgb(R,G,B)\"]\n\ndescription\n\narguments: \n-h, --help \n\t\t show this help message and exit\n-i BITMAP_SRC \n\t\t Path to input PNG Bitmap image\n-o SVG_DEST \n\t\t Destination of output SVG with desired name of file(default=ouput.svg)\n-t FIT_TOLERANCE \n\t\t Fitting tolerance(default=0)\n-c \"#RRGGBB\" OR \"rgb(R,G,B)\" \n\t\t Background Color rgb values in base 10 or 16(default=based on median of four corner points of input image)" << std::endl;
+			std::cout << "b2v: Transforms bitmaps to vector graphics\n\nusage: " << ROOT_DIR << "/bin/b2v [-h] -i BITMAP_SRC [-o SVG_DEST] [-t FIT_TOLERANCE_CURVE] [-s FIT_TOLERANCE_LINE] [-c \"#RRGGBB\"] [-c \"rgb(R,G,B)\"]\n\ndescription\n\narguments: \n-h, --help \n\t\t show this help message and exit\n-i BITMAP_SRC \n\t\t Path to input PNG Bitmap image\n-o SVG_DEST \n\t\t Destination of output SVG with desired name of file(default=ouput.svg)\n-t FIT_TOLERANCE_CURVE \n\t\t Fitting tolerance for curve(default=0)\n-s FIT_TOLERANCE_LINE \n\t\t Fitting tolerance for line(default=0)\n-c \"#RRGGBB\" OR \"rgb(R,G,B)\" \n\t\t Background Color rgb values in base 16 or 10(default=based on median of four corner points of input image)" << std::endl;
 			exit(1);
 		}
 		i--;
 	}
 
-	if(tolerance < 0)
+	if(toleranceCurve < 0)
 	{
-		std::cout << "invalid tolerance: must be greater than zero" << std::endl;
+		std::cout << "invalid tolerance for curve: must be greater than zero" << std::endl;
+		exit(1);
+	}
+
+	if(toleranceLine < 0)
+	{
+		std::cout << "invalid tolerance for line: must be greater than zero" << std::endl;
 		exit(1);
 	}
 
@@ -119,7 +126,7 @@ int main(int argc, char **argv)
 	}
 
 	Bitmap *inputBitmap = new Bitmap(filename, bgColor, bgColorProvided);
-	inputBitmap->processImage(tolerance);
+	inputBitmap->processImage(toleranceCurve, toleranceLine);
 	inputBitmap->writeOuputSVG(outFileName);
 	
 	return 0;

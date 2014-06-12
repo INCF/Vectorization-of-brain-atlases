@@ -101,7 +101,7 @@ Bitmap::Bitmap(std::string filename, pixel bgColor, bool bgColorProvided)
 /*
  * processes the orig image
  */
-void Bitmap::processImage(uint tolerance)
+void Bitmap::processImage(double toleranceCurve, double toleranceLine)
 {
 	preprocess();
 	popoutBoundaries();
@@ -116,7 +116,7 @@ void Bitmap::processImage(uint tolerance)
 	graph->formLineSegments();
 	graph->assignCurveNumToRegion();
 	graph->preprocessLineSegments();
-	graph->formCurves(tolerance);
+	graph->formCurves(toleranceCurve, toleranceLine);
 	graph->processRegions();
 }
 
