@@ -595,7 +595,7 @@ double Graph::shortestDistanceToSegment(uint i, uint j, uint k)
 /*
  * Form curves by fitting line segments to bezier curve
  */
-void Graph::formCurves(uint tolerance)
+void Graph::formCurves(double toleranceCurve, double toleranceLine)
 {
 	for(uint i = 0; i < lineSeg.size(); ++i)
 	{
@@ -610,7 +610,7 @@ void Graph::formCurves(uint tolerance)
 		ptStore.clear();
 		Curve *tempCurve = new Curve[1];
 		tempCurve->reverse = new Curve[1];
-		FitCurve(d, lineSeg[i].path.size(), tolerance);
+		FitCurve(d, lineSeg[i].path.size(), toleranceCurve, toleranceLine);
 		ptStore.push_back(d[lineSeg[i].path.size()-1]);
 		tempCurve->pt = ptStore; // this is a copy by value
 		tempCurve->start = ptStore.front();
@@ -633,7 +633,7 @@ void Graph::formCurves(uint tolerance)
 		ptStore.clear();
 		Curve *tempCurve = new Curve[1];
 		tempCurve->reverse = new Curve[1];
-		FitCurve(d, islandLineSeg[i].path.size(), tolerance);
+		FitCurve(d, islandLineSeg[i].path.size(), toleranceCurve, toleranceLine);
 		ptStore.push_back(d[islandLineSeg[i].path.size()-1]);
 		tempCurve->pt = ptStore; // this is a copy by value
 		tempCurve->start = ptStore.front();

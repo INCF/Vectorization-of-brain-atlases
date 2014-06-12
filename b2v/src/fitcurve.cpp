@@ -18,8 +18,8 @@ typedef Point2 *BezierCurve;
 
 /* Forward declarations */
 
-void FitCurve(Point2*, int, double);
-static void FitCubic(Point2*, int, int, Vector2, Vector2, double);
+void FitCurve(Point2*, int, double, double);
+static void FitCubic(Point2*, int, int, Vector2, Vector2, double, double);
 static BezierCurve  GenerateBezier(Point2*, int, int, double*, Vector2, Vector2);
 static double *Reparameterize(Point2*, int, int, double*, BezierCurve);
 static double NewtonRaphsonRootFind(BezierCurve, Point2, double);
@@ -33,6 +33,7 @@ static Vector2 ComputeRightTangent(Point2*, int);
 static Vector2 ComputeCenterTangent(Point2*, int);
 static double *ChordLengthParameterize(Point2*, int, int);
 static double ComputeMaxError(Point2*, int, int, BezierCurve, double*, int*);
+static double ComputeMaxError2(Point2*, int, int, BezierCurve, double*);
 static Vector2 V2AddII(Vector2, Vector2);
 static Vector2 V2ScaleIII(Vector2,double);
 static Vector2 V2SubII(Vector2, Vector2);
@@ -44,13 +45,13 @@ void DrawBezierCurve(int n, BezierCurve curve);
  *  FitCurve :
  *      Fit a Bezier curve to a set of digitized points 
  */
-void FitCurve(Point2 *d, int nPts,double error)
+void FitCurve(Point2 *d, int nPts,double errorCurve, double errorLine)
 {
     Vector2 tHat1, tHat2;   /*  Unit tangent vectors at endpoints */
 
     tHat1 = ComputeLeftTangent(d, 0);
     tHat2 = ComputeRightTangent(d, nPts - 1);
-    FitCubic(d, 0, nPts - 1, tHat1, tHat2, error);
+    FitCubic(d, 0, nPts - 1, tHat1, tHat2, errorCurve, errorLine);
 }
 
 
@@ -59,7 +60,7 @@ void FitCurve(Point2 *d, int nPts,double error)
  *  FitCubic :
  *      Fit a Bezier curve to a (sub)set of digitized points
  */
-static void FitCubic(Point2 *d, int first, int last, Vector2 tHat1, Vector2 tHat2, double error)
+static void FitCubic(Point2 *d, int first, int last, Vector2 tHat1, Vector2 tHat2, double errorCurve, double errorLine)
 {
     BezierCurve bezCurve; /*Control points of fitted Bezier curve*/
     double  *u;     /*  Parameter values for point  */
@@ -72,19 +73,22 @@ static void FitCubic(Point2 *d, int first, int last, Vector2 tHat1, Vector2 tHat
     Vector2 tHatCenter;     /* Unit tangent vector at splitPoint */
     int     i;      
 
-    iterationError = error * error;
+    iterationError = errorCurve * errorCurve;
     nPts = last - first + 1;
 
     u = ChordLengthParameterize(d, first, last);
-    bezCurve = (Point2 *)malloc(4 * sizeof(Point2));
-    bezCurve[0] = bezCurve[1] = d[first];
-    bezCurve[2] = bezCurve[3] = d[last];
-    maxError = ComputeMaxError(d, first, last, bezCurve, u, &splitPoint);
-    if (maxError < error) {
-        DrawBezierCurve(3, bezCurve);
-        free((void *)u);
-        free((void *)bezCurve);
-        return;
+    if(!(d[first].x == d[last].x && d[first].y == d[last].y))
+    {
+        bezCurve = (Point2 *)malloc(4 * sizeof(Point2));
+        bezCurve[0] = bezCurve[1] = d[first];
+        bezCurve[2] = bezCurve[3] = d[last];
+        maxError = ComputeMaxError2(d, first, last, bezCurve, u);
+        if (maxError < errorLine) {
+            DrawBezierCurve(3, bezCurve);
+            free((void *)u);
+            free((void *)bezCurve);
+            return;
+        }
     }
 
     /*  Use heuristic if region only has two points in it */
@@ -106,7 +110,7 @@ static void FitCubic(Point2 *d, int first, int last, Vector2 tHat1, Vector2 tHat
 
     /*  Find max deviation of points to fitted curve */
     maxError = ComputeMaxError(d, first, last, bezCurve, u, &splitPoint);
-    if (maxError < error) {
+    if (maxError < errorCurve) {
         DrawBezierCurve(3, bezCurve);
         free((void *)u);
         free((void *)bezCurve);
@@ -123,7 +127,7 @@ static void FitCubic(Point2 *d, int first, int last, Vector2 tHat1, Vector2 tHat
             bezCurve = GenerateBezier(d, first, last, uPrime, tHat1, tHat2);
             maxError = ComputeMaxError(d, first, last,
                        bezCurve, uPrime, &splitPoint);
-            if (maxError < error) {
+            if (maxError < errorCurve) {
             DrawBezierCurve(3, bezCurve);
             free((void *)u);
             free((void *)bezCurve);
@@ -139,9 +143,9 @@ static void FitCubic(Point2 *d, int first, int last, Vector2 tHat1, Vector2 tHat
     free((void *)u);
     free((void *)bezCurve);
     tHatCenter = ComputeCenterTangent(d, splitPoint);
-    FitCubic(d, first, splitPoint, tHat1, tHatCenter, error);
+    FitCubic(d, first, splitPoint, tHat1, tHatCenter, errorCurve, errorLine);
     V2Negate(&tHatCenter);
-    FitCubic(d, splitPoint, last, tHatCenter, tHat2, error);
+    FitCubic(d, splitPoint, last, tHatCenter, tHat2, errorCurve, errorLine);
 }
 
 
@@ -463,6 +467,47 @@ static double ComputeMaxError(Point2  *d, int first, int last, BezierCurve bezCu
     }
     return (maxDist);
 }
+
+
+/*
+ *  ComputeMaxError :
+ *  Find the maximum squared distance of digitized points
+ *  to fitted curve. FOR A STRAIGHT LINE ONLY
+*/
+static double ComputeMaxError2(Point2  *d, int first, int last, BezierCurve bezCurve, double *u)
+{
+    int i;
+    double maxDist;
+    double dist;
+    Vector2 start, end;
+
+    start.x = bezCurve[0].x;
+    start.y = bezCurve[0].y;
+    end.x = bezCurve[3].x;
+    end.y = bezCurve[3].y;
+
+    maxDist = 0.0;
+    for (i = first + 1; i < last; i++) {
+
+        if(start.x == end.x)
+            dist = abs(d[i].x - end.x);
+        else
+        {
+            double m = (end.y - start.y) / (end.x - start.x);
+            double c = start.y - m * start.x;
+
+            dist = abs((d[i].y - m * d[i].x - c) / (sqrt(1 + m * m)));
+        }
+
+        dist = dist * dist;
+        
+        if (dist >= maxDist) {
+            maxDist = dist;
+        }
+    }
+    return (maxDist);
+}
+
 static Vector2 V2AddII(Vector2 a, Vector2 b)
 {
     Vector2 c;

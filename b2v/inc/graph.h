@@ -57,7 +57,7 @@ class Graph
 		bool equalSideRegions(uint, uint);
 		bool isAdjToFrom(uint, uint);
 		void preprocessLineSegments();
-		void formCurves(uint);
+		void formCurves(double, double);
 		Curve* reverseCurve(Curve*);
 		void assignCurveNumToRegion();
 		void processRegions();
@@ -73,11 +73,11 @@ class Graph
 /*
  * Method to fit bezier curve to a series of points.
  */
-void FitCurve(Point2 *d, int nPts,double error);
+void FitCurve(Point2*, int, double, double);
 
 /*
  * Method to catch and store generated bezier curve points.
  */
-void DrawBezierCurve(int n, BezierCurve curve);
+void DrawBezierCurve(int, BezierCurve);
 
 #endif
