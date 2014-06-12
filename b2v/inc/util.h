@@ -105,4 +105,7 @@ pixel hexToRGB(std::string);
 //Converts rgb(R,G,B) to pixel
 pixel parseRGB(std::string);
 
+//Checks if two points (Point2) are equal
+bool ifEqualPoint2(Point2, Point2);
+
 #endif
