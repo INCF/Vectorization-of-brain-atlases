@@ -113,7 +113,8 @@ def run(args):
             baseName = re.sub('.nii$', '',baseName)
             if colormap: fmt = 'png' 
             else: fmt = 'jpg'
-            redirect[mode] = op.relpath(op.join(destFolder,baseName),scriptDir)+'.'+fmt;
+            #redirect[mode] = op.relpath(op.join(destFolder,baseName),scriptDir)+'.'+fmt;
+            redirect[mode] = baseName+'.'+fmt;
 
             index2rgb = None
             if colormap:
@@ -158,13 +159,6 @@ def run(args):
                     scipy.misc.toimage(slice).save(op.join(destFolder,pngFile))
                     print 'image {}{} saved to png file "{}".'.format(dim,i,pngFile)
 
-        #q = ['bins={}'.format(numSamples)];
-        #if args.nifti_scan:
-        #    q.append('layer1={}'.format(redirect['scan']))
-        #if args.nifti_label:
-        #    q.append('layer2={}'.format(redirect['label']))
-        #q = '&'.join(q)
-
         inspectFile = '{}/nii_inspect.html'.format(scriptDir);
         with open(inspectFile, 'r') as fp:
             html = fp.read()
@@ -184,16 +178,7 @@ def run(args):
         with open(htmlFile, 'w') as fp:
             fp.write(html)
                 
-        #redirect = '{}/snapshot.html?{}'.format(op.relpath(scriptDir,destFolder),q);
-        #
-        #print q
-        #html = '<html><head></head>';
-        #html += '<body><a href="{}">go to snapshot</a></body>'.format(redirect)
-        #html += '</html>';
-        #htmlFile = op.join(destFolder,'index.html')
-        #with open(htmlFile, "w") as fp:
-        #  fp.write(html)
-        print 'Html viewer saved as "{}"'.format(htmlFile)
+        print 'HTML viewer saved as "{}"'.format(htmlFile)
 
         """
         try:
