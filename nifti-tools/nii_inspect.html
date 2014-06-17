@@ -1,0 +1,150 @@
+<html><head>
+<style type="text/css">
+table.main {
+  position: relative;
+  border: 1px solid white;
+}
+  
+div.overlay {
+  position: relative;
+  width: 100px;
+  overflow: hidden;
+}
+td.negdim {
+  text-align: right;
+}
+img.lr1 {
+  position: relative;
+  left: 0px;
+  width: 100px;
+}
+img.lr2,img.lr3 {
+  position: absolute;
+  left: 0px;
+  width: 100px;
+}
+</style>
+<script type="text/javascript">
+function getParameterByName(name) {
+  name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+  var regex = new RegExp("[\\?&]" + name + "=([^&#]*)");
+  var results = regex.exec(location.search);
+  return results == null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+}
+
+function onload() {
+  var SliceDirs = [['Left','Right'],['Posterior','Anterior'],['Inferior','Superior']];
+  var lr1 = getParameterByName('layer1');
+  // NEXT LINE USED IN REPLACEMENT OPERATION
+  /*$ if (!lr1) lr1 = '' $*/
+  lr1 = lr1.split('.');
+  ext1 = lr1.pop();
+  lr1 = lr1.join('.');
+  var lr2 = getParameterByName('layer2');
+  // NEXT LINE USED IN REPLACEMENT OPERATION
+  /*$ if (!lr2) lr2 = '' $*/
+  if (lr2) {
+    lr2 = lr2.split('.');
+    ext2 = lr2.pop();
+    lr2 = lr2.join('.');
+  }
+  var lr3 = getParameterByName('layer3');
+  // NEXT LINE USED IN REPLACEMENT OPERATION
+  /*$ if (!lr3) lr3 = '' $*/
+  if (lr3) {
+    lr3 = lr3.split('.');
+    ext3 = lr3.pop();
+    lr3 = lr3.join('.');
+  }
+  //var bins = parseInt(getParameterByName('bins'));
+  // NEXT LINE USED IN REPLACEMENT OPERATION
+  /*$ if (!bins) bins = 0 $*/
+  var slicesX = getParameterByName('slices_x');
+  // NEXT LINE USED IN REPLACEMENT OPERATION
+  /*$ if (!slicesX) slicesX = '0:1:2' $*/
+  var slicesY = getParameterByName('slices_y');
+  // NEXT LINE USED IN REPLACEMENT OPERATION
+  /*$ if (!slicesY) slicesY = '0:1:2' $*/
+  var slicesZ = getParameterByName('slices_z');
+  // NEXT LINE USED IN REPLACEMENT OPERATION
+  /*$ if (!slicesZ) slicesZ = '0:1:2' $*/
+  
+  var slices = [
+    slicesX.split(':'),
+    slicesY.split(':'),
+    slicesZ.split(':')
+  ]
+  for (var d in slices) {
+    for (var i in slices[d]) slices[d][i] = parseInt(slices[d][i]);
+  }
+      
+  
+  var dims = ['x','y','z'];
+  var ans = '';
+  for (var d in dims) {
+    var T = '<table class="main"><tr>';
+    T += '<td class="negdim"><div class="overlay">'+SliceDirs[d][0]+'</div></td>';
+    dim = dims[d];
+    for (var s=slices[d][0]; s<=slices[d][2]; s+=slices[d][1]) {
+      var pngFile = lr1+'_'+dim+s+'.'+ext1;
+      T += '<td><div class="overlay">';
+      T += '<img class="lr1" src="'+pngFile+'"/>';
+      if (lr2) {
+        var pngFile = lr2+'_'+dim+s+'.'+ext2;
+        T += '<img class="lr2" src="'+pngFile+'"/>';
+      }
+      if (lr3) {
+        var pngFile = lr3+'_'+dim+s+'.'+ext3;
+        T += '<img class="lr3" src="'+pngFile+'"/>';
+      }
+      T += '</div></td>';
+    }
+    T += '<td class="posdim"><div class="overlay">'+SliceDirs[d][1]+'</div></td>';
+    T += '</tr><tr>';
+    for (var s=slices[d][0]; s<slices[d][2]; s+=slices[d][1]) {
+      T += '<td>'+s+'</td>';     
+    }
+    T += '</tr></table>';
+    ans += T;
+  }
+  document.getElementById('MAIN').innerHTML = ans
+}
+
+// http://www.hunlock.com/blogs/Totally_Pwn_CSS_with_Javascript
+function getCSSRule(ruleName, deleteFlag) {               // Return requested style obejct
+   ruleName=ruleName.toLowerCase();                       // Convert test string to lower case.
+   if (document.styleSheets) {                            // If browser can play with stylesheets
+      for (var i=0; i<document.styleSheets.length; i++) { // For each stylesheet
+         var styleSheet=document.styleSheets[i];          // Get the current Stylesheet
+         var ii=0;                                        // Initialize subCounter.
+         var cssRule=false;                               // Initialize cssRule. 
+         do {                                             // For each rule in stylesheet
+            if (styleSheet.cssRules) {                    // Browser uses cssRules?
+               cssRule = styleSheet.cssRules[ii];         // Yes --Mozilla Style
+            } else {                                      // Browser usses rules?
+               cssRule = styleSheet.rules[ii];            // Yes IE style. 
+            }                                             // End IE check.
+            if (cssRule)  {                               // If we found a rule...
+               if (cssRule.selectorText.toLowerCase()==ruleName) { //  match ruleName?
+                 return cssRule;                          // return the style object.
+               }                                          // End found rule name
+            }                                             // end found cssRule
+            ii++;                                         // Increment sub-counter
+         } while (cssRule)                                // end While loop
+      }                                                   // end For loop
+   }                                                      // end styleSheet ability check
+   return false;                                          // we found NOTHING!
+}                                                         // end getCSSRule 
+
+function applyTransparency(val) {
+  var rule = getCSSRule('img.lr2')
+  rule.style.opacity = val;
+}
+</script>
+</head>
+<body onload="onload()">
+<div id="MAIN"></div>
+<div>Overlay transparency: <select type="select" size="3" onchange="applyTransparency(this.options[this.selectedIndex].value)"><option select value="1">0%</option><option value="0.5">50%</option><option value="0">100%</option></select></div>
+</body>
+</html>
+  
