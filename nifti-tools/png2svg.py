@@ -11,11 +11,8 @@ def argument_parser():
   parser.add_argument('-i','--png_src', type=str, help="Input PNG folder", required=True)
   parser.add_argument('-o','--svg_dest', type=str, help="Output SVG folder destination", required=True)
   parser.add_argument('-d','--slice_dir', type=str, default='y', help="Slice direction: x=Saggital, y=Coronal, z=Axial")
-<<<<<<< HEAD
-=======
   parser.add_argument('-t','--curve-tolerance', type=float, default=2, help="Tolerance value to be passed on to b2v (max. squared distance between any edge point and fitted curve)")
   parser.add_argument('-s','--line-tolerance', type=float, default=1, help="Tolerance value to be passed on to b2v (max. squared distance between any edge point and fitted line)")
->>>>>>> d255074... Adds routines to inspect and reorient nifti files.
   return parser
 
 def parse_arguments(raw=None):
@@ -61,13 +58,6 @@ def run(args):
       outputFile =  op.join(svgFolder,svgFile)
       
       # generate and save svg with b2v
-<<<<<<< HEAD
-      ret2 = subprocess.call(["/home/dhruv/bitmap2vector_cpp/copy/Vectorization-of-brain-atlases/nifti-tools/b2v -i "+inputFile+" -o "+outputFile+" -t 0"], shell=True)
-      if ret2==1:
-        print 'Error: Unsuccessful PNG to SVG conversion'
-      else:
-        print 'vector image saved to svg file "{}".'.format(svgFile)
-=======
       #ret1 = subprocess.call(["chmod +x /home/dhruv/bitmap2vector_cpp/nifti/b2v.sh"], shell=True)
       #if ret1==1:
       #  print 'Error: Permission required to change mode of b2v.sh'
@@ -84,15 +74,10 @@ def run(args):
       #  print 'Error: Unsuccessful PNG to SVG conversion'
       #else:
       print 'vector image saved to svg file "{}".'.format(svgFile)
->>>>>>> d255074... Adds routines to inspect and reorient nifti files.
   except:
     print "Unexpected error:", sys.exc_info()[0]
     raise
 
 if __name__ == '__main__':
   args = parse_arguments()
-<<<<<<< HEAD
   run(args)
-=======
-  run(args)
->>>>>>> d255074... Adds routines to inspect and reorient nifti files.
