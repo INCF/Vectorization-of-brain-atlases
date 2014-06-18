@@ -18,7 +18,12 @@ img.lr1 {
   left: 0px;
   width: 100px;
 }
-img.lr2,img.lr3 {
+img.lr2 {
+  position: absolute;
+  left: 0px;
+  width: 100px;
+}
+img.lr3 {
   position: absolute;
   left: 0px;
   width: 100px;
@@ -137,7 +142,7 @@ function getCSSRule(ruleName, deleteFlag) {               // Return requested st
 }                                                         // end getCSSRule 
 
 function applyTransparency(val) {
-  var rule = getCSSRule('img.lr2,img.lr3')
+  var rule = getCSSRule('img.lr2')
   rule.style.opacity = val;
 }
 </script>
