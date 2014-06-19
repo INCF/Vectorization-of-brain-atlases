@@ -5,6 +5,7 @@
 
 Info::Info()
 {
+	//default values
 	inputFileName = "";
 	outFileName = "";
 	toleranceCurve = 2;
@@ -33,7 +34,7 @@ void Info::parseInputArg(int argc, char **argv)
 				inputFileName = argv[i];
 			else
 			{
-				std::cout << "invalid input file" << std::endl;
+				std::cout << "invalid input file: use -h, --help for usage information" << std::endl;
 				exit(1);
 			}
 		}
@@ -43,7 +44,7 @@ void Info::parseInputArg(int argc, char **argv)
 				outFileName = argv[i];
 			else
 			{
-				std::cout << "invalid output file" << std::endl;
+				std::cout << "invalid output file: use -h, --help for usage information" << std::endl;
 				exit(1);
 			}
 		}
@@ -53,7 +54,7 @@ void Info::parseInputArg(int argc, char **argv)
 				toleranceCurve = atoi(argv[i]);
 			else
 			{
-				std::cout << "invalid tolerance for Curve" << std::endl;
+				std::cout << "invalid tolerance for Curve: use -h, --help for usage information" << std::endl;
 				exit(1);
 			}
 		}
@@ -63,7 +64,7 @@ void Info::parseInputArg(int argc, char **argv)
 				toleranceLine = atoi(argv[i]);
 			else
 			{
-				std::cout << "invalid tolerance for Line" << std::endl;
+				std::cout << "invalid tolerance for Line: use -h, --help for usage information" << std::endl;
 				exit(1);
 			}
 		}
@@ -82,14 +83,14 @@ void Info::parseInputArg(int argc, char **argv)
 				}
 				else
 				{
-					std::cout << "invalid background color: Either #RRGGBB or rgb(R,G,B) must be provided" << std::endl;
+					std::cout << "invalid background color: use -h, --help for usage information" << std::endl;
 					exit(1);
 				}
 				bgColorProvided = true;
 			}
 			else
 			{
-				std::cout << "invalid background color: Either #RRGGBB or rgb(R,G,B) must be provided" << std::endl;
+				std::cout << "invalid background color: use -h, --help for usage information" << std::endl;
 				exit(1);
 			}
 		}

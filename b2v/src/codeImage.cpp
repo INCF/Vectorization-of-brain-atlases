@@ -4,6 +4,7 @@
 #include "string"
 #include "bitmap.h"
 #include <queue>
+#include <iostream>
 #include <utility>
 
 //Constructor

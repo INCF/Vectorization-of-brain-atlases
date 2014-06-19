@@ -27,6 +27,8 @@ Bitmap::Bitmap(std::string filename, pixel bgColor, bool bgColorProvided)
 	}
 
 	numControlPoints = 0;
+	codedImage = NULL;
+	graph = NULL;
 
 	//Assigning values to the pixels of original image matrix
 	for(uint i = 0; i < h; ++i)
@@ -130,6 +132,7 @@ void Bitmap::writeOuputSVG(std::string outFileName)
 Bitmap::~Bitmap()
 {
 	//delete pixToNodeMap
+
 	for(uint i = 0; i < pop->height; ++i)
 	{
 		delete[] pixToNodeMap[i];
@@ -146,10 +149,10 @@ Bitmap::~Bitmap()
 	del(pop);
 
 	//delete coded image
-	delete[] codedImage;
+	delete codedImage;
 
 	//delete graph
-	delete[] graph;
+	delete graph;
 }
 
 //deletes an image matrix
