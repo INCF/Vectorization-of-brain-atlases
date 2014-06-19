@@ -17,7 +17,7 @@ int main(int argc, char **argv)
 {
 	std::string filename = "";
 	std::string outFileName = "";
-	double toleranceCurve = 0;
+	double toleranceCurve = 2;
 	double toleranceLine = 0;
 	std::string color;
 	pixel bgColor;
@@ -28,7 +28,7 @@ int main(int argc, char **argv)
 	while(i > 1)
 	{
 		std::string temp(argv[i - 1]);
-		if(temp == "-i")
+		if(temp == "-i" || temp == "--input-file")
 		{
 			if(argc != i)
 				filename = argv[i];
@@ -38,17 +38,17 @@ int main(int argc, char **argv)
 				exit(1);
 			}
 		}
-		else if(temp == "-o")
+		else if(temp == "-o" || temp == "--output-file")
 		{
 			if(argc != i)
 				outFileName = argv[i];
 			else
 			{
-				std::cout << "invalid input file" << std::endl;
+				std::cout << "invalid output file" << std::endl;
 				exit(1);
 			}
 		}
-		else if(temp == "-t")
+		else if(temp == "-t" || temp == "--curve-tolerance")
 		{
 			if(argc != i)
 				toleranceCurve = atoi(argv[i]);
@@ -58,7 +58,7 @@ int main(int argc, char **argv)
 				exit(1);
 			}
 		}
-		else if(temp == "-s")
+		else if(temp == "-s" || temp == "--line-tolerance")
 		{
 			if(argc != i)
 				toleranceLine = atoi(argv[i]);
@@ -68,7 +68,7 @@ int main(int argc, char **argv)
 				exit(1);
 			}
 		}
-		else if(temp == "-c")
+		else if(temp == "-c" || temp == "--bg-color")
 		{
 			if(argc != i)
 			{
@@ -94,9 +94,9 @@ int main(int argc, char **argv)
 				exit(1);
 			}
 		}
-		else if(temp == "-h")
+		else if(temp == "-h" || temp == "--help")
 		{
-			std::cout << "b2v: Transforms bitmaps to vector graphics\n\nusage: " << ROOT_DIR << "/bin/b2v [-h] -i BITMAP_SRC [-o SVG_DEST] [-t FIT_TOLERANCE_CURVE] [-s FIT_TOLERANCE_LINE] [-c \"#RRGGBB\"] [-c \"rgb(R,G,B)\"]\n\ndescription\n\narguments: \n-h, --help \n\t\t show this help message and exit\n-i BITMAP_SRC \n\t\t Path to input PNG Bitmap image\n-o SVG_DEST \n\t\t Destination of output SVG with desired name of file(default=ouput.svg)\n-t FIT_TOLERANCE_CURVE \n\t\t Fitting tolerance for curve(default=0)\n-s FIT_TOLERANCE_LINE \n\t\t Fitting tolerance for line(default=0)\n-c \"#RRGGBB\" OR \"rgb(R,G,B)\" \n\t\t Background Color rgb values in base 16 or 10(default=based on median of four corner points of input image)" << std::endl;
+			std::cout << "b2v: Transforms bitmaps to vector graphics\n\nUsage:b2v [options] [filename...]\nDescription\n\nArguments: \n-h, --help \n\t\t show this help message and exit\n-i, --input-file <filename> \n\t\t read input PNG Bitmap image from this file\n-o, --output-file <filename> \n\t\t write output to this file(default=ouput.svg)\n-t, --curve-tolerance <n>  \n\t\t Bezier Curve Fitting tolerance(default=2)\n-s, --line-tolerance <n> \n\t\t Line Fitting tolerance(default=0)\n-c, --bg-color <\"#RRGGBB\"> OR <\"rgb(R,G,B)\"> \n\t\t Background Color in base 16 or 10(default=based on median of colors of four corner points of input image)" << std::endl;
 			exit(1);
 		}
 		i--;
