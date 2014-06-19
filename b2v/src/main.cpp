@@ -16,9 +16,9 @@ int main(int argc, char **argv)
 	Info inputInfo;
 	inputInfo.parseInputArg(argc, argv);
 
-	Bitmap *inputBitmap = new Bitmap(inputInfo.inputFileName, inputInfo.bgColor, inputInfo.bgColorProvided);
-	inputBitmap->processImage(inputInfo.toleranceCurve, inputInfo.toleranceLine);
-	inputBitmap->writeOuputSVG(inputInfo.outFileName);
+	Bitmap inputBitmap(inputInfo.inputFileName, inputInfo.bgColor, inputInfo.bgColorProvided);
+	inputBitmap.processImage(inputInfo.toleranceCurve, inputInfo.toleranceLine);
+	inputBitmap.writeOuputSVG(inputInfo.outFileName);
 	
 	return 0;
 }

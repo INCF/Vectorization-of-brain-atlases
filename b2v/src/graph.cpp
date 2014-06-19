@@ -82,7 +82,7 @@ Graph::~Graph()
 	}
 	islandLineSeg.clear();
 
-	delete[] outputSVG;
+	delete outputSVG;
 }
 
 //Adds a vertex to the graph with specified parameters set
