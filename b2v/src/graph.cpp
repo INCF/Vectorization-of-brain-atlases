@@ -18,7 +18,7 @@ std::vector<Point2> ptStore; //stores bezier points as they are genereted/stream
 //JUMP: Number of pixels to be left while walking over the line segment
 #define JUMP 0
 //GAP: Net absolute change in the x and y direction of two pixels to be considered for a closed loop
-#define GAP 6
+#define GAP 150
 //EPSILON: For douglas pecker algorithm
 #define EPSILON 1
 
@@ -144,12 +144,16 @@ void Graph::formLineSegments()
 				else
 					vertex[i].isIslandPoint.set(0, true);
 
+				bool check = false;
+				std::vector<uint> visitedNodes;
+				visitedNodes.clear();
 				for(uint j = 0; j < vertex[i].node.size(); ++j)
 				{
 					Line *temp = new Line[1];
 					if(!vertex[vertex[i].node[j]].isUsedUp.test(0))
 					{
 						vertex[vertex[i].node[j]].isUsedUp.set(0, true);
+						visitedNodes.push_back(vertex[i].node[j]);
 						moveToNode(temp->path, vertex[i].node[j], i, i, pass, 1);
 						if(!temp->path.empty())
 						{
@@ -161,12 +165,31 @@ void Graph::formLineSegments()
 							if(pass == 1)
 								lineSeg.push_back(*temp);
 							else 
+							{
 								islandLineSeg.push_back(*temp);
+								check = true;
+							}
 						}
 					}
 				}
 				if(pass == 2)
+				{
+					if(check)
+						vertex[i].isUsedUp.set(0, true);
+					else
+					{
+						vertex[i].isUsedUp.set(0, false);
+						for(uint l = 0; l < visitedNodes.size(); ++l)
+						{
+							vertex[visitedNodes[l]].isUsedUp.set(0, false);
+						}
+					}
+
+				}
+				else if(pass == 3)
+				{
 					vertex[i].isUsedUp.set(0, true);
+				}
 			}
 		}
 	}
@@ -251,9 +274,20 @@ void Graph::formLineSegments()
 		for(uint j = 0; j < islandLineSeg[i].path.size(); ++j)
 		{
 			image[4 * imageWidth * vertex[islandLineSeg[i].path[j]].x + 4 * vertex[islandLineSeg[i].path[j]].y + 0] = 255;
-			image[4 * imageWidth * vertex[islandLineSeg[i].path[j]].x + 4 * vertex[islandLineSeg[i].path[j]].y + 1] = 0;
+			image[4 * imageWidth * vertex[islandLineSeg[i].path[j]].x + 4 * vertex[islandLineSeg[i].path[j]].y + 1] = (j*50)%255;
 			image[4 * imageWidth * vertex[islandLineSeg[i].path[j]].x + 4 * vertex[islandLineSeg[i].path[j]].y + 2] = 0;
 			image[4 * imageWidth * vertex[islandLineSeg[i].path[j]].x + 4 * vertex[islandLineSeg[i].path[j]].y + 3] = 255;			
+		}
+	}
+
+	for(uint i = 0; i < V; ++i)
+	{
+		if(!vertex[i].isUsedUp.test(0))
+		{
+			image[4 * imageWidth * vertex[i].x + 4 * vertex[i].y + 0] = 255;
+			image[4 * imageWidth * vertex[i].x + 4 * vertex[i].y + 1] = 255;
+			image[4 * imageWidth * vertex[i].x + 4 * vertex[i].y + 2] = 0;
+			image[4 * imageWidth * vertex[i].x + 4 * vertex[i].y + 3] = 255;
 		}
 	}
 
@@ -275,7 +309,7 @@ void Graph::formLineSegments()
 void Graph::moveToNode(std::vector<uint> &v, uint to, uint from, uint startedFrom, uint pass, uint len)
 {
 	uint ind;
-	bool emptyFlag = true;
+	bool emptyFlag = false;
 	if(pass == 2 && to == startedFrom)
 	{
 		v.push_back(to);
@@ -303,19 +337,34 @@ void Graph::moveToNode(std::vector<uint> &v, uint to, uint from, uint startedFro
 					if(vertex[v[0]].isCntrlPoint.test(0))
 						break;
 					emptyFlag = false;
+					if(pass == 3)
+						break;
 				}
 				else if(pass == 2)
 				{
 					vertex[vertex[to].node[i]].isUsedUp.set(0, false);
 				}
 			}
+			if(pass == 3)
+			{
+				for(uint m = 0; m < islandLineSeg.size(); ++m)
+				{
+					for(uint k = 0; k < islandLineSeg[m].path.size(); ++k)
+					{
+						if(islandLineSeg[m].path[k] == vertex[to].node[i])
+							emptyFlag = true;
+					}
+				}
+			}
 		}
+
 		if(emptyFlag && pass == 3 && len > LOOP)
 		{
+			//std::cout << "Came in" << std::endl;
 			if((abs(vertex[startedFrom].x - vertex[to].x) + abs(vertex[startedFrom].y - vertex[to].y)) <= GAP)
 			{
 				v.push_back(to);
-				std::cout << "PASS 3" << std::endl;
+				//std::cout << "PASS 3" << std::endl;
 			}
 		}
 	}
@@ -603,8 +652,8 @@ void Graph::formCurves(double toleranceCurve, double toleranceLine)
 
 		for(uint j = 0; j < lineSeg[i].path.size(); ++j)
 		{
-			d[j].x = (vertex[lineSeg[i].path[j]].y)*0.5-1;
-			d[j].y = (vertex[lineSeg[i].path[j]].x)*0.5-1;
+			d[j].x = (vertex[lineSeg[i].path[j]].y-2)*0.5;
+			d[j].y = (vertex[lineSeg[i].path[j]].x-2)*0.5;
 		}
 
 		ptStore.clear();
@@ -625,8 +674,8 @@ void Graph::formCurves(double toleranceCurve, double toleranceLine)
 
 		for(uint j = 0; j < islandLineSeg[i].path.size(); ++j)
 		{
-			d[j].x = (vertex[islandLineSeg[i].path[j]].y)*0.5-1;
-			d[j].y = (vertex[islandLineSeg[i].path[j]].x)*0.5-1;
+			d[j].x = (vertex[islandLineSeg[i].path[j]].y-2)*0.5;
+			d[j].y = (vertex[islandLineSeg[i].path[j]].x-2)*0.5;
 		}
 
 
