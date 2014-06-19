@@ -27,7 +27,8 @@ SRC=$(SRCPATH)/util.cpp \
     $(SRCPATH)/graph.cpp \
     $(SRCPATH)/codeImage.cpp \
     $(SRCPATH)/bitmap.cpp \
-    $(SRCPATH)/main.cpp
+    $(SRCPATH)/main.cpp \
+    $(SRCPATH)/info.cpp
 OBJ=$(OBJPATH)/util.o \
 	$(OBJPATH)/lodepng.o \
 	$(OBJPATH)/fitcurve.o \
@@ -36,7 +37,8 @@ OBJ=$(OBJPATH)/util.o \
 	$(OBJPATH)/graph.o \
     $(OBJPATH)/codeImage.o \
     $(OBJPATH)/bitmap.o \
-    $(OBJPATH)/main.o
+    $(OBJPATH)/main.o \
+    $(OBJPATH)/info.o
 
 INCLUDES=-I $(INCPATH)
 
