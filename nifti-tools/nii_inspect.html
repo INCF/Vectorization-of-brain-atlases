@@ -141,15 +141,16 @@ function getCSSRule(ruleName, deleteFlag) {               // Return requested st
    return false;                                          // we found NOTHING!
 }                                                         // end getCSSRule 
 
-function applyTransparency(val) {
-  var rule = getCSSRule('img.lr2')
+function applyOpacity(val,lr) {
+  var rule = getCSSRule('img.lr'+lr)
   rule.style.opacity = val;
 }
 </script>
 </head>
 <body onload="onload()">
+<div>Visibility overlay 1: <select type="select" size="1" onchange="applyOpacity(this.options[this.selectedIndex].value,2)"><option value="0">0%</option><option value="0.5">50%</option><option selected value="1">100%</option></select></div>
+<div>Visibility overlay 2: <select type="select" size="1" onchange="applyOpacity(this.options[this.selectedIndex].value,3)"><option value="0">0%</option><option value="0.5">50%</option><option selected value="1">100%</option></select></div>
 <div id="MAIN"></div>
-<div>Overlay transparency: <select type="select" size="3" onchange="applyTransparency(this.options[this.selectedIndex].value)"><option select value="1">0%</option><option value="0.5">50%</option><option value="0">100%</option></select></div>
 </body>
 </html>
   

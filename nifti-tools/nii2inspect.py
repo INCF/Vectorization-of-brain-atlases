@@ -12,12 +12,13 @@ def argument_parser():
   parser = argparse.ArgumentParser(
     description='description',
     formatter_class=argparse.RawTextHelpFormatter)
-  parser.add_argument('-i','--nifti_scan', type=str, help="Input Nifti file (scan)", required=True)
-  parser.add_argument('-j','--nifti_label', type=str, help="Input Nifti file (label)", required=False)
-  parser.add_argument('-k','--nifti_other', type=str, help="Input Nifti file (other overlay)", required=False)
+  parser.add_argument('-i','--nifti_lr1', type=str, help="Input Nifti file layer 1", required=True)
+  parser.add_argument('-j','--nifti_lr2', type=str, help="Input Nifti file layer 2", required=False)
+  parser.add_argument('-k','--nifti_lr3', type=str, help="Input Nifti file layer 3", required=False)
   parser.add_argument('-o','--path_dest', type=str, help="Output snapshot folder", required=True)
-  parser.add_argument('-c','--colormap_scan', type=str, help="JSON colormap file (scan)", required=False)
-  parser.add_argument('-d','--colormap_label', type=str, help="JSON colormap file (label)", required=False)
+  parser.add_argument('-c','--colormap_lr1', type=str, help="JSON colormap layer 1", required=False)
+  parser.add_argument('-d','--colormap_lr2', type=str, help="JSON colormap layer 2", required=False)
+  parser.add_argument('-e','--colormap_lr3', type=str, help="JSON colormap layer 3", required=False)
   parser.add_argument('-sx','--slices_x', type=str, help="Slices in the x-dimension, start%:step%:stop%", required=False)
   parser.add_argument('-sy','--slices_y', type=str, help="Slices in the y-dimension, start%:step%:stop%", required=False)
   parser.add_argument('-sz','--slices_z', type=str, help="Slices in the z-dimension, start%:step%:stop%", required=False)
@@ -29,17 +30,17 @@ def parse_arguments(raw=None):
 
     try:
         """ Basic argument checking """
-        if not args.nifti_scan and not args.nifti_label:
-            raise Exception('At least one Nifti file must be specified (scan or label)')
+        if not args.nifti_lr1:
+            raise Exception('Nifti file for layer 1 must be specified')
       
-        if args.nifti_scan and not op.exists(args.nifti_scan):
-            raise Exception('Nifti file "{}" not found.'.format(args.nifti_scan))
+        if args.nifti_lr1 and not op.exists(args.nifti_lr1):
+            raise Exception('Nifti file "{}" not found.'.format(args.nifti_lr1))
 
-        if args.nifti_label and not op.exists(args.nifti_label):
-            raise Exception('Nifti file "{}" not found.'.format(args.nifti_label))
+        if args.nifti_lr2 and not op.exists(args.nifti_lr2):
+            raise Exception('Nifti file "{}" not found.'.format(args.nifti_lr2))
 
-        if args.nifti_other and not op.exists(args.nifti_other):
-            raise Exception('Nifti file "{}" not found.'.format(args.nifti_other))
+        if args.nifti_lr3 and not op.exists(args.nifti_lr3):
+            raise Exception('Nifti file "{}" not found.'.format(args.nifti_lr3))
 
         args.sliceRangePct = [[],[],[]]
         for d in [0,1,2]:
@@ -77,8 +78,9 @@ def hex2rgba(v):
     return tuple(rgba)
 
 def run(args):
-    print('Input Nifti scan: {}'.format(args.nifti_scan))
-    print('Input Nifti label: {}'.format(args.nifti_label))
+    print('Input Nifti layer 1: {}'.format(args.nifti_lr1))
+    print('Input Nifti layer 2: {}'.format(args.nifti_lr2))
+    print('Input Nifti layer 3: {}'.format(args.nifti_lr3))
     try:
         destFolder = args.path_dest
         if not(op.exists(destFolder)):
@@ -88,7 +90,7 @@ def run(args):
         scriptDir = op.realpath(op.dirname(__file__))
 
         redirect = {}
-        for mode in ['scan','label','other']:
+        for mode in ['lr1','lr2','lr3']:
             nifti_src = getattr(args,'nifti_'+mode);
             if not nifti_src: continue
             colormap = getattr(args,'colormap_'+mode);
@@ -157,23 +159,22 @@ def run(args):
                     #pngFile = baseName+'_{}{:02d}.{}'.format(dim,100*(sample+1)/(numSamples+1),fmt)
                     pngFile = baseName+'_{}{:d}.{}'.format(dim,i,fmt)
                     scipy.misc.toimage(slice).save(op.join(destFolder,pngFile))
-                    print 'image {}{} saved to png file "{}".'.format(dim,i,pngFile)
+                    if i==sliceStart:
+                        print 'image {}{} saved to png file "{}".'.format(dim,i,pngFile)
 
         inspectFile = '{}/nii_inspect.html'.format(scriptDir);
         with open(inspectFile, 'r') as fp:
             html = fp.read()
-            if args.nifti_scan:
-                html = html.replace("/*$ if (!lr1) lr1 = '' $*/","if (!lr1) lr1 = '{}';".format(redirect['scan']))
-            if args.nifti_label:
-                html = html.replace("/*$ if (!lr2) lr2 = '' $*/","if (!lr2) lr2 = '{}';".format(redirect['label']))
-            if args.nifti_other:
-                html = html.replace("/*$ if (!lr3) lr3 = '' $*/","if (!lr3) lr3 = '{}';".format(redirect['other']))
-            #html = html.replace("/*$ if (!bins) bins = 0 $*/","if (!bins) bins = {}".format(numSamples))
-            html = html.replace("/*$ if (!slicesX) slicesX = '0:1:2' $*/","if (!slicesX) slicesX = '{}';".format(':'.join(str(s) for s in sliceRange[0])))
-            html = html.replace("/*$ if (!slicesY) slicesY = '0:1:2' $*/","if (!slicesY) slicesY = '{}';".format(':'.join(str(s) for s in sliceRange[1])))
-            html = html.replace("/*$ if (!slicesZ) slicesZ = '0:1:2' $*/","if (!slicesZ) slicesZ = '{}';".format(':'.join(str(s) for s in sliceRange[2])))
+            for mode in ['lr1','lr2','lr3']:
+                nifti_src = getattr(args,'nifti_'+mode);
+                if nifti_src:
+                    html = html.replace("/*$ if (!{}) {} = '' $*/".format(mode,mode),
+                        "if (!{}) {} = '{}';".format(mode,mode,redirect[mode]))
+            for d in [0,1,2]:
+                dim = ['X','Y','Z'][d]
+                html = html.replace("/*$ if (!slices{}) slices{} = '0:1:2' $*/".format(dim,dim),
+                    "if (!slices{}) slices{} = '{}';".format(dim,dim,':'.join(str(s) for s in sliceRange[d])))
   
-
         htmlFile = op.join(destFolder,'index.html')
         with open(htmlFile, 'w') as fp:
             fp.write(html)
