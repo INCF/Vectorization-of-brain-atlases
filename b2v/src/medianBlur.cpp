@@ -1,9 +1,15 @@
+//medianBlur.cpp
 #include "medianBlur.h"
 
+/*
+ * Performs median blur on "m" using
+ * (2 * kernelRadius + 1) X (2 * kernelRadius + 1) square kernel.
+ * Final blurred image is stored back in "m".
+ */
 void medianBlur(int kernelRadius, ImageMatrix *m)
 {
     uint h, w;
-    long unsigned int L2Cache = 512 * 1024;
+    long unsigned int L2Cache = 16 * 1024; // 16Kb: size of L2 cache
 
     h = m->height;
     w = m->width;
@@ -11,6 +17,7 @@ void medianBlur(int kernelRadius, ImageMatrix *m)
     uchar *src = new uchar[3*h*w];
     uchar *dst = new uchar[3*h*w];
 
+    //flattening 2d matrix of pixels to 1d array
     for(uint i = 0; i < h; ++i)
     {
         for(uint j = 0; j < w; ++j)
@@ -21,8 +28,10 @@ void medianBlur(int kernelRadius, ImageMatrix *m)
         }
     }
 
+    //call to constant time median filter
     ctmf(src, dst, w, h, 3*w, 3*w, kernelRadius, 3, L2Cache);
 
+    //copying back results to "m"
     for(uint y = 0; y < h; y++)
     {
         for(uint x = 0; x < w; x++)
@@ -33,6 +42,7 @@ void medianBlur(int kernelRadius, ImageMatrix *m)
         }
     }
 
+    //free memory
     delete[] src;
     delete[] dst;
 }

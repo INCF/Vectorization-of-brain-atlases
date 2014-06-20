@@ -1,3 +1,4 @@
+//util.h
 #ifndef __UTIL_H__
 #define __UTIL_H__ 1
 
@@ -90,8 +91,8 @@ struct AdjList
    	std::vector<uint> adjRegion;	//Adjacent region codes
 };
 
-//returns 1 if pixels have same rgb values else 0
-int ifEqualPixel(pixel, pixel);
+//returns true if pixels have same rgb values else false
+bool ifEqualPixel(pixel, pixel);
 
 //The image argument has width * height RGBA pixels or width * height * 4 bytes
 void encodeOneStep(const char*, std::vector<uchar>&, uint, uint);
@@ -102,10 +103,10 @@ std::string RGBToHex(uint, uint, uint);
 //Converts Hexcode to RGB pixel
 pixel hexToRGB(std::string);
 
-//Converts rgb(R,G,B) to pixel
+//Converts rgb(R,G,B) to RGB pixel
 pixel parseRGB(std::string);
 
-//Checks if two points (Point2) are equal
+//returns true if two points (Point2) are equal else false
 bool ifEqualPoint2(Point2, Point2);
 
 #endif

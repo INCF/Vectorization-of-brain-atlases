@@ -1,3 +1,4 @@
+//lodepng.h
 /*
 LodePNG version 20131222
 
@@ -23,8 +24,8 @@ freely, subject to the following restrictions:
     distribution.
 */
 
-#ifndef LODEPNG_H
-#define LODEPNG_H
+#ifndef __LODEPNG_H__
+#define __LODEPNG_H__ 1
 
 #include <string.h> /*for size_t*/
 

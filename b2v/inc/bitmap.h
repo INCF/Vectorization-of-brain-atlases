@@ -1,3 +1,4 @@
+//bitmap.h
 #ifndef __BITMAP_H__
 #define __BITMAP_H__ 1
 
@@ -26,6 +27,12 @@
  * 
  * pixToNodeMap stores the map of a pixel to the id of Node in graph. If a pixel is
  * not white then it maps to -1.
+ *
+ * boundaryPixel: pixel used in popped out boundaries.
+ *
+ * borderPixel: pixel used in appended rows and cols.
+ *
+ * inputParam: holds the input parameter(option) values provided by the user.
  * 
  * Note: pop image has height and width twice that of pre image (See Algorithm 
  * for popping out boundary for more details).

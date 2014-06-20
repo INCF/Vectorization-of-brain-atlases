@@ -50,6 +50,7 @@ Graph::Graph(uint h, uint w, std::vector<pixel> &v, ImageMatrix *x)
 	imageWidth = w;
 	outputSVG = new SVG(imageHeight, imageWidth);
 
+	//initializing region with the col value set.
 	for(uint i = 0; i < v.size(); ++i)
 	{
 		Region *tempRegion = new Region[1];
@@ -63,6 +64,7 @@ Graph::Graph(uint h, uint w, std::vector<pixel> &v, ImageMatrix *x)
 //Destructor
 Graph::~Graph()
 {
+	//delete vertex
 	for(uint i = 0; i < vertex.size(); ++i)
 	{
 		vertex[i].node.clear();
@@ -70,18 +72,21 @@ Graph::~Graph()
 	}
 	vertex.clear();
 
+	//delete lineSeg
 	for(uint i = 0; i < lineSeg.size(); ++i)
 	{
 		lineSeg[i].path.clear();
 	}
 	lineSeg.clear();
 
+	//delete islandLineSeg
 	for(uint i = 0; i < islandLineSeg.size(); ++i)
 	{
 		islandLineSeg[i].path.clear();
 	}
 	islandLineSeg.clear();
 
+	//delete outputSVG
 	delete outputSVG;
 }
 

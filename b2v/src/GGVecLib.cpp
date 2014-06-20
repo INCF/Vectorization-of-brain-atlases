@@ -1,3 +1,4 @@
+//GGVecLib.cpp
 /* 
 2d and 3d Vector C Library 
 by Andrew Glassner

@@ -4,9 +4,9 @@
  * from "Graphics Gems", Academic Press, 1990
  */
 
-#ifndef GG_H
+#ifndef __GG_H__
 
-#define GG_H 1
+#define __GG_H__ 1
 
 /*********************/
 /* 2d geometry types */

@@ -1,3 +1,4 @@
+//graph.h
 #ifndef __GRAPH_H__
 #define __GRAPH_H__ 1
 
@@ -10,19 +11,19 @@ typedef Point2 *BezierCurve;
 
 /*
  * A class of Graph using adjacency list representation
- * that adds vertices dynamically i.e. vertices (white pixels) are
- * added as they are discovered.
+ * that adds vertices dynamically i.e. vertices (boundary pixels) are
+ * added as they are discovered(see Bitmap::detectControlPoints())
  * 
- * V = Real time number of vertices (Not TOTAL until all vertices are added)
+ * V: Real time number of vertices (Not TOTAL until all vertices are added)
  *
- * vertex stores all the AdjList nodes = white vertices.
+ * vertex: stores all the AdjList nodes = white vertices.
  *
- * lineSeg = stores line segments from control points to control points.
- * islandLineSeg = stores line segments from NON control point to itself.
+ * lineSeg: stores line segments from control points to control points.
+ * islandLineSeg: stores line segments from NON control point to itself.
  *
- * curve stores bezier curve(svg data) of the line segments.
+ * curve: stores bezier curve(svg data) of the line segments.
  *
- * region stores all the disjoint regions in the bitmap poppped out boundaries.
+ * region: stores all the disjoint regions in the bitmap poppped out boundaries.
 */
 class Graph
 {
@@ -33,7 +34,6 @@ class Graph
 		std::vector<Line> islandLineSeg;
 		std::vector<Curve> curve;
 		std::vector<Region> region;
-		double tolerance;
 		SVG *outputSVG;
 		uint imageHeight;
 		uint imageWidth;
@@ -76,7 +76,7 @@ class Graph
 void FitCurve(Point2*, int, double, double);
 
 /*
- * Method to catch and store generated bezier curve points.
+ * Method to catch and store generated/streamed bezier curve points.
  */
 void DrawBezierCurve(int, BezierCurve);
 
