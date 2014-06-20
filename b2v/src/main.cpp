@@ -9,19 +9,15 @@
 
 #include "info.h"
 #include "bitmap.h"
-#include "util.h"
 
 int main(int argc, char **argv)
 {
 	Info inputInfo;
 	inputInfo.parseInputArg(argc, argv);
 
-	Bitmap inputBitmap(inputInfo.inputFileName, inputInfo.bgColor, inputInfo.bgColorProvided);
-	if(inputInfo.switchNoisy)
-		inputBitmap.removeNoise(inputInfo.turdSize, inputInfo.medianBlurKernelSize, inputInfo.numClusters, inputInfo.KMeansMaxIters);
-	inputBitmap.processImage(inputInfo.toleranceCurve, inputInfo.toleranceLine);
-	inputBitmap.writeOuputSVG(inputInfo.outFileName);
+	Bitmap inputBitmap(&inputInfo);
+	inputBitmap.processImage();
+	inputBitmap.writeOuputSVG();
 	
 	return 0;
 }
-
