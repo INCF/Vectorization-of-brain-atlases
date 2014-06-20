@@ -1,14 +1,17 @@
+//svg.cpp
 #include "svg.h"
 #include <fstream>
 #include <string>
 #include "util.h"
 
+//Constructor
 SVG::SVG(uint h, uint w)
 {
 	imageHeight = (h-4)*0.5;
 	imageWidth = (w-4)*0.5;
 }
 
+//Destructor
 SVG::~SVG()
 {
 
@@ -71,18 +74,20 @@ void SVG::writeDisjointLineSegments(std::vector<Curve> &v)
 }
 
 /*
- * Writes Final SVG corresponding to original image
- * Arguments: Vector of regions in the image and output File name
+ * Writes Final SVG corresponding to original image.
+ * Arguments: Vector of regions in the image, output File name and background color.
  */
 void SVG::writeFinalOutput(std::vector<Region> &rgn, std::string outFileName, pixel bgColor)
 {
 	std::ofstream ofsFinal(outFileName.c_str(), std::ofstream::out);
+
+	//header
 	ofsFinal << "<svg height=\"" << imageHeight << "\" width=\"" << imageWidth << "\">" << std::endl << "<g>" << std::endl;
 	
 	//background
 	ofsFinal << "<rect width=\"" << imageWidth << "\" height=\"" << imageHeight << "\" fill=\"" << RGBToHex((uint)bgColor.r, (uint)bgColor.g, (uint)bgColor.b) << "\"  stroke-width=\"0\" /> " << std::endl;
 
-	// Ouput final svg paths with bezier curves only
+	//iterate over all regions
 	for(uint i = 0; i < rgn.size(); ++i)
 	{
 		//No printing of empty paths
@@ -100,9 +105,10 @@ void SVG::writeFinalOutput(std::vector<Region> &rgn, std::string outFileName, pi
 			//iterate over the curves in a closed path
 			for(uint k = 0; k < rgn[i].closedPath[j].size(); ++k)
 			{
+				int count = 0;				//count == 0 signifies start of a bezier curve segment
+				bool cMayBePlaced = false;
+
 				//iterate over the points in the curve
-				int count = 0;
-				bool cToBePlaced = false;
 				for(uint m = 0; m < rgn[i].closedPath[j][k]->pt.size(); ++m)
 				{	
 					count = count % 3;					
@@ -111,44 +117,49 @@ void SVG::writeFinalOutput(std::vector<Region> &rgn, std::string outFileName, pi
 						//print starting point of first curve in a closed path
 						if(k == 0)
 						{
+							//if SC1C2E forms a straight line and its the start of the bezier curve segment i.e. count==0
 							if(count == 0 && m+4 <= rgn[i].closedPath[j][k]->pt.size() && ifEqualPoint2(rgn[i].closedPath[j][k]->pt[m], rgn[i].closedPath[j][k]->pt[m+1]) && ifEqualPoint2(rgn[i].closedPath[j][k]->pt[m+2], rgn[i].closedPath[j][k]->pt[m+3]))
 							{
 								ofsFinal << " M" << rgn[i].closedPath[j][k]->start.x << " " << rgn[i].closedPath[j][k]->start.y << " L";
-								m = m + 2;
-								cToBePlaced = true;
+								m = m + 2;				//jump to the C2 skipping C1
+								cMayBePlaced = true;	//C may be placed after E
 							}
 							else
 							{
 								ofsFinal << " M" << rgn[i].closedPath[j][k]->start.x << " " << rgn[i].closedPath[j][k]->start.y << " C";
 								count = count + 1;
-								cToBePlaced = false;
+								cMayBePlaced = false;	//C is already placed
 							}
 						}
 					}
 					else
 					{
+						//if SC1C2E forms a straight line and its a start of the bezier curve segment i.e. count==0
 						if(count == 0 && m+4 <= rgn[i].closedPath[j][k]->pt.size() && ifEqualPoint2(rgn[i].closedPath[j][k]->pt[m], rgn[i].closedPath[j][k]->pt[m+1]) && ifEqualPoint2(rgn[i].closedPath[j][k]->pt[m+2], rgn[i].closedPath[j][k]->pt[m+3]))
 						{
 							ofsFinal << rgn[i].closedPath[j][k]->pt[m].x << "," << rgn[i].closedPath[j][k]->pt[m].y << " L";
-							m = m + 2;
-							cToBePlaced = true;
+							m = m + 2;				//jump to the C2 skipping C1
+							cMayBePlaced = true;	//C may be placed after E
 						}
 						else
 						{
-							if(cToBePlaced && m != rgn[i].closedPath[j][k]->pt.size() - 1)
+							//we don't want to place C after last bezier curve segment
+							if(cMayBePlaced && m != rgn[i].closedPath[j][k]->pt.size() - 1)
 								ofsFinal << rgn[i].closedPath[j][k]->pt[m].x << "," << rgn[i].closedPath[j][k]->pt[m].y << " C";
 							else
 								ofsFinal << rgn[i].closedPath[j][k]->pt[m].x << "," << rgn[i].closedPath[j][k]->pt[m].y << " ";
 							count = count + 1;
-							cToBePlaced = false;
+							cMayBePlaced = false;	//C already placed or last bezier curve segment
 						}
 					}
 				}
 			}
 		}
+		//for closed path
 		ofsFinal << " Z\" />" << std::endl;
 		ofsFinal << std::endl;
 	}
+	//footer
 	ofsFinal << "</g>" << std::endl << "</svg>" << std::endl;
 
 	ofsFinal.close();

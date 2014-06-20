@@ -1,3 +1,4 @@
+//fitcurve.cpp
 /*
 An Algorithm for Automatically Fitting Digitized Curves
 by Philip J. Schneider
@@ -5,8 +6,7 @@ from "Graphics Gems", Academic Press, 1990
 */
 
 #define TESTMODE
-
-/*  fit_cubic.c */                                  
+                               
 /*  Piecewise cubic fitting code    */
 
 #include "fitcurve.h"                   
@@ -76,12 +76,17 @@ static void FitCubic(Point2 *d, int first, int last, Vector2 tHat1, Vector2 tHat
     iterationError = errorCurve * errorCurve;
     nPts = last - first + 1;
 
+    //get parameter values for points from first to last
     u = ChordLengthParameterize(d, first, last);
+
+    //check if not a closed loop i.e. islandLineSeg
     if(!(d[first].x == d[last].x && d[first].y == d[last].y))
     {
         bezCurve = (Point2 *)malloc(4 * sizeof(Point2));
         bezCurve[0] = bezCurve[1] = d[first];
         bezCurve[2] = bezCurve[3] = d[last];
+        
+        /*  Find max deviation of points to fitted line */
         maxError = ComputeMaxError2(d, first, last, bezCurve, u);
         if (maxError < errorLine) {
             DrawBezierCurve(3, bezCurve);
@@ -470,7 +475,7 @@ static double ComputeMaxError(Point2  *d, int first, int last, BezierCurve bezCu
 
 
 /*
- *  ComputeMaxError :
+ *  ComputeMaxError2 :
  *  Find the maximum squared distance of digitized points
  *  to fitted curve. FOR A STRAIGHT LINE ONLY
 */

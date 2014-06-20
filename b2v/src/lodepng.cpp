@@ -1,3 +1,4 @@
+//lodepng.cpp
 /*
 LodePNG version 20131222
 

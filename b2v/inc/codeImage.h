@@ -1,3 +1,4 @@
+//codeImage.h
 #ifndef __CODEIMAGE_H__
 #define __CODEIMAGE_H__ 1
 
@@ -10,9 +11,12 @@
  * i.e. assigning different unsigned integers to different
  * disjoint regions of image.
  *
- * mat stores image coded with ints from {0, 1, .. n}; n = number of regions.
+ * mat: stores image coded with ints from {0, 1, .. n}; n = number of regions.
  *
- * colorCode stores the rgb value value corresponding to the region/code.
+ * colorCode: stores the rgb value value corresponding to the region/code.
+ *
+ * regionPixelCoord[i]: vector containing coordinates of pixels in ith region. 
+ * regionPixelCoord: vector contatining above vectors corresponding to each region.
  */
 class CodeImage
 {
@@ -34,7 +38,7 @@ class CodeImage
 		int **getMatrix();
 		std::vector<pixel>* getColCode();
 		void processRegions(uint);
-		void recursiveMerge(int);
+		void dissolveRegion(int);
 		ImageMatrix *getFinalImage();
 };
 

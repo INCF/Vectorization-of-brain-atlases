@@ -1,11 +1,14 @@
+//posterize.h
 #ifndef __POSTERIZE_H__
-#define __POSTERIZE_H__
+#define __POSTERIZE_H__ 1
 
-// posterize.h
-// Kmeans implementation by:
-// Ethan Brodsky
-// October 2011
-
+/* posterize.h
+ * Kmeans implementation by:
+ * Ethan Brodsky
+ * October 2011
+ *
+ * please refer posterize.cpp for more detail
+ */	
 #include <string>
 #include "util.h"
 
