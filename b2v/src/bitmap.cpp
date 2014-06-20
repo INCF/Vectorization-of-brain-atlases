@@ -5,7 +5,8 @@
 #include <string>
 #include <algorithm>
 #include <cmath>
-
+#include "medianBlur.h"
+#include "posterize.h"
 //Constructor
 Bitmap::Bitmap(std::string filename, pixel bgColor, bool bgColorProvided)
 {
@@ -120,6 +121,30 @@ void Bitmap::processImage(double toleranceCurve, double toleranceLine)
 	graph->preprocessLineSegments();
 	graph->formCurves(toleranceCurve, toleranceLine);
 	graph->processRegions();
+}
+
+void Bitmap::removeNoise(uint regionSizeThreshold, uint kernelRadius, uint numClusters, uint maxKMeanIters)
+{
+	medianBlur(kernelRadius, orig);
+
+	posterize(orig, numClusters, maxKMeanIters);
+
+	CodeImage *myCodedImage = new CodeImage(orig);
+	myCodedImage->processRegions(regionSizeThreshold);
+
+	ImageMatrix *m = new ImageMatrix[1];
+	m = myCodedImage->getFinalImage();
+
+	for(uint i = 0; i < orig->height; ++i)
+	{
+		for(uint j = 0; j < orig->width; ++j)
+		{
+			orig->pixMap[i][j] = m->pixMap[i][j];
+		}
+	}
+
+	delete myCodedImage;
+	delete m;
 }
 
 //writes svg output in outFileName by moving control to writeOutput method of graph

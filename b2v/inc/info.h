@@ -14,6 +14,11 @@ class Info
 		double toleranceCurve;
 		double toleranceLine;
 		bool bgColorProvided;
+		bool switchNoisy;
+		int turdSize;
+		int medianBlurKernelSize;
+		int KMeansMaxIters;
+		int numClusters;
 
 		Info();
 		~Info();

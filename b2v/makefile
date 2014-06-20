@@ -20,6 +20,9 @@ OBJPATH=$(ROOT_D)/obj
 BINPATH=$(ROOT_D)/bin
 
 SRC=$(SRCPATH)/util.cpp \
+	$(SRCPATH)/ctmf.cpp \
+	$(SRCPATH)/medianBlur.cpp \
+	$(SRCPATH)/posterize.cpp \
     $(SRCPATH)/lodepng.cpp \
     $(SRCPATH)/fitcurve.cpp \
     $(SRCPATH)/GGVecLib.cpp \
@@ -30,6 +33,9 @@ SRC=$(SRCPATH)/util.cpp \
     $(SRCPATH)/main.cpp \
     $(SRCPATH)/info.cpp
 OBJ=$(OBJPATH)/util.o \
+	$(OBJPATH)/ctmf.o \
+	$(OBJPATH)/medianBlur.o \
+	$(OBJPATH)/posterize.o \
 	$(OBJPATH)/lodepng.o \
 	$(OBJPATH)/fitcurve.o \
 	$(OBJPATH)/GGVecLib.o \
