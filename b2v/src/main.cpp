@@ -17,6 +17,8 @@ int main(int argc, char **argv)
 	inputInfo.parseInputArg(argc, argv);
 
 	Bitmap inputBitmap(inputInfo.inputFileName, inputInfo.bgColor, inputInfo.bgColorProvided);
+	if(inputInfo.switchNoisy)
+		inputBitmap.removeNoise(inputInfo.turdSize, inputInfo.medianBlurKernelSize, inputInfo.numClusters, inputInfo.KMeansMaxIters);
 	inputBitmap.processImage(inputInfo.toleranceCurve, inputInfo.toleranceLine);
 	inputBitmap.writeOuputSVG(inputInfo.outFileName);
 	

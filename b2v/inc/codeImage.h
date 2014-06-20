@@ -2,6 +2,7 @@
 #define __CODEIMAGE_H__ 1
 
 #include "util.h"
+#include "GraphicsGems.h"
 #include <vector>
 
 /*
@@ -20,7 +21,8 @@ class CodeImage
 		uint height;
 		uint width;
 		uint numDisjointRegions;
-		std::vector<pixel> colorCode;	
+		std::vector<pixel> colorCode;
+		std::vector< std::vector<Point2> > regionPixelCoord;	
 	public:
 		/*
 		 * Please refer corresponding src file codeImage.cpp for
@@ -31,6 +33,9 @@ class CodeImage
 		void codeImage(ImageMatrix*);
 		int **getMatrix();
 		std::vector<pixel>* getColCode();
+		void processRegions(uint);
+		void recursiveMerge(int);
+		ImageMatrix *getFinalImage();
 };
 
 #endif

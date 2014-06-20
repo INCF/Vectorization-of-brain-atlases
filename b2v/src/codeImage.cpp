@@ -4,8 +4,12 @@
 #include "string"
 #include "bitmap.h"
 #include <queue>
-#include <iostream>
 #include <utility>
+#include "GraphicsGems.h"
+#include <cstdlib>
+#include <vector>
+#include <iostream>
+#include "util.h"
 
 //Constructor
 CodeImage::CodeImage(ImageMatrix* m)
@@ -82,6 +86,12 @@ void CodeImage::codeImage(ImageMatrix *m)
 			//if pixel at (i,j) is not yet coded
 			if(mat[ix][jy] == -1)
 			{
+				std::vector<Point2> temp;
+				Point2 *tempCoord = new Point2[1];
+				tempCoord->x = ix;
+				tempCoord->y = jy;
+				temp.push_back(*tempCoord);
+
 				mat[ix][jy] = counter;
 
 				pixel *myPixel = new pixel[1];
@@ -106,6 +116,10 @@ void CodeImage::codeImage(ImageMatrix *m)
 						if(mat[i][j - 1] == -1 && ifEqualPixel(m->pixMap[i][j], m->pixMap[i][j - 1]))
 						{
 							mat[i][j - 1] = counter;
+							tempCoord = new Point2[1];
+							tempCoord->x = i;
+							tempCoord->y = j - 1;
+							temp.push_back(*tempCoord);
 							Q.push(std::make_pair(i,j-1));
 						}
 					}
@@ -115,6 +129,10 @@ void CodeImage::codeImage(ImageMatrix *m)
 						if(mat[i][j + 1] == -1 && ifEqualPixel(m->pixMap[i][j], m->pixMap[i][j + 1]))
 						{
 							mat[i][j + 1] = counter;
+							tempCoord = new Point2[1];
+							tempCoord->x = i;
+							tempCoord->y = j + 1;
+							temp.push_back(*tempCoord);
 							Q.push(std::make_pair(i,j+1));
 						}
 					}
@@ -124,6 +142,10 @@ void CodeImage::codeImage(ImageMatrix *m)
 						if(mat[i - 1][j] == -1 && ifEqualPixel(m->pixMap[i][j], m->pixMap[i - 1][j]))
 						{
 							mat[i - 1][j] = counter;
+							tempCoord = new Point2[1];
+							tempCoord->x = i - 1;
+							tempCoord->y = j;
+							temp.push_back(*tempCoord);
 							Q.push(std::make_pair(i-1,j));
 						}
 
@@ -132,6 +154,10 @@ void CodeImage::codeImage(ImageMatrix *m)
 							if(mat[i - 1][j - 1] == -1 && ifEqualPixel(m->pixMap[i][j], m->pixMap[i - 1][j - 1]))
 							{
 								mat[i - 1][j - 1] = counter;
+								tempCoord = new Point2[1];
+								tempCoord->x = i - 1;
+								tempCoord->y = j - 1;
+								temp.push_back(*tempCoord);
 								Q.push(std::make_pair(i-1,j-1));
 							}
 						}
@@ -141,6 +167,10 @@ void CodeImage::codeImage(ImageMatrix *m)
 							if(mat[i - 1][j + 1] == -1 && ifEqualPixel(m->pixMap[i][j], m->pixMap[i - 1][j + 1]))
 							{
 								mat[i - 1][j + 1] = counter;
+								tempCoord = new Point2[1];
+								tempCoord->x = i - 1;
+								tempCoord->y = j + 1;
+								temp.push_back(*tempCoord);
 								Q.push(std::make_pair(i-1,j+1));
 							}
 						}
@@ -151,6 +181,10 @@ void CodeImage::codeImage(ImageMatrix *m)
 						if(mat[i + 1][j] == -1 && ifEqualPixel(m->pixMap[i][j], m->pixMap[i + 1][j]))
 						{
 							mat[i + 1][j] = counter;
+							tempCoord = new Point2[1];
+							tempCoord->x = i + 1;
+							tempCoord->y = j;
+							temp.push_back(*tempCoord);
 							Q.push(std::make_pair(i+1,j));
 						}
 
@@ -159,6 +193,10 @@ void CodeImage::codeImage(ImageMatrix *m)
 							if(mat[i + 1][j - 1] == -1 && ifEqualPixel(m->pixMap[i][j], m->pixMap[i + 1][j - 1]))
 							{
 								mat[i + 1][j - 1] = counter;
+								tempCoord = new Point2[1];
+								tempCoord->x = i + 1;
+								tempCoord->y = j - 1;
+								temp.push_back(*tempCoord);
 								Q.push(std::make_pair(i+1,j-1));
 							}
 						}
@@ -168,13 +206,17 @@ void CodeImage::codeImage(ImageMatrix *m)
 							if(mat[i + 1][j + 1] == -1 && ifEqualPixel(m->pixMap[i][j], m->pixMap[i + 1][j + 1]))
 							{
 								mat[i + 1][j + 1] = counter;
+								tempCoord = new Point2[1];
+								tempCoord->x = i + 1;
+								tempCoord->y = j + 1;
+								temp.push_back(*tempCoord);
 								Q.push(std::make_pair(i+1,j+1));
 							}
 						}
 					}
-
 				}
-
+				regionPixelCoord.push_back(temp);
+				temp.clear();
 				counter = counter + 1;
 			}
 		}
@@ -191,4 +233,114 @@ int** CodeImage::getMatrix()
 std::vector<pixel>* CodeImage::getColCode()
 {
 	return &colorCode;
+}
+
+void CodeImage::processRegions(uint threshold)
+{
+	int pass = 5;
+	while(pass > 0)
+	{
+		for(uint i = 0; i < regionPixelCoord.size(); ++i)
+		{
+			//std::cout << "Region Num: " << i << "  " << "its size: " << regionPixelCoord[i].size() << std::endl;
+			if(regionPixelCoord[i].size() <= threshold)
+			{
+				recursiveMerge(i);
+			}
+		}
+		pass--;
+	}
+}
+
+void CodeImage::recursiveMerge(int ind)
+{
+	while(!regionPixelCoord[ind].empty())
+	{
+		for(uint i = 0; i < regionPixelCoord[ind].size(); ++i)
+		{
+			int ix = regionPixelCoord[ind][i].x;
+			int jy = regionPixelCoord[ind][i].y;
+
+			std::vector<int> boundElem, boundCount;
+			for(int l = ix - 1; l <= ix + 1; ++l)
+			{
+				for(int m = jy - 1; m <= jy + 1; ++m)
+				{
+					if(l >= 0 && l < (int)height && m >= 0 && m < (int)width && l != ix && m != jy)
+					{
+						if(mat[l][m] != ind)
+						{
+							bool check = false;
+							for(uint k = 0; k < boundElem.size(); ++k)
+							{
+								if(boundElem[k] == mat[l][m])
+								{
+									check = true;
+									boundCount[k]++;
+									break;
+								}
+							}
+							if(!check)
+							{
+								boundElem.push_back(mat[l][m]);
+								boundCount.push_back(1);
+							}
+						}
+					}
+				}
+			}
+
+			if(boundCount.size() != boundElem.size())
+			{
+				std::cout << "Error size of boundElem and boundCount not equal" << std::endl;
+				exit(1);
+			}
+
+			if(!boundElem.empty())
+			{
+				uint max = 0;
+				for(uint k = 1; k < boundElem.size(); ++k)
+				{
+					if(boundCount[k] > boundCount[max])
+					{
+						max = k;
+					}
+				}
+				mat[ix][jy] = boundElem[max];
+				Point2 temp = 
+				{
+					.x = (double)ix,
+					.y = (double)jy
+				};
+				regionPixelCoord[boundElem[max]].push_back(temp);
+				regionPixelCoord[ind].erase(regionPixelCoord[ind].begin() + i);
+			}
+			boundCount.clear();
+			boundElem.clear();
+		}
+	}
+}
+
+ImageMatrix *CodeImage::getFinalImage()
+{
+	ImageMatrix *m = new ImageMatrix[1];
+
+	m->height = height;
+	m->width = width;
+
+	m->pixMap = new pixel*[height];
+	for(uint i = 0; i < height; ++i)
+	{
+		m->pixMap[i] = new pixel[width];
+	}
+
+	for(uint i = 0; i < height; ++i)
+	{
+		for(uint j = 0; j < width; ++j)
+		{
+			m->pixMap[i][j] = colorCode[mat[i][j]];
+		}
+	}
+
+	return m;
 }

@@ -58,6 +58,7 @@ class Bitmap
 		void formAdjacencyList();
 		void processImage(double, double);
 		void writeOuputSVG(std::string);
+		void removeNoise(uint, uint, uint, uint);
 };
 
 #endif
