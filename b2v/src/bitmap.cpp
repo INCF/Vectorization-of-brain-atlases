@@ -7,13 +7,16 @@
 #include <cmath>
 #include "medianBlur.h"
 #include "posterize.h"
+#include "info.h"
+
 //Constructor
-Bitmap::Bitmap(std::string filename, pixel bgColor, bool bgColorProvided)
+Bitmap::Bitmap(class Info *info)
 {
+	inputParam = info;
 	uint h, w;
 	std::vector<uchar> v;	//the raww pixel
 
-	decodeOneStep(filename.c_str(), h, w, v);
+	decodeOneStep(inputParam->inputFileName.c_str(), h, w, v);
 	//the pixels are now in the vector "v", 4 bytes per pixel, ordered RGBARGBA
 
 	//Initialization and allocation of private variables
@@ -43,9 +46,9 @@ Bitmap::Bitmap(std::string filename, pixel bgColor, bool bgColorProvided)
 	}
 
 	//borderPixel initialization
-	if(bgColorProvided)
+	if(inputParam->bgColorProvided)
 	{
-		borderPixel = bgColor;
+		borderPixel = inputParam->bgColor;
 	}
 	else
 	{
@@ -104,8 +107,11 @@ Bitmap::Bitmap(std::string filename, pixel bgColor, bool bgColorProvided)
 /*
  * processes the orig image
  */
-void Bitmap::processImage(double toleranceCurve, double toleranceLine)
+void Bitmap::processImage()
 {
+	if(inputParam->switchNoisy)
+		removeNoise();
+
 	preprocess();
 	popoutBoundaries();
 
@@ -119,18 +125,18 @@ void Bitmap::processImage(double toleranceCurve, double toleranceLine)
 	graph->formLineSegments();
 	graph->assignCurveNumToRegion();
 	graph->preprocessLineSegments();
-	graph->formCurves(toleranceCurve, toleranceLine);
+	graph->formCurves(inputParam->toleranceCurve, inputParam->toleranceLine);
 	graph->processRegions();
 }
 
-void Bitmap::removeNoise(uint regionSizeThreshold, uint kernelRadius, uint numClusters, uint maxKMeanIters)
+void Bitmap::removeNoise()
 {
-	medianBlur(kernelRadius, orig);
+	medianBlur(inputParam->medianBlurKernelSize, orig);
 
-	posterize(orig, numClusters, maxKMeanIters);
+	posterize(orig, inputParam->numClusters, inputParam->KMeansMaxIters);
 
 	CodeImage *myCodedImage = new CodeImage(orig);
-	myCodedImage->processRegions(regionSizeThreshold);
+	myCodedImage->processRegions(inputParam->turdSize);
 
 	ImageMatrix *m = new ImageMatrix[1];
 	m = myCodedImage->getFinalImage();
@@ -148,9 +154,9 @@ void Bitmap::removeNoise(uint regionSizeThreshold, uint kernelRadius, uint numCl
 }
 
 //writes svg output in outFileName by moving control to writeOutput method of graph
-void Bitmap::writeOuputSVG(std::string outFileName)
+void Bitmap::writeOuputSVG()
 {
-	graph->writeOuput(outFileName, borderPixel);
+	graph->writeOuput(inputParam->outFileName, borderPixel);
 }
 
 //Destructor

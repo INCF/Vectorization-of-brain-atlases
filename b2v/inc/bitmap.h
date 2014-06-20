@@ -7,6 +7,7 @@
 #include "lodepng.h"
 #include <vector>
 #include <string>
+#include "info.h"
 
 /*
  * Class to store all bitmaps assosciated with an image.
@@ -37,16 +38,17 @@ class Bitmap
 		ImageMatrix* pop;
 		CodeImage *codedImage;
 		Graph *graph;
-		int** pixToNodeMap;
+		int **pixToNodeMap;
 		uint numControlPoints;
 		pixel boundaryPixel;
 		pixel borderPixel;
+		Info *inputParam;
 	public:
 		/*
 		 * Please refer corresponding src file bitmap.cpp for
 		 * the functioning of the following methods.
 		 */
-		Bitmap(std::string, pixel, bool);
+		Bitmap(class Info*);
 		~Bitmap();
 		void del(ImageMatrix*);
 		void decodeOneStep(const char*, uint&, uint&, std::vector<uchar>&);
@@ -56,9 +58,9 @@ class Bitmap
 		void detectControlPoints();
 		int checkUniqueRegionPixel(pixel, std::vector<pixel>&);
 		void formAdjacencyList();
-		void processImage(double, double);
-		void writeOuputSVG(std::string);
-		void removeNoise(uint, uint, uint, uint);
+		void processImage();
+		void writeOuputSVG();
+		void removeNoise();
 };
 
 #endif

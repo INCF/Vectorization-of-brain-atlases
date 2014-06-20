@@ -113,13 +113,13 @@ void SVG::writeFinalOutput(std::vector<Region> &rgn, std::string outFileName, pi
 						{
 							if(count == 0 && m+4 <= rgn[i].closedPath[j][k]->pt.size() && ifEqualPoint2(rgn[i].closedPath[j][k]->pt[m], rgn[i].closedPath[j][k]->pt[m+1]) && ifEqualPoint2(rgn[i].closedPath[j][k]->pt[m+2], rgn[i].closedPath[j][k]->pt[m+3]))
 							{
-								ofsFinal << "M" << rgn[i].closedPath[j][k]->start.x << " " << rgn[i].closedPath[j][k]->start.y << " L";
+								ofsFinal << " M" << rgn[i].closedPath[j][k]->start.x << " " << rgn[i].closedPath[j][k]->start.y << " L";
 								m = m + 2;
 								cToBePlaced = true;
 							}
 							else
 							{
-								ofsFinal << "M" << rgn[i].closedPath[j][k]->start.x << " " << rgn[i].closedPath[j][k]->start.y << " C";
+								ofsFinal << " M" << rgn[i].closedPath[j][k]->start.x << " " << rgn[i].closedPath[j][k]->start.y << " C";
 								count = count + 1;
 								cToBePlaced = false;
 							}
@@ -135,7 +135,7 @@ void SVG::writeFinalOutput(std::vector<Region> &rgn, std::string outFileName, pi
 						}
 						else
 						{
-							if(cToBePlaced)
+							if(cToBePlaced && m != rgn[i].closedPath[j][k]->pt.size() - 1)
 								ofsFinal << rgn[i].closedPath[j][k]->pt[m].x << "," << rgn[i].closedPath[j][k]->pt[m].y << " C";
 							else
 								ofsFinal << rgn[i].closedPath[j][k]->pt[m].x << "," << rgn[i].closedPath[j][k]->pt[m].y << " ";
