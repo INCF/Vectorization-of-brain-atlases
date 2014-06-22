@@ -201,12 +201,47 @@
  *
  */
 
- 	formLineSegments and MoveToNode
-
- 	It forms line segments from control point to control point and island line segments too.
- 	
-
- 	A high level view of the algorithm.
-
- 	pass 1: forms line segments from control point to control point.
- 		start from a control point and move away
+/*
+ * 	formLineSegments and MoveToNode
+ *
+ * 	It forms line segments from control point to control point and island line segments too.
+ * 	Pass = 1 forms linesegments
+ * 	Pass = 2 forms islandLineSegments
+ *	Note: Before forming island line segments, "dangerous connections" surrounding dangerous points must be removed.
+ *
+ *	Dangerous points/pixels: those non boundary pixels which have boundary pixels at UP, DOWN, LEFT, RIGHT.
+ *	Dangerous connections:
+ *		Let x be a dangerous point. 
+ *		If, in popped out boundary bitmap, x->UPLEFT and x->DOWNRIGHT have same
+ *		rgb value as x then connection between UP and LEFT & DOWN and RIGHT are dangerous.
+ *		Else if, in popped out boundary bitmap, x->UPRIGHT and x->DOWNLEFT have same
+ *		rgb value as x then connection between UP and RIGHT & DOWN and LEFT are dangerous.
+ *		Following are the pictorial reresentation of above two cases:
+ *			x 	B 	?			? 	B 	x
+ *			B 	x 	B 			B 	x 	B
+ *			? 	B 	x 			x 	B 	?
+ *	
+ *	A high level view of the algorithm.
+ *
+ * 	pass 1: forms line segments from control point to control point.
+ * 		start from a control point(X) and initialize an empty "path" variable
+ * 		move away via adjacencly list represnetation of graph and a visited node/vertex bookkeeping
+ * 		once you touch another control point OR (same control point with length of path > some FIXED CONSTANT)
+ * 			push all the visited nodes/vertices from the starting cp to this cp to the "path"
+ * 			push this "path" in a vector of lineSeg
+ * 		repeat from step 2 with the same starting control point(X) but different adjacent node/vertex which is not yet visited
+ * 		repeat the above steps until all control points are exhausted
+ *
+ * 		Now, you have a vector of lineSeg which contains all line segments from cp to cp.
+ *
+ * 	pass 2: forms island line segments from an unused node/vertex to itself
+ * 		start from an unsed node/vertex and initialize an empty "path" variable
+ * 		move away via adjacencly list represnetation of graph and a visited node/vertex bookkeeping
+ * 		once you touch the same starting node/vertex
+ * 			push all the visited nodes/vertices from starting pt to itself to the "path"
+ * 			push this "path" in a vector of islandLineSeg
+ * 		repeat from step 2 with the same starting point(X) but different adjacent node/vertex which is not yet visited(rarely happens)
+ * 		repeat the above steps until all vertices/nodes are used up
+ *
+ * 		Now, you have a vector of islandLineSeg which contains all line segments from a non control point to itself.
+ */

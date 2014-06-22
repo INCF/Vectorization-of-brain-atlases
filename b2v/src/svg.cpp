@@ -28,7 +28,7 @@ void SVG::writeDisjointLineSegments(std::vector<Curve> &v)
 	std::string path = ROOT_DIR;
 	std::ofstream ofsTest6((path + "/check/eval_4_borders.svg").c_str(), std::ofstream::out);
 
-	ofsTest6 << "<svg height=\"" << imageHeight << "\" width=\"" << imageWidth << "\">" << std::endl << "<g>" << std::endl;
+	ofsTest6 << "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" height=\"" << imageHeight << "\" width=\"" << imageWidth << "\">" << std::endl << "<g>" << std::endl;
 	//white backgoround
 	ofsTest6 << "<rect width=\"" << imageWidth << "\" height=\"" << imageHeight << "\" fill=\"#ffffff\" stroke-width=\"0\" /> " << std::endl;
 
@@ -82,7 +82,7 @@ void SVG::writeFinalOutput(std::vector<Region> &rgn, std::string outFileName, pi
 	std::ofstream ofsFinal(outFileName.c_str(), std::ofstream::out);
 
 	//header
-	ofsFinal << "<svg height=\"" << imageHeight << "\" width=\"" << imageWidth << "\">" << std::endl << "<g>" << std::endl;
+	ofsFinal << "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" height=\"" << imageHeight << "\" width=\"" << imageWidth << "\">" << std::endl << "<g>" << std::endl;
 	
 	//background
 	ofsFinal << "<rect width=\"" << imageWidth << "\" height=\"" << imageHeight << "\" fill=\"" << RGBToHex((uint)bgColor.r, (uint)bgColor.g, (uint)bgColor.b) << "\"  stroke-width=\"0\" /> " << std::endl;

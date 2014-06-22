@@ -130,65 +130,102 @@ void Graph::setIslandPoint(uint a, bool b)
 	vertex[a].isIslandPoint.set(0,b);
 }
 
+
 /*
- * Forms line segments.
- * Please refer the doc for the complete algorithm.
+ * 	formLineSegments and MoveToNode
+ *
+ * 	It forms line segments from control point to control point and island line segments too.
+ * 	Pass = 1 forms linesegments
+ * 	Pass = 2 forms islandLineSegments
+ *	Note: Before forming line segments, "dangerous connections" surrounding dangerous points must be removed.
+ *
+ *	Dangerous points/pixels: those non boundary pixels which have boundary pixels at UP, DOWN, LEFT, RIGHT.
+ *	Dangerous connections:
+ *		Let x be a dangerous point. 
+ *		If, in popped out boundary bitmap, x->UPLEFT and x->DOWNRIGHT have same
+ *		rgb value as x then connection between UP and LEFT & DOWN and RIGHT are dangerous.
+ *		Else if, in popped out boundary bitmap, x->UPRIGHT and x->DOWNLEFT have same
+ *		rgb value as x then connection between UP and RIGHT & DOWN and LEFT are dangerous.
+ *		Following are the pictorial reresentation of above two cases:
+ *			x 	B 	?			? 	B 	x
+ *			B 	x 	B 			B 	x 	B
+ *			? 	B 	x 			x 	B 	?
+ *	
+ *	A high level view of the algorithm.
+ *
+ * 	pass 1: forms line segments from control point to control point.
+ * 		start from a control point(X) and initialize an empty "path" variable
+ * 		move away via adjacencly list represnetation of graph and a visited node/vertex bookkeeping
+ * 		once you touch another control point OR (same control point with length of path > some FIXED CONSTANT)
+ * 			push all the visited nodes/vertices from the starting cp to this cp to the "path"
+ * 			push this "path" in a vector of lineSeg
+ * 		repeat from step 2 with the same starting control point(X) but different adjacent node/vertex which is not yet visited
+ * 		repeat the above steps until all control points are exhausted
+ *
+ * 		Now, you have a vector of lineSeg which contains all line segments from cp to cp.
+ *
+ * 	pass 2: forms island line segments from an unused node/vertex to itself
+ * 		start from an unsed node/vertex and initialize an empty "path" variable
+ * 		move away via adjacencly list represnetation of graph and a visited node/vertex bookkeeping
+ * 		once you touch the same starting node/vertex
+ * 			push all the visited nodes/vertices from starting pt to itself to the "path"
+ * 			push this "path" in a vector of islandLineSeg
+ * 		repeat from step 2 with the same starting point(X) but different adjacent node/vertex which is not yet visited(rarely happens)
+ * 		repeat the above steps until all vertices/nodes are used up
+ *
+ * 		Now, you have a vector of islandLineSeg which contains all line segments from a non control point to itself.
  */
 void Graph::formLineSegments(uint pass)
 {
-	//Pass 1: finds line segments from control point to control point.
-	//Pass 2: finds islands and assign one point of that island as representative by setting isIslandPt.
-
 	for(uint i = 0; i < V; ++i)
 	{
-		if((vertex[i].isCntrlPoint.test(0) && pass == 1) || (!vertex[i].isUsedUp.test(0) && (pass == 2||pass==3)))
+		if((vertex[i].isCntrlPoint.test(0) && pass == 1) || (!vertex[i].isUsedUp.test(0) && pass == 2))
 		{
 			if(pass == 1)
-				vertex[i].isUsedUp.set(0, true);
+				vertex[i].isUsedUp.set(0, true);	//set usedUp true
 			else
-				vertex[i].isIslandPoint.set(0, true);
+				vertex[i].isIslandPoint.set(0, true);	//set islandPoint true
 
-			bool check = false;
-			std::vector<uint> visitedNodes;
-			visitedNodes.clear();
 			for(uint j = 0; j < vertex[i].node.size(); ++j)
 			{
-				Line *temp = new Line[1];
+				//if adjacentt vertex not used up
 				if(!vertex[vertex[i].node[j]].isUsedUp.test(0))
 				{
+					//initialize an empty line "temp"
+					Line *temp = new Line[1];
+
+					//setting this adjacent node used up i.e. visited
 					vertex[vertex[i].node[j]].isUsedUp.set(0, true);
-					visitedNodes.push_back(vertex[i].node[j]);
+
+					//move or step over this adjacent node
 					moveToNode(temp->path, vertex[i].node[j], i, i, pass, 1);
+
+					//if the path is not empty
 					if(!temp->path.empty())
 					{
 						temp->path.push_back(vertex[i].node[j]);
 						temp->path.push_back(i);
+
+						//reorienting path (reversed paths are returned)
 						std::reverse(temp->path.begin(), temp->path.end());
+
 						temp->start = temp->path.front();
 						temp->end = temp->path.back();
+
 						if(pass == 1)
 							lineSeg.push_back(*temp);
 						else 
 						{
 							islandLineSeg.push_back(*temp);
-							check = true;
+							vertex[i].isUsedUp.set(0, true);
 						}
 					}
-				}
-			}
-			if(pass == 2)
-			{
-				if(check)
-					vertex[i].isUsedUp.set(0, true);
-				else
-				{
-					vertex[i].isUsedUp.set(0, false);
-					for(uint l = 0; l < visitedNodes.size(); ++l)
+					else if(pass == 2)
 					{
-						vertex[visitedNodes[l]].isUsedUp.set(0, false);
+						//if no island line segment is formed then make this adjacent node not used up
+						vertex[vertex[i].node[j]].isUsedUp.set(0, false);
 					}
 				}
-
 			}
 		}
 	}
@@ -304,11 +341,12 @@ void Graph::formLineSegments(uint pass)
 
 /*
  * Moves to a node.
- * Please refer the doc for the complete algorithm.
+ * See the comments before formLineSegments
  */
 void Graph::moveToNode(std::vector<uint> &v, uint to, uint from, uint startedFrom, uint pass, uint len)
 {
 	uint ind;
+
 	if(pass == 2 && to == startedFrom)
 	{
 		v.push_back(to);
@@ -321,23 +359,36 @@ void Graph::moveToNode(std::vector<uint> &v, uint to, uint from, uint startedFro
 	{
 		for(uint i = 0; i < vertex[to].node.size(); ++i)
 		{
-			std::vector<uint> temp;
+			//if adjacent regions are equal && not used up / not visited && not adjacent to "from" vertex && not equal to from
 			if(equalSideRegions(to, vertex[to].node[i]) && !vertex[vertex[to].node[i]].isUsedUp.test(0) && !isAdjToFrom(from, vertex[to].node[i]) && vertex[to].node[i] != from)
 			{
+				std::vector<uint> temp;
+
+				//set used up / visited true
 				vertex[vertex[to].node[i]].isUsedUp.set(0, true);
+
+				//increment length of path
 				len++;
+
+				//move to adjacent node
 				moveToNode(temp, vertex[to].node[i], to, startedFrom, pass, len);
+
+				//if temporary path "temp" is not empty
 				if(!temp.empty())
 				{
 					v.assign(temp.begin(), temp.end());
+
 					if(vertex[to].node[i] != startedFrom)
 						v.push_back(vertex[to].node[i]);
 					//else no need to add because starting point already pushed in
+					
+					//no need to move to adjacent node is temp has control point in the beginning i.e. at End after reorientation
 					if(vertex[v[0]].isCntrlPoint.test(0))
 						break;
 				}
 				else if(pass == 2)
 				{
+					//make vertex unused if an island line segment is not formed
 					vertex[vertex[to].node[i]].isUsedUp.set(0, false);
 				}
 			}
@@ -630,16 +681,19 @@ void Graph::formCurves(double toleranceCurve, double toleranceLine)
 
 		for(uint j = 0; j < lineSeg[i].path.size(); ++j)
 		{
-			d[j].x = (vertex[lineSeg[i].path[j]].y-2)*0.5;
-			d[j].y = (vertex[lineSeg[i].path[j]].x-2)*0.5;
+			d[j].x = (vertex[lineSeg[i].path[j]].y-2)*0.5;	//rescaling
+			d[j].y = (vertex[lineSeg[i].path[j]].x-2)*0.5;	//rescaling
 		}
 
 		ptStore.clear();
 		Curve *tempCurve = new Curve[1];
 		tempCurve->reverse = new Curve[1];
+
+		//call fitting routine on the series of points in d
 		FitCurve(d, lineSeg[i].path.size(), toleranceCurve, toleranceLine);
+
 		ptStore.push_back(d[lineSeg[i].path.size()-1]);
-		tempCurve->pt = ptStore; // this is a copy by value
+		tempCurve->pt = ptStore;	// this is a copy by value
 		tempCurve->start = ptStore.front();
 		tempCurve->end = ptStore.back();
 		tempCurve->reverse = reverseCurve(tempCurve);
@@ -652,15 +706,18 @@ void Graph::formCurves(double toleranceCurve, double toleranceLine)
 
 		for(uint j = 0; j < islandLineSeg[i].path.size(); ++j)
 		{
-			d[j].x = (vertex[islandLineSeg[i].path[j]].y-2)*0.5;
-			d[j].y = (vertex[islandLineSeg[i].path[j]].x-2)*0.5;
+			d[j].x = (vertex[islandLineSeg[i].path[j]].y-2)*0.5;	//rescaling
+			d[j].y = (vertex[islandLineSeg[i].path[j]].x-2)*0.5;	//rescaling
 		}
 
 
 		ptStore.clear();
 		Curve *tempCurve = new Curve[1];
 		tempCurve->reverse = new Curve[1];
+
+		//call fitting routine on the series of points in d
 		FitCurve(d, islandLineSeg[i].path.size(), toleranceCurve, toleranceLine);
+
 		ptStore.push_back(d[islandLineSeg[i].path.size()-1]);
 		tempCurve->pt = ptStore; // this is a copy by value
 		tempCurve->start = ptStore.front();
@@ -825,7 +882,14 @@ void Graph::writeOuput(std::string outFileName, pixel bg)
 }
 
 /*
- * Please refer doc for the complete algorithm.
+ * Assigns paths surrounding a region in a proper order which ultimately forms a closed path taken together.
+ *
+ * Basic idea: 
+ * We have a pool of line segments that surrounds a region.
+ * We need to arrange them in proper order so that, taken in order, they form a closed path.
+ * This is achieved by first picking a random line segment.
+ * Then the one which has starting point same/nearest to end point of last line segment added, is attached further.
+ * Now, above step is repeated until all line segments are used up.
  */
 void Graph::assignClosedPaths(Region &rgn)
 {
@@ -834,10 +898,12 @@ void Graph::assignClosedPaths(Region &rgn)
 	std::vector<Curve*> *tempPath = NULL;
 	bool initiallyEmpty = rgn.curveNum.empty();
 
+	//until all surrounding paths are consumed
 	while(!rgn.curveNum.empty())
 	{
 		if(firstTime)
 		{
+			//take any initial path (say the first/last one from curveNum)
 			tempPath = new std::vector<Curve*>();
 			tempPath->clear();
 			focus = rgn.curveNum.back();
@@ -847,6 +913,7 @@ void Graph::assignClosedPaths(Region &rgn)
 		}
 		else
 		{
+			//if start and point of last path added are same i.e. island
 			if(tempPath->front()->start.x == tempPath->back()->end.x && tempPath->front()->start.y == tempPath->back()->end.y)
 			{
 				rgn.closedPath.push_back(*tempPath);
@@ -854,6 +921,7 @@ void Graph::assignClosedPaths(Region &rgn)
 			}
 			else
 			{
+				//get next path/line which can be joined with the end point of last path/line added
 				focus = getNextPathIndex(rgn.curveNum, tempPath->back()->end);
 				if(focus == -1)
 					std::cout << "Error: focus = - 1 i.e. rgn.curveNum is empty still in the loop : Graph::assignClosedPaths" << std::endl;
@@ -864,6 +932,7 @@ void Graph::assignClosedPaths(Region &rgn)
 					rgn.curveNum.erase(rgn.curveNum.begin() + focus);
 					focus = temp;
 
+					//if forward direction path has to be attached
 					if(ifForwardDirection(focus, tempPath->back()->end))
 					{
 						tempPath->push_back(&curve[focus]);
@@ -875,7 +944,8 @@ void Graph::assignClosedPaths(Region &rgn)
 				}
 			}
 		}
-	}	
+	}
+	//if curveNum is not empty initially then push the ordered paths in the closedpath of rgn	
 	if(!initiallyEmpty)
 		rgn.closedPath.push_back(*tempPath);
 }
@@ -939,6 +1009,7 @@ bool Graph::checkIfUsedUp(uint ind)
 	return vertex[ind].isUsedUp.test(0);
 }
 
+//Remove connection/edge between vertex[a] and vertex[b]
 void Graph::removeConnection(uint a, uint b)
 {
 	vertex[a].node.erase(std::remove(vertex[a].node.begin(), vertex[a].node.end(), b), vertex[a].node.end());
