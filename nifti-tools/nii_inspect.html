@@ -45,6 +45,10 @@ function onload() {
   lr1 = lr1.split('.');
   ext1 = lr1.pop();
   lr1 = lr1.join('.');
+  ti1 = getParameterByName('title1');
+  // NEXT LINE USED IN REPLACEMENT OPERATION
+  /*$ if (!ti1) ti1 = 'layer1' $*/
+  if (ti1) document.getElementById('title1').innerHTML = ti1
   var lr2 = getParameterByName('layer2');
   // NEXT LINE USED IN REPLACEMENT OPERATION
   /*$ if (!lr2) lr2 = '' $*/
@@ -52,6 +56,10 @@ function onload() {
     lr2 = lr2.split('.');
     ext2 = lr2.pop();
     lr2 = lr2.join('.');
+    ti2 = getParameterByName('title2');
+    // NEXT LINE USED IN REPLACEMENT OPERATION
+    /*$ if (!ti2) ti2 = 'layer2' $*/
+    if (ti2) document.getElementById('title2').innerHTML = ti2
   }
   var lr3 = getParameterByName('layer3');
   // NEXT LINE USED IN REPLACEMENT OPERATION
@@ -60,8 +68,11 @@ function onload() {
     lr3 = lr3.split('.');
     ext3 = lr3.pop();
     lr3 = lr3.join('.');
+    ti3 = getParameterByName('title3');
+    // NEXT LINE USED IN REPLACEMENT OPERATION
+    /*$ if (!ti3) ti3 = 'layer3' $*/
+    if (ti3) document.getElementById('title 3').innerHTML = ti3
   }
-  //var bins = parseInt(getParameterByName('bins'));
   // NEXT LINE USED IN REPLACEMENT OPERATION
   /*$ if (!bins) bins = 0 $*/
   var slicesX = getParameterByName('slices_x');
@@ -97,10 +108,14 @@ function onload() {
       if (lr2) {
         var pngFile = lr2+'_'+dim+s+'.'+ext2;
         T += '<img class="lr2" src="'+pngFile+'"/>';
+      } else {
+        document.getElementById('control1').style.visibility = 'hidden';
       }
       if (lr3) {
         var pngFile = lr3+'_'+dim+s+'.'+ext3;
         T += '<img class="lr3" src="'+pngFile+'"/>';
+      } else {
+        document.getElementById('control2').style.visibility = 'hidden';
       }
       T += '</div></td>';
     }
@@ -148,8 +163,9 @@ function applyOpacity(val,lr) {
 </script>
 </head>
 <body onload="onload()">
-<div>Visibility overlay 1: <select type="select" size="1" onchange="applyOpacity(this.options[this.selectedIndex].value,2)"><option value="0">0%</option><option value="0.5">50%</option><option selected value="1">100%</option></select></div>
-<div>Visibility overlay 2: <select type="select" size="1" onchange="applyOpacity(this.options[this.selectedIndex].value,3)"><option value="0">0%</option><option value="0.5">50%</option><option selected value="1">100%</option></select></div>
+<div><span id="title1"></span></div>
+<div id="control1">Overlay 1: <select type="select" size="1" onchange="applyOpacity(this.options[this.selectedIndex].value,2)"><option value="0">Hidden</option><option value="0.5">50% visible</option><option selected value="1">100% visible</option></select>&nbsp;<span id="title2"></span></div>
+<div id="control2">Overlay 2: <select type="select" size="1" onchange="applyOpacity(this.options[this.selectedIndex].value,3)"><option value="0">Hidden</option><option value="0.5">50% visible</option><option selected value="1">100% visible</option></select>&nbsp;<span id="title3"></span></div>
 <div id="MAIN"></div>
 </body>
 </html>

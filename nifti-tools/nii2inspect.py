@@ -22,6 +22,9 @@ def argument_parser():
   parser.add_argument('-sx','--slices_x', type=str, help="Slices in the x-dimension, start%:step%:stop%", required=False)
   parser.add_argument('-sy','--slices_y', type=str, help="Slices in the y-dimension, start%:step%:stop%", required=False)
   parser.add_argument('-sz','--slices_z', type=str, help="Slices in the z-dimension, start%:step%:stop%", required=False)
+  parser.add_argument('-t1','--title_lr1', type=str, help="Title layer 1", required=False)
+  parser.add_argument('-t2','--title_lr2', type=str, help="Title layer 2", required=False)
+  parser.add_argument('-t3','--title_lr3', type=str, help="Title layer 3", required=False)
   return parser
 
 def parse_arguments(raw=None):
@@ -94,28 +97,26 @@ def run(args):
             nifti_src = getattr(args,'nifti_'+mode);
             if not nifti_src: continue
             colormap = getattr(args,'colormap_'+mode);
-                
+
             import nibabel
             nii = nibabel.load(nifti_src)
             img = numpy.squeeze(nii.get_data())
+            print 'Image type: {} {}-{}'.format(img.dtype,numpy.amin(img),numpy.amax(img))
             hdr = nii.get_header()
             q = hdr.get_best_affine();
             ornt = nibabel.io_orientation(q)
             print 'Orientation: {}'.format(ornt)
             img = nibabel.apply_orientation(img,ornt)
             dims = img.shape
-            print 'Nifti image loaded, data type "{}"'.format(img.dtype)
+            print 'Nifti image for layer {} loaded, data type "{}"'.format(mode,img.dtype)
 
             if len(dims)==4:
                 print 'Error: NIFTI file with RGB color data not supported yet.'
                 exit(0)
 
-            baseName = op.basename(nifti_src)
-            baseName = re.sub('.gz$', '',baseName)
-            baseName = re.sub('.nii$', '',baseName)
+            baseName = op.basename(nifti_src).rstrip('.gz').rstrip('.nii')
             if colormap: fmt = 'png' 
             else: fmt = 'jpg'
-            #redirect[mode] = op.relpath(op.join(destFolder,baseName),scriptDir)+'.'+fmt;
             redirect[mode] = baseName+'.'+fmt;
 
             index2rgb = None
@@ -140,10 +141,10 @@ def run(args):
                 dim = ['x','y','z'][d]
                 numSlices = dims[d];
                 sliceStep = int(args.sliceRangePct[d][1]*numSlices/100)
-                sliceStart = int(args.sliceRangePct[d][0]*numSlices/100)
-                sliceEnd = int(args.sliceRangePct[d][2]*numSlices/100)
+                sliceStart = int(args.sliceRangePct[d][0]*(numSlices-1)/100)
+                sliceEnd = int(args.sliceRangePct[d][2]*(numSlices-1)/100)
                 sliceRange[d] = [sliceStart,sliceStep,sliceEnd]
-                for i in range(sliceStart,sliceEnd,sliceStep):
+                for i in range(sliceStart,sliceEnd+1,sliceStep):
                     slice = get_slice(img,dim,i)
                     if index2rgb:
                         shape = slice.shape
@@ -165,11 +166,20 @@ def run(args):
         inspectFile = '{}/nii_inspect.html'.format(scriptDir);
         with open(inspectFile, 'r') as fp:
             html = fp.read()
-            for mode in ['lr1','lr2','lr3']:
-                nifti_src = getattr(args,'nifti_'+mode);
-                if nifti_src:
-                    html = html.replace("/*$ if (!{}) {} = '' $*/".format(mode,mode),
-                        "if (!{}) {} = '{}';".format(mode,mode,redirect[mode]))
+            for lr in [1,2,3]:
+                try:
+                    nifti_src = getattr(args,'nifti_lr{}'.format(lr));
+                    if nifti_src is not None:
+                        html = html.replace(r"/*$ if (!lr{}) lr{} = '' $*/".format(lr,lr),
+                            r"if (!lr{}) lr{} = '{}';".format(lr,lr,redirect['lr{}'.format(lr)]))
+                    title = getattr(args,'title_lr{}'.format(lr))
+                    if title is not None:
+                        html = html.replace(r"/*$ if (!ti{}) ti{} = 'layer{}' $*/".format(lr,lr,lr),
+                            r"if (!ti{}) ti{} = '{}';".format(lr,lr,title))
+                        
+                except NameError:
+                    raise
+                    
             for d in [0,1,2]:
                 dim = ['X','Y','Z'][d]
                 html = html.replace("/*$ if (!slices{}) slices{} = '0:1:2' $*/".format(dim,dim),
