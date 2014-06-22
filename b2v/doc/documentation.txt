@@ -200,3 +200,13 @@
  *  		endwhile
  *
  */
+
+ 	formLineSegments and MoveToNode
+
+ 	It forms line segments from control point to control point and island line segments too.
+ 	
+
+ 	A high level view of the algorithm.
+
+ 	pass 1: forms line segments from control point to control point.
+ 		start from a control point and move away

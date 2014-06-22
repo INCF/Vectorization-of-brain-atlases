@@ -26,7 +26,8 @@
  * graph represents a Graph formed by all white vertices of pop.
  * 
  * pixToNodeMap stores the map of a pixel to the id of Node in graph. If a pixel is
- * not white then it maps to -1.
+ * not white then it maps to -1 and dangerous pixels are mapped to -2.
+ * Please refer graph::formLineSegments for the definition of dangerous points.
  *
  * boundaryPixel: pixel used in popped out boundaries.
  *
@@ -68,6 +69,7 @@ class Bitmap
 		void processImage();
 		void writeOuputSVG();
 		void removeNoise();
+		void removeDangerousConnections();
 };
 
 #endif

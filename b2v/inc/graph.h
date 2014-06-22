@@ -50,7 +50,7 @@ class Graph
 		void addRegion(uint, uint);
 		void setControlPoint(uint, bool);
 		void setIslandPoint(uint, bool);
-		void formLineSegments();
+		void formLineSegments(uint);
 		void moveToNode(std::vector<uint>&, uint, uint, uint, uint, uint);
 		bool checkCntrlPtAdj(uint);
 		uint getAdjCntrlPtInd(uint, uint);
@@ -68,6 +68,8 @@ class Graph
 		double shortestDistanceToSegment(uint, uint, uint);
 		void writeOuput(std::string, pixel);
 		bool checkIfCntrlPt(uint);
+		bool checkIfUsedUp(uint);
+		void removeConnection(uint, uint);
 };
 
 /*

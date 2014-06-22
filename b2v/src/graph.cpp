@@ -1,3 +1,4 @@
+//graph.cpp
 #include "graph.h"
 #include "debug.h"
 #include <fstream>
@@ -133,81 +134,72 @@ void Graph::setIslandPoint(uint a, bool b)
  * Forms line segments.
  * Please refer the doc for the complete algorithm.
  */
-void Graph::formLineSegments()
+void Graph::formLineSegments(uint pass)
 {
 	//Pass 1: finds line segments from control point to control point.
 	//Pass 2: finds islands and assign one point of that island as representative by setting isIslandPt.
-	//Pass 3: Form any remaining islands.
-	for(int pass = 1; pass <= 3; ++pass)
+
+	for(uint i = 0; i < V; ++i)
 	{
-		for(uint i = 0; i < V; ++i)
+		if((vertex[i].isCntrlPoint.test(0) && pass == 1) || (!vertex[i].isUsedUp.test(0) && (pass == 2||pass==3)))
 		{
-			if((vertex[i].isCntrlPoint.test(0) && pass == 1) || (!vertex[i].isUsedUp.test(0) && (pass == 2||pass==3)))
+			if(pass == 1)
+				vertex[i].isUsedUp.set(0, true);
+			else
+				vertex[i].isIslandPoint.set(0, true);
+
+			bool check = false;
+			std::vector<uint> visitedNodes;
+			visitedNodes.clear();
+			for(uint j = 0; j < vertex[i].node.size(); ++j)
 			{
-				if(pass == 1)
+				Line *temp = new Line[1];
+				if(!vertex[vertex[i].node[j]].isUsedUp.test(0))
+				{
+					vertex[vertex[i].node[j]].isUsedUp.set(0, true);
+					visitedNodes.push_back(vertex[i].node[j]);
+					moveToNode(temp->path, vertex[i].node[j], i, i, pass, 1);
+					if(!temp->path.empty())
+					{
+						temp->path.push_back(vertex[i].node[j]);
+						temp->path.push_back(i);
+						std::reverse(temp->path.begin(), temp->path.end());
+						temp->start = temp->path.front();
+						temp->end = temp->path.back();
+						if(pass == 1)
+							lineSeg.push_back(*temp);
+						else 
+						{
+							islandLineSeg.push_back(*temp);
+							check = true;
+						}
+					}
+				}
+			}
+			if(pass == 2)
+			{
+				if(check)
 					vertex[i].isUsedUp.set(0, true);
 				else
-					vertex[i].isIslandPoint.set(0, true);
-
-				bool check = false;
-				std::vector<uint> visitedNodes;
-				visitedNodes.clear();
-				for(uint j = 0; j < vertex[i].node.size(); ++j)
 				{
-					Line *temp = new Line[1];
-					if(!vertex[vertex[i].node[j]].isUsedUp.test(0))
+					vertex[i].isUsedUp.set(0, false);
+					for(uint l = 0; l < visitedNodes.size(); ++l)
 					{
-						vertex[vertex[i].node[j]].isUsedUp.set(0, true);
-						visitedNodes.push_back(vertex[i].node[j]);
-						moveToNode(temp->path, vertex[i].node[j], i, i, pass, 1);
-						if(!temp->path.empty())
-						{
-							temp->path.push_back(vertex[i].node[j]);
-							temp->path.push_back(i);
-							std::reverse(temp->path.begin(), temp->path.end());
-							temp->start = temp->path.front();
-							temp->end = temp->path.back();
-							if(pass == 1)
-								lineSeg.push_back(*temp);
-							else 
-							{
-								islandLineSeg.push_back(*temp);
-								check = true;
-							}
-						}
+						vertex[visitedNodes[l]].isUsedUp.set(0, false);
 					}
 				}
-				if(pass == 2)
-				{
-					if(check)
-						vertex[i].isUsedUp.set(0, true);
-					else
-					{
-						vertex[i].isUsedUp.set(0, false);
-						for(uint l = 0; l < visitedNodes.size(); ++l)
-						{
-							vertex[visitedNodes[l]].isUsedUp.set(0, false);
-						}
-					}
 
-				}
-				else if(pass == 3)
-				{
-					vertex[i].isUsedUp.set(0, true);
-				}
 			}
 		}
 	}
-
-	//for debugging mode
-	std::string path = ROOT_DIR;
-
+	
 /******************************************************************/
 /***********************TEST 5:DEBUGGING MODE**********************/
 /******************************************************************/
 
 #ifdef _TEST_5_
 
+	std::string path = ROOT_DIR;
 	std::ofstream ofsTest5((path + "/check/test_5_cpp.txt").c_str(), std::ofstream::out);
 	ofsTest5 << lineSeg.size() + islandLineSeg.size() << std::endl;
 
@@ -249,6 +241,9 @@ void Graph::formLineSegments()
 
 #ifdef _EVAL_3_
 
+	#ifndef _TEST_5_
+		std::string path = ROOT_DIR;
+	#endif
 	//generate some image
 	std::vector<unsigned char> image;
 	image.resize(imageWidth * imageHeight * 4);
@@ -279,7 +274,7 @@ void Graph::formLineSegments()
 		for(uint j = 0; j < islandLineSeg[i].path.size(); ++j)
 		{
 			image[4 * imageWidth * vertex[islandLineSeg[i].path[j]].x + 4 * vertex[islandLineSeg[i].path[j]].y + 0] = 255;
-			image[4 * imageWidth * vertex[islandLineSeg[i].path[j]].x + 4 * vertex[islandLineSeg[i].path[j]].y + 1] = (j*50)%255;
+			image[4 * imageWidth * vertex[islandLineSeg[i].path[j]].x + 4 * vertex[islandLineSeg[i].path[j]].y + 1] = 0;
 			image[4 * imageWidth * vertex[islandLineSeg[i].path[j]].x + 4 * vertex[islandLineSeg[i].path[j]].y + 2] = 0;
 			image[4 * imageWidth * vertex[islandLineSeg[i].path[j]].x + 4 * vertex[islandLineSeg[i].path[j]].y + 3] = 255;			
 		}
@@ -314,7 +309,6 @@ void Graph::formLineSegments()
 void Graph::moveToNode(std::vector<uint> &v, uint to, uint from, uint startedFrom, uint pass, uint len)
 {
 	uint ind;
-	bool emptyFlag = false;
 	if(pass == 2 && to == startedFrom)
 	{
 		v.push_back(to);
@@ -341,42 +335,18 @@ void Graph::moveToNode(std::vector<uint> &v, uint to, uint from, uint startedFro
 					//else no need to add because starting point already pushed in
 					if(vertex[v[0]].isCntrlPoint.test(0))
 						break;
-					emptyFlag = false;
-					if(pass == 3)
-						break;
 				}
 				else if(pass == 2)
 				{
 					vertex[vertex[to].node[i]].isUsedUp.set(0, false);
 				}
 			}
-			if(pass == 3)
-			{
-				for(uint m = 0; m < islandLineSeg.size(); ++m)
-				{
-					for(uint k = 0; k < islandLineSeg[m].path.size(); ++k)
-					{
-						if(islandLineSeg[m].path[k] == vertex[to].node[i])
-							emptyFlag = true;
-					}
-				}
-			}
-		}
-
-		if(emptyFlag && pass == 3 && len > LOOP)
-		{
-			//std::cout << "Came in" << std::endl;
-			if((abs(vertex[startedFrom].x - vertex[to].x) + abs(vertex[startedFrom].y - vertex[to].y)) <= GAP)
-			{
-				v.push_back(to);
-				//std::cout << "PASS 3" << std::endl;
-			}
 		}
 	}
 }
 
 /*
- * Returns 1 if there is an adjacent control point to vertex[a]
+ * Returns true if there is an adjacent control point to vertex[a] else false
  */
 bool Graph::checkCntrlPtAdj(uint a)
 {
@@ -417,17 +387,19 @@ uint Graph::getAdjCntrlPtInd(uint to, uint startedFrom)
 }
 
 /*
- * Checks if the regions adjacent to vertex[a] and vertex[b]
- * are equal.
+ * Returns true if the regions adjacent to vertex[a] and vertex[b]
+ * are equal else false.
  */
 bool Graph::equalSideRegions(uint a, uint b)
 {
 	if(vertex[a].adjRegion.size() != vertex[b].adjRegion.size())
 		return false;
 
+	//sort the region codes
 	std::sort(vertex[a].adjRegion.begin(), vertex[a].adjRegion.end());
 	std::sort(vertex[b].adjRegion.begin(), vertex[b].adjRegion.end());
 
+	//compare the sorted region codes
 	for(uint i = 0; i < vertex[a].adjRegion.size(); ++i)
 	{
 		if(vertex[a].adjRegion[i] != vertex[b].adjRegion[i])
@@ -438,7 +410,7 @@ bool Graph::equalSideRegions(uint a, uint b)
 }
 
 /*
- * returns 1 if vertex[dest] is adjacent to vertex[from]
+ * returns true if vertex[dest] is adjacent to vertex[from] else false
  */
 bool Graph::isAdjToFrom(uint from, uint dest)
 {
@@ -647,7 +619,8 @@ double Graph::shortestDistanceToSegment(uint i, uint j, uint k)
 }
 
 /*
- * Form curves by fitting line segments to bezier curve
+ * Form curves by fitting line segments to bezier curve.
+ * The coordinates are rescaled before sending them to fitting routine.
  */
 void Graph::formCurves(double toleranceCurve, double toleranceLine)
 {
@@ -753,8 +726,7 @@ Curve* Graph::reverseCurve(Curve *x)
 	p->start = x->end;
 	p->end = x->start;
 
-	//Cannot come here because each line segment contains atleast 1 point
-	//and hence the corresponding bezier curve will have atleast 3 control points
+	//Never true
 	if(x->pt.size() < 3)
 		std::cout << "Error: Curve has less than 3 control points: Graph::reverseCurve" << std::endl;
 
@@ -767,7 +739,7 @@ Curve* Graph::reverseCurve(Curve *x)
 }
 
 /*
- * assigns the indices of those curves to a region adjacent to that region
+ * Assigns the indices of those curves to a region which are adjacent to that region
  */
 void Graph::assignCurveNumToRegion()
 {
@@ -775,19 +747,15 @@ void Graph::assignCurveNumToRegion()
 	{
 		for(uint j = 0; j < lineSeg[i].path.size(); ++j)
 		{
+			//if lineSeg[i].path[j] is not a control point
 			if(!vertex[lineSeg[i].path[j]].isCntrlPoint.test(0))
 			{
+				//if there are two adj Regions to this point
 				if(vertex[lineSeg[i].path[j]].adjRegion.size() == 2)
 				{
 					region[vertex[lineSeg[i].path[j]].adjRegion[0]].curveNum.push_back(i);
 					region[vertex[lineSeg[i].path[j]].adjRegion[1]].curveNum.push_back(i);
 					break;
-				}
-				else
-				{
-					//Not a control point will have only 2 adjacent regions
-					std::cout << "Something wrong: Not a Control Point but still 3 or more adjacent regions: Graph::assignCurveNumToRegion" << std::endl;
-					exit(1);
 				}
 			}
 		}
@@ -796,17 +764,12 @@ void Graph::assignCurveNumToRegion()
 	{
 		for(uint j = 0; j < islandLineSeg[i].path.size(); ++j)
 		{
+			//if there are two adj Regions to this point
 			if(vertex[islandLineSeg[i].path[j]].adjRegion.size() == 2)
 			{
 				region[vertex[islandLineSeg[i].path[j]].adjRegion[0]].curveNum.push_back(i + lineSeg.size());
 				region[vertex[islandLineSeg[i].path[j]].adjRegion[1]].curveNum.push_back(i + lineSeg.size());
 				break;
-			}
-			else
-			{
-				//Not a control point will have only 2 adjacent regions
-				std::cout << "Something wrong: Not a Control Point but still 3 or more adjacent regions: Graph::assignCurveNumToRegion" << std::endl;
-				exit(1);
 			}
 		}
 	}
@@ -918,7 +881,7 @@ void Graph::assignClosedPaths(Region &rgn)
 }
 
 /*
- * gets next path index whose start or end point is near to the point b
+ * Get next path index whose start or end point is nearest to the point b
  */
 int Graph::getNextPathIndex(std::vector<uint> &v, Point2 b)
 {
@@ -948,8 +911,8 @@ int Graph::getNextPathIndex(std::vector<uint> &v, Point2 b)
 }
 
 /*
- * checks if start point is near to b or end point
- * if start point then return 1 else 0
+ * Checks if curve's start point is near to "b" or end point
+ * if start point then return true else false
  */
 bool Graph::ifForwardDirection(int focus, Point2 b)
 {
@@ -964,7 +927,20 @@ bool Graph::ifForwardDirection(int focus, Point2 b)
 		return false;
 }
 
+//Returns true if vertex[ind] is a control point else false
 bool Graph::checkIfCntrlPt(uint ind)
 {
 	return vertex[ind].isCntrlPoint.test(0);
+}
+
+//Returns true if vertex[ind] is used up else false
+bool Graph::checkIfUsedUp(uint ind)
+{
+	return vertex[ind].isUsedUp.test(0);
+}
+
+void Graph::removeConnection(uint a, uint b)
+{
+	vertex[a].node.erase(std::remove(vertex[a].node.begin(), vertex[a].node.end(), b), vertex[a].node.end());
+	vertex[b].node.erase(std::remove(vertex[b].node.begin(), vertex[b].node.end(), a), vertex[b].node.end());
 }
