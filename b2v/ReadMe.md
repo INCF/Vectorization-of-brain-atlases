@@ -12,7 +12,11 @@ For Linux
 - chmod +x path/to/install.sh
 - /path/to/install.sh
 
-That's it! Now just do: b2v /path/to/input/file.png [/path/to/output.svg]
+That's it! Now just write in terminal: b2v -h
+The above command will show you how to use the software.
 
 For Windows
-...Soon...
+- open cmd
+- go to the directory contatining b2v.exe
+- type: b2v.exe -h
+- The above command will show you how to use the software.
