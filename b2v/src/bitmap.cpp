@@ -197,11 +197,11 @@ void Bitmap::processImage()
 	//form adjacency list of graph
 	formAdjacencyList();
 
-	//forms line segments from control point to control point
-	graph->formLineSegments(1);
-
 	//removes the connections defined Dangerous(see graph::formLineSegments)
 	removeDangerousConnections();
+
+	//forms line segments from control point to control point
+	graph->formLineSegments(1);
 
 	//forms island line segments
 	graph->formLineSegments(2);
