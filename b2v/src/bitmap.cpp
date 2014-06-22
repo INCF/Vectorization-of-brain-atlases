@@ -197,7 +197,14 @@ void Bitmap::processImage()
 	//form adjacency list of graph
 	formAdjacencyList();
 
-	graph->formLineSegments();
+	//forms line segments from control point to control point
+	graph->formLineSegments(1);
+
+	//removes the connections defined Dangerous(see graph::formLineSegments)
+	removeDangerousConnections();
+
+	//forms island line segments
+	graph->formLineSegments(2);
 
 	//assign the curves id/num to regions of pop bitmap
 	graph->assignCurveNumToRegion();
@@ -581,6 +588,10 @@ void Bitmap::detectControlPoints()
 			{
 				//not a white pixel
 				pixToNodeMap[i][j] = -1;
+				if(ifEqualPixel(pop->pixMap[i][j-1],boundaryPixel) && ifEqualPixel(pop->pixMap[i][j+1], boundaryPixel) && ifEqualPixel(pop->pixMap[i-1][j], boundaryPixel) && ifEqualPixel(pop->pixMap[i+1][j], boundaryPixel))
+				{
+					pixToNodeMap[i][j] = -2;	//danger pixel
+				}
 			}
 		}
 	}
@@ -612,6 +623,13 @@ void Bitmap::detectControlPoints()
 				image[4 * w * i + 4 * j + 0] = 0;
 				image[4 * w * i + 4 * j + 1] = 0;
 				image[4 * w * i + 4 * j + 2] = 255;
+				image[4 * w * i + 4 * j + 3] = 255;
+			}
+			else if(pixToNodeMap[i][j] == -2)
+			{
+				image[4 * w * i + 4 * j + 0] = 255;
+				image[4 * w * i + 4 * j + 1] = 0;
+				image[4 * w * i + 4 * j + 2] = 0;
 				image[4 * w * i + 4 * j + 3] = 255;
 			}
 		}
@@ -743,6 +761,40 @@ void Bitmap::formAdjacencyList()
 
 				if(ifEqualPixel(pop->pixMap[i][j + 1], boundaryPixel))
 					graph->addEdge(pixToNodeMap[i][j], pixToNodeMap[i][j + 1]);
+			}
+		}
+	}
+}
+
+/*
+ * Removes dangerous connections around dangerous points.
+ * Please refer graph::formLineSegments to know about dangerous points and connections
+ */
+void Bitmap::removeDangerousConnections()
+{
+	uint h = pop->height;
+	uint w = pop->width;
+
+	for(uint i = 1; i < h - 1; ++i)
+	{
+		for(uint j = 1; j < w - 1; ++j)
+		{
+			if(pixToNodeMap[i][j] == -2)
+			{
+				if(!graph->checkIfUsedUp(pixToNodeMap[i][j-1]) && !graph->checkIfUsedUp(pixToNodeMap[i][j+1]) && !graph->checkIfUsedUp(pixToNodeMap[i-1][j]) && !graph->checkIfUsedUp(pixToNodeMap[i+1][j]))
+				{
+					pixel midPixel = pop->pixMap[i][j];
+					if(ifEqualPixel(pop->pixMap[i-1][j-1], midPixel) && ifEqualPixel(pop->pixMap[i+1][j+1], midPixel))
+					{
+						graph->removeConnection(pixToNodeMap[i-1][j], pixToNodeMap[i][j-1]);
+						graph->removeConnection(pixToNodeMap[i+1][j], pixToNodeMap[i][j+1]);
+					}
+					else if(ifEqualPixel(pop->pixMap[i+1][j-1], midPixel) && ifEqualPixel(pop->pixMap[i-1][j+1], midPixel))
+					{
+						graph->removeConnection(pixToNodeMap[i-1][j], pixToNodeMap[i][j+1]);
+						graph->removeConnection(pixToNodeMap[i+1][j], pixToNodeMap[i][j-1]);
+					}
+				}
 			}
 		}
 	}
