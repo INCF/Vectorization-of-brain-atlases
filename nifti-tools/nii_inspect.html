@@ -13,21 +13,21 @@ div.overlay {
 td.negdim {
   text-align: right;
 }
-img.lr1 {
-  position: relative;
-  left: 0px;
-  width: 100px;
-}
-img.lr2 {
+img.lr {
   position: absolute;
   left: 0px;
   width: 100px;
 }
-img.lr3 {
-  position: absolute;
-  left: 0px;
-  width: 100px;
-}
+img.i0 { opacity: 1 }
+img.i1 { opacity: 1 }
+img.i2 { opacity: 1 }
+img.i3 { opacity: 1 }
+img.i4 { opacity: 1 }
+img.i5 { opacity: 1 }
+img.i6 { opacity: 1 }
+img.i7 { opacity: 1 }
+img.i8 { opacity: 1 }
+img.i9 { opacity: 1 }
 </style>
 <script type="text/javascript">
 function getParameterByName(name) {
@@ -39,95 +39,126 @@ function getParameterByName(name) {
 
 function onload() {
   var SliceDirs = [['Left','Right'],['Posterior','Anterior'],['Inferior','Superior']];
-  var lr1 = getParameterByName('layer1');
+  // NEXT LINE USED IN REPLACEMENT OPERATION
+  var defaultLayers = [];
+  var layers = defaultLayers;
+  for (var i=0; i<10; i++) {
+    var lr = getParameterByName('layer'+i);
+    if (lr) {
+      var parts = lr.split('.');
+      var ext = parts.pop();
+      lr = parts.join('.');
+      var title = getParameterByName('title'+i);
+      layers[i] = {
+        "name": lr,
+        "ext":ext,
+        "title":title
+      }
+    }
+  }
+  //var lr0 = getParameterByName('layer0');
   // NEXT LINE USED IN REPLACEMENT OPERATION
   /*$ if (!lr1) lr1 = '' $*/
-  lr1 = lr1.split('.');
-  ext1 = lr1.pop();
-  lr1 = lr1.join('.');
-  ti1 = getParameterByName('title1');
+  //lr1 = lr1.split('.');
+  //ext1 = lr1.pop();
+  //lr1 = lr1.join('.');
+  //ti1 = getParameterByName('title1');
   // NEXT LINE USED IN REPLACEMENT OPERATION
   /*$ if (!ti1) ti1 = 'layer1' $*/
-  if (ti1) document.getElementById('title1').innerHTML = ti1
-  var lr2 = getParameterByName('layer2');
+  //if (ti1) document.getElementById('title1').innerHTML = ti1
+  //var lr2 = getParameterByName('layer2');
   // NEXT LINE USED IN REPLACEMENT OPERATION
   /*$ if (!lr2) lr2 = '' $*/
-  if (lr2) {
-    lr2 = lr2.split('.');
-    ext2 = lr2.pop();
-    lr2 = lr2.join('.');
-    ti2 = getParameterByName('title2');
-    // NEXT LINE USED IN REPLACEMENT OPERATION
-    /*$ if (!ti2) ti2 = 'layer2' $*/
-    if (ti2) document.getElementById('title2').innerHTML = ti2
-  }
-  var lr3 = getParameterByName('layer3');
+  //if (lr2) {
+  //  lr2 = lr2.split('.');
+  //  ext2 = lr2.pop();
+  //  lr2 = lr2.join('.');
+  //  ti2 = getParameterByName('title2');
+  //  // NEXT LINE USED IN REPLACEMENT OPERATION
+  //  /*$ if (!ti2) ti2 = 'layer2' $*/
+  //  if (ti2) document.getElementById('title2').innerHTML = ti2
+  //}
+  //var lr3 = getParameterByName('layer3');
   // NEXT LINE USED IN REPLACEMENT OPERATION
   /*$ if (!lr3) lr3 = '' $*/
-  if (lr3) {
-    lr3 = lr3.split('.');
-    ext3 = lr3.pop();
-    lr3 = lr3.join('.');
-    ti3 = getParameterByName('title3');
-    // NEXT LINE USED IN REPLACEMENT OPERATION
-    /*$ if (!ti3) ti3 = 'layer3' $*/
-    if (ti3) document.getElementById('title 3').innerHTML = ti3
-  }
+  //if (lr3) {
+  //  lr3 = lr3.split('.');
+  //  ext3 = lr3.pop();
+  //  lr3 = lr3.join('.');
+  //  ti3 = getParameterByName('title3');
+  //  // NEXT LINE USED IN REPLACEMENT OPERATION
+  //  /*$ if (!ti3) ti3 = 'layer3' $*/
+  //  if (ti3) document.getElementById('title 3').innerHTML = ti3
+  //}
   // NEXT LINE USED IN REPLACEMENT OPERATION
   /*$ if (!bins) bins = 0 $*/
-  var slicesX = getParameterByName('slices_x');
+  
+  // NEXT LINE USED IN REPLACEMENT OPERATION
+  var defaultSliceRange = [];
+  var sliceRange = defaultSliceRange;
+  var dims = ['x','y','z']
+  for (var d=0; d<3; d++) {
+    s = getParameterByName('slices_'+dims[d]);
+    if (s) {
+      sliceRange[d] = s.split(':');
+    }
+  }
+  //var slicesX = getParameterByName('slices_x');
   // NEXT LINE USED IN REPLACEMENT OPERATION
   /*$ if (!slicesX) slicesX = '0:1:2' $*/
-  var slicesY = getParameterByName('slices_y');
+  //var slicesY = getParameterByName('slices_y');
   // NEXT LINE USED IN REPLACEMENT OPERATION
   /*$ if (!slicesY) slicesY = '0:1:2' $*/
-  var slicesZ = getParameterByName('slices_z');
+  //var slicesZ = getParameterByName('slices_z');
   // NEXT LINE USED IN REPLACEMENT OPERATION
   /*$ if (!slicesZ) slicesZ = '0:1:2' $*/
   
-  var slices = [
-    slicesX.split(':'),
-    slicesY.split(':'),
-    slicesZ.split(':')
-  ]
-  for (var d in slices) {
-    for (var i in slices[d]) slices[d][i] = parseInt(slices[d][i]);
+  //var slices = [
+  //  slicesX.split(':'),
+  //  slicesY.split(':'),
+  //  slicesZ.split(':')
+  //]
+  for (var d in sliceRange) {
+    for (var i in sliceRange[d]) sliceRange[d][i] = parseInt(sliceRange[d][i]);
   }
       
-  
-  var dims = ['x','y','z'];
   var ans = '';
   for (var d in dims) {
     var T = '<table class="main"><tr>';
     T += '<td class="negdim"><div class="overlay">'+SliceDirs[d][0]+'</div></td>';
-    dim = dims[d];
-    for (var s=slices[d][0]; s<=slices[d][2]; s+=slices[d][1]) {
-      var pngFile = lr1+'_'+dim+s+'.'+ext1;
+    var dim = dims[d];
+    for (var s=sliceRange[d][0]; s<=sliceRange[d][2]; s+=sliceRange[d][1]) {
+      var pngFile = layers[0].name+'_'+dim+s+'.'+layers[0].ext1;
       T += '<td><div class="overlay">';
-      T += '<img class="lr1" src="'+pngFile+'"/>';
-      if (lr2) {
-        var pngFile = lr2+'_'+dim+s+'.'+ext2;
-        T += '<img class="lr2" src="'+pngFile+'"/>';
-      } else {
-        document.getElementById('control1').style.visibility = 'hidden';
-      }
-      if (lr3) {
-        var pngFile = lr3+'_'+dim+s+'.'+ext3;
-        T += '<img class="lr3" src="'+pngFile+'"/>';
-      } else {
-        document.getElementById('control2').style.visibility = 'hidden';
+      T += '<img class="lr" src="'+pngFile+'"/>';
+      for (i = 0; i<layers.length; i++) {
+        lr = layers[i];
+        if (lr.name) {
+          var pngFile = lr.name+'_'+dim+s+'.'+lr.ext;
+          var style = (i==0 ? ' style="position:relative"' : '');
+          T += '<img class="lr i'+i+'"'+style+' src="'+pngFile+'"/>';
+        }
       }
       T += '</div></td>';
     }
     T += '<td class="posdim"><div class="overlay">'+SliceDirs[d][1]+'</div></td>';
     T += '</tr><tr>';
-    for (var s=slices[d][0]; s<slices[d][2]; s+=slices[d][1]) {
+    for (var s=sliceRange[d][0]; s<sliceRange[d][2]; s+=sliceRange[d][1]) {
       T += '<td>'+s+'</td>';     
     }
     T += '</tr></table>';
     ans += T;
   }
   document.getElementById('MAIN').innerHTML = ans
+  var controls = [];
+  for (i = 0; i<layers.length; i++) {
+    lr = layers[i];
+    if (lr.name) {
+      var title = lr.title? lr.title : lr.name;
+      controls.push('<div>Layer '+i+'<select type="select" size="1" onchange="applyOpacity(this.options[this.selectedIndex].value,'+i+')"><option value="0">Hidden</option><option value="0.5">50% visible</option><option selected value="1">100% visible</option></select>&nbsp;<span>'+title+'</span></div>');
+    }
+  }
+  document.getElementById('controls').innerHTML = controls.join('');
 }
 
 // http://www.hunlock.com/blogs/Totally_Pwn_CSS_with_Javascript
@@ -156,16 +187,14 @@ function getCSSRule(ruleName, deleteFlag) {               // Return requested st
    return false;                                          // we found NOTHING!
 }                                                         // end getCSSRule 
 
-function applyOpacity(val,lr) {
-  var rule = getCSSRule('img.lr'+lr)
-  rule.style.opacity = val;
+function applyOpacity(val,i) {
+  var rule = getCSSRule('img.i'+i)
+  if (rule) rule.style.opacity = val;
 }
 </script>
 </head>
 <body onload="onload()">
-<div><span id="title1"></span></div>
-<div id="control1">Overlay 1: <select type="select" size="1" onchange="applyOpacity(this.options[this.selectedIndex].value,2)"><option value="0">Hidden</option><option value="0.5">50% visible</option><option selected value="1">100% visible</option></select>&nbsp;<span id="title2"></span></div>
-<div id="control2">Overlay 2: <select type="select" size="1" onchange="applyOpacity(this.options[this.selectedIndex].value,3)"><option value="0">Hidden</option><option value="0.5">50% visible</option><option selected value="1">100% visible</option></select>&nbsp;<span id="title3"></span></div>
+<div id="controls"></div>
 <div id="MAIN"></div>
 </body>
 </html>
