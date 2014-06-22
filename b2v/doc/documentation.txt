@@ -207,7 +207,7 @@
  * 	It forms line segments from control point to control point and island line segments too.
  * 	Pass = 1 forms linesegments
  * 	Pass = 2 forms islandLineSegments
- *	Note: Before forming island line segments, "dangerous connections" surrounding dangerous points must be removed.
+ *	Note: Before forming line segments, "dangerous connections" surrounding dangerous points must be removed.
  *
  *	Dangerous points/pixels: those non boundary pixels which have boundary pixels at UP, DOWN, LEFT, RIGHT.
  *	Dangerous connections:
