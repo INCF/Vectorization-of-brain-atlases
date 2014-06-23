@@ -3,6 +3,8 @@
 table.main {
   position: relative;
   border: 1px solid white;
+  color: #FFF;
+  background: #000;
 }
   
 div.overlay {
@@ -10,13 +12,19 @@ div.overlay {
   width: 100px;
   overflow: hidden;
 }
-td.negdim {
+td.r {
   text-align: right;
+}
+td.ctr {
+  text-align: center;
 }
 img.lr {
   position: absolute;
   left: 0px;
   width: 100px;
+}
+img.lr.i0 {
+  position: relative;
 }
 img.i0 { opacity: 1 }
 img.i1 { opacity: 1 }
@@ -24,7 +32,8 @@ img.i2 { opacity: 1 }
 img.i3 { opacity: 1 }
 img.i4 { opacity: 1 }
 img.i5 { opacity: 1 }
-img.i6 { opacity: 1 }
+img.i6 { opacity: 1 }ls
+
 img.i7 { opacity: 1 }
 img.i8 { opacity: 1 }
 img.i9 { opacity: 1 }
@@ -73,39 +82,41 @@ function onload() {
   var ans = '';
   for (var d in dims) {
     var T = '<table class="main"><tr>';
-    T += '<td class="negdim"><div class="overlay">'+SliceDirs[d][0]+'</div></td>';
+    T += '<td class="r"><div class="overlay">'+SliceDirs[d][0]+'</div></td>';
     var dim = dims[d];
     for (var s=sliceRange[d][0]; s<=sliceRange[d][2]; s+=sliceRange[d][1]) {
-      var pngFile = layers[0].name+'_'+dim+s+'.'+layers[0].ext1;
+      //var pngFile = layers[0].name+'_'+dim+s+'.'+layers[0].ext1;
       T += '<td><div class="overlay">';
-      T += '<img class="lr" src="'+pngFile+'"/>';
+      //T += '<img class="lr" src="'+pngFile+'"/>';
       for (i = 0; i<layers.length; i++) {
         lr = layers[i];
         if (lr.name) {
           var pngFile = lr.name+'_'+dim+s+'.'+lr.ext;
-          var style = (i==0 ? ' style="position:relative"' : '');
+          //var style = (i==0 ? ' style="position:relative"' : '');
+          style = ''
           T += '<img class="lr i'+i+'"'+style+' src="'+pngFile+'"/>';
         }
       }
       T += '</div></td>';
     }
     T += '<td class="posdim"><div class="overlay">'+SliceDirs[d][1]+'</div></td>';
-    T += '</tr><tr><td></td>';
+    T += '</tr><tr><td class="r">slice-'+dim+'</td>';
     for (var s=sliceRange[d][0]; s<sliceRange[d][2]; s+=sliceRange[d][1]) {
-      T += '<td>'+s+'</td>';     
+      T += '<td class="ctr">'+s+'</td>';     
     }
     T += '</tr></table>';
     ans += T;
   }
   document.getElementById('MAIN').innerHTML = ans
-  var controls = [];
+  var controls = ['<table style="margin: auto">'];
   for (i = 0; i<layers.length; i++) {
     lr = layers[i];
     if (lr.name) {
       var title = lr.title? lr.title : lr.name;
-      controls.push('<div>Layer '+i+'&nbsp;<select id="selectOpacity'+i+'" type="select" size="1" onchange="applyOpacity(this.options[this.selectedIndex].value,'+i+')"><option value="0">Hidden</option><option value="0.25">25% visible</option><option value="0.5">50% visible</option><option value="0.75">75% visible</option><option selected value="1">100% visible</option></select><input type="button" value="toggle" onclick="moreOpaque('+i+')">&nbsp;<span>'+title+'</span><a href="'+lr.src+'"></a>nii-file</a></div>');
+      controls.push('<tr><td class="r"><i>'+title+'</i></td><td><select id="selectOpacity'+i+'" type="select" size="1" onchange="applyOpacity(this.options[this.selectedIndex].value,'+i+')"><option value="0">Hidden</option><option value="0.25">25% visible</option><option value="0.5">50% visible</option><option value="0.75">75% visible</option><option selected value="1">100% visible</option></select></td><td><input type="button" value="toggle" onclick="moreOpaque('+i+')">&nbsp;(<a href="'+lr.src+'">nifti-source</a>)</td></tr>');
     }
   }
+  controls.push('</table>')
   document.getElementById('controls').innerHTML = controls.join('');
 }
 
@@ -153,8 +164,12 @@ function applyOpacity(val,i) {
 </script>
 </head>
 <body onload="onload()">
-<div id="controls"></div>
-<div id="MAIN"></div>
+<div style="text-align: center">
+  <div id="controls"></div>
+  <div style="width:100%; overflow-x: scroll">
+    <div id="MAIN"></div>
+  </div>
+</div>
 </body>
 </html>
   
