@@ -50,11 +50,11 @@ def parse_arguments(raw=None):
     return args
          
 def get_slice(img,dim,i):
-    if dim is 'x':
+    if dim == 'x':
         slice = img[i,:,::-1].squeeze().transpose();
-    elif dim is 'y':
+    elif dim == 'y':
         slice = img[:,i,::-1].squeeze().transpose();
-    elif dim is 'z':
+    elif dim == 'z':
         slice = img[:,::-1,i].squeeze().transpose();
     return slice
 
@@ -120,7 +120,7 @@ def run(args):
                     })
                 else:
                     fmt = 'png'
-                    if cmap[0] is '#':
+                    if cmap[0] == '#':
                         cmap = cmap.split(',')
                         cmap = dict((str(i),val) for i,val in enumerate(cmap))
                     else:
