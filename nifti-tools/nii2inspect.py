@@ -13,7 +13,7 @@ def argument_parser():
   parser = argparse.ArgumentParser(
     description='description',
     formatter_class=argparse.RawTextHelpFormatter)
-  parser.add_argument('-i','--nifti_json', nargs='+', type=json.loads, help="Input Nifti json struct with fields 'file','title' and 'colormap'")
+  parser.add_argument('-i','--nifti_json', nargs='+', type=json.loads, help="Input Nifti json struct with fields 'file','title' and 'colormap'", action='append')
   parser.add_argument('-o','--path_dest', type=str, help="Output snapshot folder", required=True)
   parser.add_argument('-sx','--slices_x', type=str, help="Slices in the x-dimension, start%:step%:stop%", required=False)
   parser.add_argument('-sy','--slices_y', type=str, help="Slices in the y-dimension, start%:step%:stop%", required=False)
@@ -118,7 +118,6 @@ def run(args):
                         'green':[(0.0,c1[1],c1[1]),(1.0,c2[1],c2[1])],
                         'blue':[(0.0,c1[2],c1[2]),(1.0,c2[2],c2[2])],
                     })
-                    #print('mpc_cmap {}'.format(mpc_cmap(numpy.arange(256))))
                 else:
                     fmt = 'png'
                     if cmap[0] is '#':
@@ -154,14 +153,6 @@ def run(args):
                         norm = mpl.colors.Normalize(vmin=img_min, vmax=img_max)
                         m = cm.ScalarMappable(norm=norm, cmap=mpc_cmap)
                         slice = m.to_rgba(slice)
-                        #import Image
-                        #slice = (slice-img_min)/(img_max-img_min)
-                        #if i==0: print 'A {}'.format(numpy.uint8(mpc_cmap(slice)*255))
-                        #im = Image.fromarray(numpy.uint8(mpc_cmap(slice)*255))
-                        #im.save(pngFile)
-                        
-                        #print 'VIA MPC_MAP'
-
                     else:
                         if index2rgb:
                             shape = slice.shape
@@ -192,23 +183,7 @@ def run(args):
         with open(inspectFile, 'r') as fp:
             html = fp.read()
             html = html.replace(r"var defaultLayers = [];",
-                r"var defaultLayers = {};".format(json.dumps(parsedLayers)))
-                            
-            #for lr in [1,2,3]:
-            #    try:
-            #        nifti_src = getattr(args,'nifti_lr{}'.format(lr));
-            #        if nifti_src is not None:
-            #            
-            #            html = html.replace(r"/*$ if (!lr{}) lr{} = '' $*/".format(lr,lr),
-            #                r"if (!lr{}) lr{} = '{}';".format(lr,lr,redirect['lr{}'.format(lr)]))
-            #        title = getattr(args,'title_lr{}'.format(lr))
-            #        if title is not None:
-            #            html = html.replace(r"/*$ if (!ti{}) ti{} = 'layer{}' $*/".format(lr,lr,lr),
-            #                r"if (!ti{}) ti{} = '{}';".format(lr,lr,title))
-            #            
-            #    except NameError:
-            #        raise
-                    
+                r"var defaultLayers = {};".format(json.dumps(parsedLayers)))                            
             html = html.replace(r"var defaultSliceRange = [];",
                 "var defaultSliceRange = {};".format(json.dumps(sliceRange)))
   
