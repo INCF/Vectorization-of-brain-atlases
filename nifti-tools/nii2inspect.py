@@ -11,10 +11,15 @@ SliceDirs = {'x':'Left-Right','y':'Posterior-Anterior','z':'Inferior-Superior'}
 def argument_parser():
   """ Define the argument parser and return the parser object. """
   parser = argparse.ArgumentParser(
-    description='description',
+    description="""
+        Colormap supports various formats:
+        1. comma separated list of rgb-hex values: #R1G1B1,#R2G2B2,...
+        2. range of rgb-hex values: #R1G1B1-#R2G2B2
+        3. constant color with range alpha values: alpha-#R2G2B2
+    """,
     formatter_class=argparse.RawTextHelpFormatter)
-  parser.add_argument('-i','--nifti_json', type=json.loads, help="Input Nifti json struct with fields 'file','title' and 'colormap'", action='append')
-  parser.add_argument('-o','--path_dest', type=str, help="Output snapshot folder", required=True)
+  parser.add_argument('-lr','--layers', type=json.loads, help="Input json struct with fields 'file','title' and 'colormap'", action='append')
+  parser.add_argument('-o','--out', type=str, help="Output html folder", required=True)
   parser.add_argument('-sx','--slices_x', type=str, help="Slices in the x-dimension, start%:step%:stop%", required=False)
   parser.add_argument('-sy','--slices_y', type=str, help="Slices in the y-dimension, start%:step%:stop%", required=False)
   parser.add_argument('-sz','--slices_z', type=str, help="Slices in the z-dimension, start%:step%:stop%", required=False)
@@ -25,10 +30,9 @@ def parse_arguments(raw=None):
     args = argument_parser().parse_args(raw)
 
     try:
-        print "nifti_json {}".format(args.nifti_json)
+        print "layers {}".format(args.layers)
 
         """ Basic argument checking """
-        args.layers = args.nifti_json
         for lr in args.layers:
             if not op.exists(lr["file"]):
                 raise Exception('Nifti file "{}" not found.'.format(lr["file"]))
@@ -58,20 +62,31 @@ def get_slice(img,dim,i):
         slice = img[:,::-1,i].squeeze().transpose();
     return slice
 
-def hex2rgba(v):
+def hex2rgb(v):
     v = v.lstrip('#')
     lv = len(v)
-    rgba = [int(v[i:i+lv/3], 16) for i in range(0, lv, lv/3)];
+    if lv==3:
+      rgb = [int(v[i]+v[i], 16) for i in range(0,lv)];
+    elif lv==6:
+      rgb = [int(v[i:i+1], 16) for i in range(0,lv,2)];
+
+    return tuple(rgb)
+
+def hex2rgba(v):
+    rgba = hex2rgb(v)
+
+    # transparent background
     if all(v==0 for v in rgba):
         rgba.append(0)
     else: 
         rgba.append(255)
+
     return tuple(rgba)
 
 def run(args):
     print('Layer specification: {}'.format(args.layers))
     try:
-        destFolder = args.path_dest
+        destFolder = args.out
         if not(op.exists(destFolder)):
             os.makedirs(destFolder)
             print 'Created destination folder "{}".'.format(destFolder)
@@ -105,36 +120,42 @@ def run(args):
             # apply colormap
             fmt = 'jpg'
             index2rgb = None
-            mpc_cmap = None
+            hasAlpha = 1
+            rescale = False
             if "colormap" in lr:
                 cmap = lr["colormap"]
                 matches = re.search('^(#[0-9a-fA-F]+)-(#[0-9a-fA-F]+)$',cmap)
                 if matches:
-                    import matplotlib.colors as mpc
-                    c1 = mpc.hex2color(matches.group(1))
-                    c2 = mpc.hex2color(matches.group(2))
-                    mpc_cmap = mpc.LinearSegmentedColormap(baseName,{
-                        'red':[(0.0,c1[0],c1[0]),(1.0,c2[0],c2[0])],
-                        'green':[(0.0,c1[1],c1[1]),(1.0,c2[1],c2[1])],
-                        'blue':[(0.0,c1[2],c1[2]),(1.0,c2[2],c2[2])],
-                    })
-                else:
+                    rescale = True
+                    hasAlpha = False
+                    rgb1 = hex2rgb(matches.group(1))
+                    rgb2 = hex2rgb(matches.group(2))
+                    index2rgb = [[rgb1[0]+i/(256+1e-8)*(rgb2[0]-rgb1[0]),rgb1[1]+i/(256+1e-8)*(rgb2[1]-rgb1[1]),rgb1[2]+i/(256+1e-8)*(rgb2[2]-rgb1[2])] for i in range(256)]
+                elif cmap.startswith('alpha'):
                     fmt = 'png'
-                    if cmap[0] == '#':
-                        cmap = cmap.split(',')
-                        cmap = dict((str(i),val) for i,val in enumerate(cmap))
+                    rescale = True
+                    matches = re.search('^alpha-(#[0-9a-fA-F]+)$',cmap)
+                    if matches:
+                        rgb = hex2rgb(matches.group(1))
                     else:
-                        if not op.exists(cmap):
-                            raise('JSON colormap file "{}" not found.'.format(cmap))
-                      
-                        with open(cmap,'r') as fp:
-                            cmap = json.load(fp)
-                  
+                        rgb = list([255,255,255])
+                    index2rgb = [[rgb[0],rgb[1],rgb[2],i] for i in range(256)]
+                elif cmap[0] == '#':
+                    fmt = 'png'
+                    hasAlpha = False
+                    cmap = cmap.split(',')
                     index2rgb = {};
-                    for a in cmap:
-                        index2rgb[a] = hex2rgba(cmap[a])
+                    for i,a in enumerate(cmap):
+                        index2rgb[i] = hex2rgb(a)
                     print "Color map {}".format(index2rgb)
-
+                elif op.exists(cmap):
+                    fmt = 'png'
+                    hasAlpha = False
+                    with open(cmap,'r') as fp:
+                        index2rgb = json.load(fp)
+                else:
+                    raise('Do not know how to parse colormap "{}".'.format(cmap))
+                  
             sliceRange = [[],[],[]]
             for d in [0,1,2]:
                 dim = ['x','y','z'][d]
@@ -147,22 +168,20 @@ def run(args):
                     slice = get_slice(img,dim,i)
                     
                     pngFile = baseName+'_{}{:d}.{}'.format(dim,i,fmt)
-                    if mpc_cmap:
-                        import matplotlib as mpl
-                        import matplotlib.cm as cm
-                        norm = mpl.colors.Normalize(vmin=img_min, vmax=img_max)
-                        m = cm.ScalarMappable(norm=norm, cmap=mpc_cmap)
-                        slice = m.to_rgba(slice)
-                    else:
-                        if index2rgb:
-                            shape = slice.shape
-                            slice = slice.reshape(-1)
-                            rgbImg = numpy.zeros(shape=(slice.shape[0],4), dtype=numpy.uint8)
-                            for grayvalue in numpy.unique(slice):
-                                mask = (slice == grayvalue)
+                    if index2rgb:
+                        shape = slice.shape
+                        slice = slice.reshape(-1)
+                        if rescale: 
+                            slice = numpy.uint8(256.0*(slice-img_min)/(img_max-img_min+1e-8))
+                        rgbImg = numpy.zeros(shape=(slice.shape[0],3+hasAlpha), dtype=numpy.uint8)
+                        for grayvalue in numpy.unique(slice):
+                            mask = (slice == grayvalue)
+                            try:
+                                val = index2rgb[numpy.uint8(grayvalue)]
+                            except KeyError:
                                 val = index2rgb[str(grayvalue)]
-                                rgbImg[mask] = val
-                            slice = rgbImg.reshape(shape[0],shape[1],4)
+                            rgbImg[mask] = val
+                        slice = rgbImg.reshape(shape[0],shape[1],3+hasAlpha)
 
                     # Save image to PNG
                     scipy.misc.toimage(slice).save(op.join(destFolder,pngFile))
