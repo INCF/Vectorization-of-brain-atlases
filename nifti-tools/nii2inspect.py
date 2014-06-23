@@ -13,7 +13,7 @@ def argument_parser():
   parser = argparse.ArgumentParser(
     description='description',
     formatter_class=argparse.RawTextHelpFormatter)
-  parser.add_argument('-i','--nifti_json', nargs='+', type=json.loads, help="Input Nifti json struct with fields 'file','title' and 'colormap'", action='append')
+  parser.add_argument('-i','--nifti_json', type=json.loads, help="Input Nifti json struct with fields 'file','title' and 'colormap'", action='append')
   parser.add_argument('-o','--path_dest', type=str, help="Output snapshot folder", required=True)
   parser.add_argument('-sx','--slices_x', type=str, help="Slices in the x-dimension, start%:step%:stop%", required=False)
   parser.add_argument('-sy','--slices_y', type=str, help="Slices in the y-dimension, start%:step%:stop%", required=False)

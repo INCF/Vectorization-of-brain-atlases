@@ -155,7 +155,7 @@ function onload() {
     lr = layers[i];
     if (lr.name) {
       var title = lr.title? lr.title : lr.name;
-      controls.push('<div>Layer '+i+'<select type="select" size="1" onchange="applyOpacity(this.options[this.selectedIndex].value,'+i+')"><option value="0">Hidden</option><option value="0.5">50% visible</option><option selected value="1">100% visible</option></select>&nbsp;<span>'+title+'</span></div>');
+      controls.push('<div>Layer '+i+'&nbsp;<select id="selectOpacity'+i+'" type="select" size="1" onchange="applyOpacity(this.options[this.selectedIndex].value,'+i+')"><option value="0">Hidden</option><option value="0.25">25% visible</option><option value="0.5">50% visible</option><option value="0.75">75% visible</option><option selected value="1">100% visible</option></select><input type="button" value="toggle" onclick="moreOpaque('+i+')">&nbsp;<span>'+title+'</span></div>');
     }
   }
   document.getElementById('controls').innerHTML = controls.join('');
@@ -186,6 +186,17 @@ function getCSSRule(ruleName, deleteFlag) {               // Return requested st
    }                                                      // end styleSheet ability check
    return false;                                          // we found NOTHING!
 }                                                         // end getCSSRule 
+
+function moreOpaque(i) {
+  var elem = document.getElementById('selectOpacity'+i);
+  if (elem) {
+    if (elem.selectedIndex == elem.options.length-1)
+      elem.selectedIndex = 0;
+    else
+      elem.selectedIndex = elem.options.length-1;
+    elem.onchange();
+  }
+}
 
 function applyOpacity(val,i) {
   var rule = getCSSRule('img.i'+i)
