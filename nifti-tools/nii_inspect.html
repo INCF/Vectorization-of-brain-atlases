@@ -52,46 +52,11 @@ function onload() {
       layers[i] = {
         "name": lr,
         "ext":ext,
-        "title":title
+        "title":title,
+        "src":null
       }
     }
   }
-  //var lr0 = getParameterByName('layer0');
-  // NEXT LINE USED IN REPLACEMENT OPERATION
-  /*$ if (!lr1) lr1 = '' $*/
-  //lr1 = lr1.split('.');
-  //ext1 = lr1.pop();
-  //lr1 = lr1.join('.');
-  //ti1 = getParameterByName('title1');
-  // NEXT LINE USED IN REPLACEMENT OPERATION
-  /*$ if (!ti1) ti1 = 'layer1' $*/
-  //if (ti1) document.getElementById('title1').innerHTML = ti1
-  //var lr2 = getParameterByName('layer2');
-  // NEXT LINE USED IN REPLACEMENT OPERATION
-  /*$ if (!lr2) lr2 = '' $*/
-  //if (lr2) {
-  //  lr2 = lr2.split('.');
-  //  ext2 = lr2.pop();
-  //  lr2 = lr2.join('.');
-  //  ti2 = getParameterByName('title2');
-  //  // NEXT LINE USED IN REPLACEMENT OPERATION
-  //  /*$ if (!ti2) ti2 = 'layer2' $*/
-  //  if (ti2) document.getElementById('title2').innerHTML = ti2
-  //}
-  //var lr3 = getParameterByName('layer3');
-  // NEXT LINE USED IN REPLACEMENT OPERATION
-  /*$ if (!lr3) lr3 = '' $*/
-  //if (lr3) {
-  //  lr3 = lr3.split('.');
-  //  ext3 = lr3.pop();
-  //  lr3 = lr3.join('.');
-  //  ti3 = getParameterByName('title3');
-  //  // NEXT LINE USED IN REPLACEMENT OPERATION
-  //  /*$ if (!ti3) ti3 = 'layer3' $*/
-  //  if (ti3) document.getElementById('title 3').innerHTML = ti3
-  //}
-  // NEXT LINE USED IN REPLACEMENT OPERATION
-  /*$ if (!bins) bins = 0 $*/
   
   // NEXT LINE USED IN REPLACEMENT OPERATION
   var defaultSliceRange = [];
@@ -102,23 +67,6 @@ function onload() {
     if (s) {
       sliceRange[d] = s.split(':');
     }
-  }
-  //var slicesX = getParameterByName('slices_x');
-  // NEXT LINE USED IN REPLACEMENT OPERATION
-  /*$ if (!slicesX) slicesX = '0:1:2' $*/
-  //var slicesY = getParameterByName('slices_y');
-  // NEXT LINE USED IN REPLACEMENT OPERATION
-  /*$ if (!slicesY) slicesY = '0:1:2' $*/
-  //var slicesZ = getParameterByName('slices_z');
-  // NEXT LINE USED IN REPLACEMENT OPERATION
-  /*$ if (!slicesZ) slicesZ = '0:1:2' $*/
-  
-  //var slices = [
-  //  slicesX.split(':'),
-  //  slicesY.split(':'),
-  //  slicesZ.split(':')
-  //]
-  for (var d in sliceRange) {
     for (var i in sliceRange[d]) sliceRange[d][i] = parseInt(sliceRange[d][i]);
   }
       
@@ -142,7 +90,7 @@ function onload() {
       T += '</div></td>';
     }
     T += '<td class="posdim"><div class="overlay">'+SliceDirs[d][1]+'</div></td>';
-    T += '</tr><tr>';
+    T += '</tr><tr><td></td>';
     for (var s=sliceRange[d][0]; s<sliceRange[d][2]; s+=sliceRange[d][1]) {
       T += '<td>'+s+'</td>';     
     }
@@ -155,7 +103,7 @@ function onload() {
     lr = layers[i];
     if (lr.name) {
       var title = lr.title? lr.title : lr.name;
-      controls.push('<div>Layer '+i+'&nbsp;<select id="selectOpacity'+i+'" type="select" size="1" onchange="applyOpacity(this.options[this.selectedIndex].value,'+i+')"><option value="0">Hidden</option><option value="0.25">25% visible</option><option value="0.5">50% visible</option><option value="0.75">75% visible</option><option selected value="1">100% visible</option></select><input type="button" value="toggle" onclick="moreOpaque('+i+')">&nbsp;<span>'+title+'</span></div>');
+      controls.push('<div>Layer '+i+'&nbsp;<select id="selectOpacity'+i+'" type="select" size="1" onchange="applyOpacity(this.options[this.selectedIndex].value,'+i+')"><option value="0">Hidden</option><option value="0.25">25% visible</option><option value="0.5">50% visible</option><option value="0.75">75% visible</option><option selected value="1">100% visible</option></select><input type="button" value="toggle" onclick="moreOpaque('+i+')">&nbsp;<span>'+title+'</span><a href="'+lr.src+'"></a>nii-file</a></div>');
     }
   }
   document.getElementById('controls').innerHTML = controls.join('');
