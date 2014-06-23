@@ -66,11 +66,12 @@ def hex2rgb(v):
     v = v.lstrip('#')
     lv = len(v)
     if lv==3:
-      rgb = [int(v[i]+v[i], 16) for i in range(0,lv)];
+        rgb = [int(v[i]+v[i], 16) for i in range(0,lv)];
     elif lv==6:
-      rgb = [int(v[i:i+1], 16) for i in range(0,lv,2)];
-
-    return tuple(rgb)
+        rgb = [int(v[i:i+2], 16) for i in range(0,lv,2)];
+    else:
+        raise Exception('Invalid hex color {}'.format(v))
+    return rgb
 
 def hex2rgba(v):
     rgba = hex2rgb(v)
@@ -81,7 +82,7 @@ def hex2rgba(v):
     else: 
         rgba.append(255)
 
-    return tuple(rgba)
+    return rgba
 
 def run(args):
     print('Layer specification: {}'.format(args.layers))
@@ -142,11 +143,11 @@ def run(args):
                     index2rgb = [[rgb[0],rgb[1],rgb[2],i] for i in range(256)]
                 elif cmap[0] == '#':
                     fmt = 'png'
-                    hasAlpha = False
+                    hasAlpha = True
                     cmap = cmap.split(',')
                     index2rgb = {};
                     for i,a in enumerate(cmap):
-                        index2rgb[i] = hex2rgb(a)
+                        index2rgb[i] = hex2rgba(a)
                     print "Color map {}".format(index2rgb)
                 elif op.exists(cmap):
                     fmt = 'png'
