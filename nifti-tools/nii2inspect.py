@@ -173,7 +173,8 @@ def run(args):
             # update parsedLayers
             pl = {
               "name": baseName,
-              "ext": fmt
+              "ext": fmt,
+              "src": nifti_src
             }
             if "title" in lr:
                 pl["title"] = lr["title"];
