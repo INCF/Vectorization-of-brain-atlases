@@ -18,7 +18,7 @@ def argument_parser():
         3. constant color with range alpha values: alpha-#R2G2B2
     """,
     formatter_class=argparse.RawTextHelpFormatter)
-  parser.add_argument('-lr','--layers', type=json.loads, help="Input json struct with fields 'file','title' and 'colormap'", action='append')
+  parser.add_argument('-lr','--layers', type=json.loads, help="Input json struct with fields 'file','title','colormap','pctile'", action='append')
   parser.add_argument('-o','--out', type=str, help="Output html folder", required=True)
   parser.add_argument('-sx','--slices_x', type=str, help="Slices in the x-dimension, start%:step%:stop%", required=False)
   parser.add_argument('-sy','--slices_y', type=str, help="Slices in the y-dimension, start%:step%:stop%", required=False)
@@ -106,6 +106,11 @@ def run(args):
             img_min = numpy.amin(img)
             img_max = numpy.amax(img)
             print 'Image type: {} {}-{}'.format(img.dtype,img_min,img_max)
+            if "pctile" in lr:
+                pctile = lr["pctile"]
+                img_min = numpy.percentile(img,100-pctile)
+                img_max = numpy.percentile(img,pctile)
+                print 'Percentile {}-{} range: {}-{}'.format(100-pctile,pctile,img_min,img_max)
             hdr = nii.get_header()
             q = hdr.get_best_affine();
             ornt = nibabel.io_orientation(q)
@@ -131,7 +136,7 @@ def run(args):
                     hasAlpha = False
                     rgb1 = hex2rgb(matches.group(1))
                     rgb2 = hex2rgb(matches.group(2))
-                    index2rgb = [[rgb1[0]+i/(256+1e-8)*(rgb2[0]-rgb1[0]),rgb1[1]+i/(256+1e-8)*(rgb2[1]-rgb1[1]),rgb1[2]+i/(256+1e-8)*(rgb2[2]-rgb1[2])] for i in range(256)]
+                    index2rgb = [numpy.uint8([rgb1[0]+i/255.0*(rgb2[0]-rgb1[0]),rgb1[1]+i/255.0*(rgb2[1]-rgb1[1]),rgb1[2]+i/255.0*(rgb2[2]-rgb1[2])]) for i in range(256)]
                 elif cmap.startswith('alpha'):
                     fmt = 'png'
                     rescale = True
@@ -173,7 +178,10 @@ def run(args):
                         shape = slice.shape
                         slice = slice.reshape(-1)
                         if rescale: 
-                            slice = numpy.uint8(256.0*(slice-img_min)/(img_max-img_min+1e-8))
+                            slice = 255.9999*(slice-img_min)/(img_max-img_min)
+                            slice[slice<0] = 0
+                            slice[slice>255] = 255
+                            slice = numpy.uint8(slice)
                         rgbImg = numpy.zeros(shape=(slice.shape[0],3+hasAlpha), dtype=numpy.uint8)
                         for grayvalue in numpy.unique(slice):
                             mask = (slice == grayvalue)
