@@ -107,10 +107,22 @@ def run(args):
             img_max = numpy.amax(img)
             print 'Image type: {} {}-{}'.format(img.dtype,img_min,img_max)
             if "pctile" in lr:
-                pctile = lr["pctile"]
-                img_min = numpy.percentile(img,100-pctile)
-                img_max = numpy.percentile(img,pctile)
-                print 'Percentile {}-{} range: {}-{}'.format(100-pctile,pctile,img_min,img_max)
+                pctile = numpy.uint8(lr["pctile"].split(','))
+                if len(pctile)<1:
+                    pctile = [0,100]
+                elif len(pctile<2):
+                    pctile = [0,pctile[0]]
+                if pctile[1]<=pctile[0]:
+                    raise('Max percentile must be larger than min percentile, not {},{}'.format(pctile[0],pctile[1]))
+                elif pctile[0]<0:
+                    raise('Min percentile must be >=0, not {}'.format(pctile[0]))
+                elif pctile[1]>100:
+                    raise('Max percentile must be <=100, not {}'.format(pctile[1]))
+                if pctile[0]>0:
+                    img_min = numpy.percentile(img,pctile[0])
+                if pctile[1]>0:
+                    img_max = numpy.percentile(img,pctile[1])
+                print 'Percentile {}-{} range: {}-{}'.format(pctile[0],pctile[1],img_min,img_max)
             hdr = nii.get_header()
             q = hdr.get_best_affine();
             ornt = nibabel.io_orientation(q)
