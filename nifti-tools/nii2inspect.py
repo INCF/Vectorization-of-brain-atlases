@@ -87,7 +87,7 @@ def hex2rgba(v):
 
 def slice2rgb(slice,index2rgb,rescale,minLevel=None,maxLevel=None):
     if isinstance(index2rgb,dict):
-        rgbLen = len(index2rgb[index2rgb.key()[0]])
+        rgbLen = len(index2rgb[index2rgb.keys()[0]])
     else:
         rgbLen = len(index2rgb[0])
         
