@@ -150,11 +150,11 @@ def run(args):
                 elif len(pctile<2):
                     pctile = [0,pctile[0]]
                 if pctile[1]<=pctile[0]:
-                    raise('Max percentile must be larger than min percentile, not {},{}'.format(pctile[0],pctile[1]))
+                    raise Exception('Max percentile must be larger than min percentile, not {},{}'.format(pctile[0],pctile[1]))
                 elif pctile[0]<0:
-                    raise('Min percentile must be >=0, not {}'.format(pctile[0]))
+                    raise Exception('Min percentile must be >=0, not {}'.format(pctile[0]))
                 elif pctile[1]>100:
-                    raise('Max percentile must be <=100, not {}'.format(pctile[1]))
+                    raise Exception('Max percentile must be <=100, not {}'.format(pctile[1]))
                 if pctile[0]>0:
                     img_min = numpy.percentile(img,pctile[0])
                 if pctile[1]>0:
@@ -209,7 +209,7 @@ def run(args):
                     with open(cmap,'r') as fp:
                         index2rgb = json.load(fp)
                 else:
-                    raise('Do not know how to parse colormap "{}".'.format(cmap))
+                    raise Exception('Do not know how to parse colormap "{}".'.format(cmap))
                   
             sliceRange = [[],[],[]]
             for d in [0,1,2]:
