@@ -186,7 +186,13 @@ def run(args):
                     hasAlpha = False
                     rgb1 = hex2rgb(matches.group(1))
                     rgb2 = hex2rgb(matches.group(2))
-                    index2rgb = [numpy.uint8([rgb1[0]+i/255.0*(rgb2[0]-rgb1[0]),rgb1[1]+i/255.0*(rgb2[1]-rgb1[1]),rgb1[2]+i/255.0*(rgb2[2]-rgb1[2])]) for i in range(256)]
+                    index2rgb = [
+                        numpy.uint8(r) for r in [
+                            rgb1[0]+i/255.0*(rgb2[0]-rgb1[0]),
+                            rgb1[1]+i/255.0*(rgb2[1]-rgb1[1]),
+                            rgb1[2]+i/255.0*(rgb2[2]-rgb1[2])
+                        ] for i in range(256)
+                    ]
                 elif cmap.startswith('alpha'):
                     fmt = 'png'
                     rescale = True
