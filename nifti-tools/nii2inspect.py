@@ -144,7 +144,7 @@ def run(args):
             img_max = numpy.amax(img)
             print 'Image type: {} {}-{}'.format(img.dtype,img_min,img_max)
             if "pctile" in lr:
-                pctile = numpy.uint8(re.split(',- ',str(lr["pctile"])))
+                pctile = numpy.uint8(re.split('[,\- ]+',str(lr["pctile"])))
                 if len(pctile)<1:
                     pctile = [0,100]
                 elif len(pctile<2):
