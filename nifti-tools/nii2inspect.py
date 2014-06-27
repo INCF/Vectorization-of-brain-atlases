@@ -11,15 +11,16 @@ SliceDirs = {'x':'Left-Right','y':'Posterior-Anterior','z':'Inferior-Superior'}
 def argument_parser():
   """ Define the argument parser and return the parser object. """
   parser = argparse.ArgumentParser(
-    description="""
-        Colormap supports various formats:
-        1. comma separated list of rgb-hex values: #R1G1B1,#R2G2B2,...
-        2. range of rgb-hex values: #R1G1B1-#R2G2B2
-        3. constant color with range alpha values: alpha-#R2G2B2
-    """,
-    formatter_class=argparse.RawTextHelpFormatter)
+      description="""
+          Colormap supports various formats:
+          1. comma separated list of rgb-hex values: #RGB1,#RGB2,...
+          2. range of rgb-hex values: #RGB1-#RGB2
+          3. constant color with range of alpha values: alpha-#RGB
+      """,
+      formatter_class=argparse.RawTextHelpFormatter)
   parser.add_argument('-lr','--layers', type=json.loads, help="Input json struct with fields 'file','title','colormap','pctile'", action='append')
-  parser.add_argument('-o','--out', type=str, help="Output html folder", required=True)
+  parser.add_argument('-o','--out', type=str, help="Html output file", required=True)
+  parser.add_argument('-oi','--out-images', type=str, help="Image output folder", required=False)
   parser.add_argument('-sx','--slices_x', type=str, help="Slices in the x-dimension, start%:step%:stop%", required=False)
   parser.add_argument('-sy','--slices_y', type=str, help="Slices in the y-dimension, start%:step%:stop%", required=False)
   parser.add_argument('-sz','--slices_z', type=str, help="Slices in the z-dimension, start%:step%:stop%", required=False)
@@ -84,14 +85,50 @@ def hex2rgba(v):
 
     return rgba
 
+def slice2rgb(slice,index2rgb,rescale,minLevel=None,maxLevel=None):
+    for rgb in index2rgb:
+        rgbLen = len(rgb)
+        break
+        
+    shape = slice.shape
+    slice = slice.reshape(-1)
+    if rescale: 
+        slice = 255.9999*(slice-minLevel)/(maxLevel-minLevel)
+        slice[slice<0] = 0
+        slice[slice>255] = 255
+        slice = numpy.uint8(slice)
+    rgbImg = numpy.zeros(shape=(slice.shape[0],rgbLen), dtype=numpy.uint8)
+    for idx in numpy.unique(slice):
+        mask = (slice == idx)
+        try:
+            val = index2rgb[numpy.uint8(idx)]
+        except KeyError:
+            val = index2rgb[str(idx)]
+
+        rgbImg[mask] = val
+    return rgbImg.reshape(shape[0],shape[1],rgbLen)
+        
+    
 def run(args):
     print('Layer specification: {}'.format(args.layers))
     try:
-        destFolder = args.out
-        if not(op.exists(destFolder)):
-            os.makedirs(destFolder)
-            print 'Created destination folder "{}".'.format(destFolder)
-        destFolder = op.realpath(destFolder)
+        htmlFile = args.out
+        if op.isdir(htmlFile):
+            htmlFile = op.join(htmlFile,'index.html')
+        htmlFolder = op.dirname(htmlFile)
+        if args.out_images:
+            imgFolder = args.out_images
+        else:
+            htmlName,htmlExt = op.splitext(op.basename(htmlFile))
+            imgFolder = op.join(htmlFolder,htmlName+'_files')
+        
+        if not(op.exists(htmlFolder)):
+            os.makedirs(htmlFolder)
+            print 'Created html output folder "{}".'.format(htmlFolder)
+        if not(op.exists(imgFolder)):
+            os.makedirs(imgFolder)
+            print 'Created image output folder "{}".'.format(imgFolder)
+        imgFolder = op.realpath(imgFolder)
         scriptDir = op.realpath(op.dirname(__file__))
 
         parsedLayers = []
@@ -107,7 +144,7 @@ def run(args):
             img_max = numpy.amax(img)
             print 'Image type: {} {}-{}'.format(img.dtype,img_min,img_max)
             if "pctile" in lr:
-                pctile = numpy.uint8(lr["pctile"].split(','))
+                pctile = numpy.uint8(re.split(',- ',str(lr["pctile"])))
                 if len(pctile)<1:
                     pctile = [0,100]
                 elif len(pctile<2):
@@ -187,25 +224,10 @@ def run(args):
                     
                     pngFile = baseName+'_{}{:d}.{}'.format(dim,i,fmt)
                     if index2rgb:
-                        shape = slice.shape
-                        slice = slice.reshape(-1)
-                        if rescale: 
-                            slice = 255.9999*(slice-img_min)/(img_max-img_min)
-                            slice[slice<0] = 0
-                            slice[slice>255] = 255
-                            slice = numpy.uint8(slice)
-                        rgbImg = numpy.zeros(shape=(slice.shape[0],3+hasAlpha), dtype=numpy.uint8)
-                        for grayvalue in numpy.unique(slice):
-                            mask = (slice == grayvalue)
-                            try:
-                                val = index2rgb[numpy.uint8(grayvalue)]
-                            except KeyError:
-                                val = index2rgb[str(grayvalue)]
-                            rgbImg[mask] = val
-                        slice = rgbImg.reshape(shape[0],shape[1],3+hasAlpha)
+                        slice = slice2rgb(slice,index2rgb,rescale,img_min,img_max)
 
                     # Save image to PNG
-                    scipy.misc.toimage(slice).save(op.join(destFolder,pngFile))
+                    scipy.misc.toimage(slice).save(op.join(imgFolder,pngFile))
                         
                     if i==sliceStart:
                         print 'image {}{} saved to png file "{}".'.format(dim,i,pngFile)
@@ -227,8 +249,9 @@ def run(args):
                 r"var defaultLayers = {};".format(json.dumps(parsedLayers)))                            
             html = html.replace(r"var defaultSliceRange = [];",
                 "var defaultSliceRange = {};".format(json.dumps(sliceRange)))
+            html = html.replace(r"var imgDir = '';",
+                "var imgDir = '{}/';".format(op.relpath(imgFolder,htmlFolder)))
   
-        htmlFile = op.join(destFolder,'index.html')
         with open(htmlFile, 'w') as fp:
             fp.write(html)
                 
