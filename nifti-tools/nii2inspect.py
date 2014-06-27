@@ -144,10 +144,11 @@ def run(args):
             img_max = numpy.amax(img)
             print 'Image type: {} {}-{}'.format(img.dtype,img_min,img_max)
             if "pctile" in lr:
-                pctile = numpy.uint8(re.split('[,\- ]+',str(lr["pctile"])))
+                pctile = re.split('[,\- ]+',str(lr["pctile"]))
+                pctile = [float(p) for p in pctile]
                 if len(pctile)<1:
                     pctile = [0,100]
-                elif len(pctile<2):
+                elif len(pctile)<2:
                     pctile = [0,pctile[0]]
                 if pctile[1]<=pctile[0]:
                     raise Exception('Max percentile must be larger than min percentile, not {},{}'.format(pctile[0],pctile[1]))
