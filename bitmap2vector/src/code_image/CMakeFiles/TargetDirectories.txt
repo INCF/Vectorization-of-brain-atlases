@@ -1,1 +1,0 @@
-/home/dhruv/repos/Vectorization-of-brain-atlases/bitmap2vector/src/code_image/CMakeFiles/code_image.dir
