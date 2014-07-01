@@ -144,7 +144,7 @@ void SVG::writeFinalOutput(std::vector<Region> &rgn, std::string outFileName, pi
 						else
 						{
 							//we don't want to place C after last bezier curve segment
-							if(cMayBePlaced && m != rgn[i].closedPath[j][k]->pt.size() - 1)
+							if(cMayBePlaced && !(k == rgn[i].closedPath[j].size() - 1 && m == rgn[i].closedPath[j][k]->pt.size() - 1))
 								ofsFinal << rgn[i].closedPath[j][k]->pt[m].x << "," << rgn[i].closedPath[j][k]->pt[m].y << " C";
 							else
 								ofsFinal << rgn[i].closedPath[j][k]->pt[m].x << "," << rgn[i].closedPath[j][k]->pt[m].y << " ";
