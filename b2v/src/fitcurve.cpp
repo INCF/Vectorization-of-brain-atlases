@@ -33,7 +33,7 @@ static Vector2 ComputeRightTangent(Point2*, int);
 static Vector2 ComputeCenterTangent(Point2*, int);
 static double *ChordLengthParameterize(Point2*, int, int);
 static double ComputeMaxError(Point2*, int, int, BezierCurve, double*, int*);
-static double ComputeMaxError2(Point2*, int, int, BezierCurve, double*);
+static double ComputeMaxErrorLine(Point2*, int, int, BezierCurve);
 static Vector2 V2AddII(Vector2, Vector2);
 static Vector2 V2ScaleIII(Vector2,double);
 static Vector2 V2SubII(Vector2, Vector2);
@@ -66,20 +66,16 @@ static void FitCubic(Point2 *d, int first, int last, Vector2 tHat1, Vector2 tHat
     double  *u;     /*  Parameter values for point  */
     double  *uPrime;    /*  Improved parameter values */
     double  maxError;   /*  Maximum fitting error    */
+    double  prevMaxError;
     int     splitPoint; /*  Point to split point set at  */
+    int     prevSplitPoint;
     int     nPts;       /*  Number of points in subset  */
     double  iterationError; /*Error below which you try iterating  */
     int     maxIterations = 4; /*  Max times to try iterating  */
     Vector2 tHatCenter;     /* Unit tangent vector at splitPoint */
     int     i;      
 
-    iterationError = errorCurve * errorCurve;
-    nPts = last - first + 1;
-
-    //get parameter values for points from first to last
-    u = ChordLengthParameterize(d, first, last);
-
-    //check if not a closed loop i.e. islandLineSeg
+    //check if a straight line segment will do
     if(!(d[first].x == d[last].x && d[first].y == d[last].y))
     {
         bezCurve = (Point2 *)malloc(4 * sizeof(Point2));
@@ -87,16 +83,16 @@ static void FitCubic(Point2 *d, int first, int last, Vector2 tHat1, Vector2 tHat
         bezCurve[2] = bezCurve[3] = d[last];
         
         /*  Find max deviation of points to fitted line */
-        maxError = ComputeMaxError2(d, first, last, bezCurve, u);
+        maxError = ComputeMaxErrorLine(d, first, last, bezCurve);
         if (maxError < errorLine) {
             DrawBezierCurve(3, bezCurve);
-            free((void *)u);
             free((void *)bezCurve);
             return;
         }
     }
 
     /*  Use heuristic if region only has two points in it */
+    nPts = last - first + 1;
     if (nPts == 2) {
         double dist = V2DistanceBetween2Points(&d[last], &d[first]) / 3.0;
 
@@ -111,6 +107,7 @@ static void FitCubic(Point2 *d, int first, int last, Vector2 tHat1, Vector2 tHat
     }
 
     /*  Parameterize points, and attempt to fit curve */
+    u = ChordLengthParameterize(d, first, last);
     bezCurve = GenerateBezier(d, first, last, u, tHat1, tHat2);
 
     /*  Find max deviation of points to fitted curve */
@@ -122,26 +119,37 @@ static void FitCubic(Point2 *d, int first, int last, Vector2 tHat1, Vector2 tHat
         return;
     }
 
-
     /*  If error not too large, try some reparameterization  */
     /*  and iteration */
+    iterationError = 4 * errorCurve; // heuristic
     if (maxError < iterationError) {
         for (i = 0; i < maxIterations; i++) {
+            prevSplitPoint = splitPoint;
+            prevMaxError = maxError;
+
             uPrime = Reparameterize(d, first, last, u, bezCurve);
             free((void *)bezCurve);
             bezCurve = GenerateBezier(d, first, last, uPrime, tHat1, tHat2);
             maxError = ComputeMaxError(d, first, last,
                        bezCurve, uPrime, &splitPoint);
             if (maxError < errorCurve) {
-            DrawBezierCurve(3, bezCurve);
-            free((void *)u);
-            free((void *)bezCurve);
-            free((void *)uPrime);
-            return;
+                DrawBezierCurve(3, bezCurve);
+                free((void *)u);
+                free((void *)bezCurve);
+                free((void *)uPrime);
+                return;
+            }
+            if (maxError < prevMaxError) {
+                free((void *)u);
+                u = uPrime;
+            } else {
+                // NewtonRhapson not converging, happens when 
+                // Bezier is reset in GenerateBezier
+                splitPoint = prevSplitPoint;
+                free((void *)uPrime);
+                break;
+            }
         }
-        free((void *)u);
-        u = uPrime;
-    }
     }
 
     /* Fitting failed -- split at max error point and fit recursively */
@@ -215,8 +223,8 @@ static BezierCurve  GenerateBezier(Point2 *d, int first, int last, double *uPrim
                                 V2ScaleIII(d[last], B3(uPrime[i]))))));
     
 
-    X[0] += V2Dot(&A[i][0], &tmp);
-    X[1] += V2Dot(&A[i][1], &tmp);
+        X[0] += V2Dot(&A[i][0], &tmp);
+        X[1] += V2Dot(&A[i][1], &tmp);
     }
 
     /* Compute the determinants of C and X  */
@@ -475,11 +483,11 @@ static double ComputeMaxError(Point2  *d, int first, int last, BezierCurve bezCu
 
 
 /*
- *  ComputeMaxError2 :
+ *  ComputeMaxErrorLine :
  *  Find the maximum squared distance of digitized points
  *  to fitted curve. FOR A STRAIGHT LINE ONLY
 */
-static double ComputeMaxError2(Point2  *d, int first, int last, BezierCurve bezCurve, double *u)
+static double ComputeMaxErrorLine(Point2  *d, int first, int last, BezierCurve bezCurve)
 {
     int i;
     double maxDist;
@@ -495,13 +503,13 @@ static double ComputeMaxError2(Point2  *d, int first, int last, BezierCurve bezC
     for (i = first + 1; i < last; i++) {
 
         if(start.x == end.x)
-            dist = abs(d[i].x - end.x);
+            dist = d[i].x - end.x;
         else
         {
             double m = (end.y - start.y) / (end.x - start.x);
             double c = start.y - m * start.x;
 
-            dist = abs((d[i].y - m * d[i].x - c) / (sqrt(1 + m * m)));
+            dist = (d[i].y - m * d[i].x - c) / (sqrt(1.0 + m * m));
         }
 
         dist = dist * dist;
