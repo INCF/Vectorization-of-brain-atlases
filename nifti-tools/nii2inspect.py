@@ -5,6 +5,7 @@ import os.path as op
 import scipy
 import re
 import json
+import niitools
 
 SliceDirs = {'x':'Left-Right','y':'Posterior-Anterior','z':'Inferior-Superior'}
 
@@ -49,8 +50,7 @@ def parse_arguments(raw=None):
                 args.sliceRangePct[d] = [0,10,100]
       
     except Exception as e:
-        print('Error in parse_arguments {}'.format(e.args))
-        exit(1)
+        raise Exception('Error in parse_arguments {}'.format(e.args))
     
     return args
          
@@ -171,8 +171,7 @@ def run(args):
             print 'Nifti image for layer {} loaded, data type "{}"'.format(i,img.dtype)
 
             if len(dims)==4:
-                print 'Error: NIFTI file with RGB color data not supported.'
-                exit(0)
+                raise Exception('Error: NIFTI file with RGB color data not supported.')
             
             # apply colormap
             fmt = 'jpg'
@@ -215,7 +214,15 @@ def run(args):
                     fmt = 'png'
                     hasAlpha = False
                     with open(cmap,'r') as fp:
-                        index2rgb = json.load(fp)
+                        cmap = json.load(fp)
+                    print('{}'.format(cmap))
+                    index2rgb = {};
+                    if isinstance(cmap,dict):
+                        for i in cmap:
+                            print cmap[i]
+                            index2rgb[i] = hex2rgba(cmap[i])
+                    else:
+                        raise Exception('Colormap file must contain a json-encoded map with color index as keys and #RRGGBB-colors as values.')
                 else:
                     raise Exception('Do not know how to parse colormap "{}".'.format(cmap))
                   
