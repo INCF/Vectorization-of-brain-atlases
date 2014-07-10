@@ -4,6 +4,7 @@ import argparse, sys, os, numpy, subprocess, json, scipy
 import os.path as op
 import scipy
 import re
+import niitools
 
 
 SliceDirs = {'x':'saggital','y':'coronal','z':'axial'}
