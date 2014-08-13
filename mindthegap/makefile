@@ -7,11 +7,11 @@ ROOT_D := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 ifeq ($(CFG),debug)
 	CXXFLAGS=-Wall -O2 -g -DDEBUG -DROOT_DIR=\"$(ROOT_D)\"
 	LDFLAGS=-Wall -g -DDEBUG
-	EXEC=$(BINPATH)/b2vDebug
+	EXEC=$(BINPATH)/mindthegapDebug
 else
 	CXXFLAGS=-Wall -O2 -DROOT_DIR=\"$(ROOT_D)\"
 	LDFLAGS=-Wall
-	EXEC=$(BINPATH)/b2v
+	EXEC=$(BINPATH)/mindthegap
 endif
 
 INCPATH=$(ROOT_D)/inc
