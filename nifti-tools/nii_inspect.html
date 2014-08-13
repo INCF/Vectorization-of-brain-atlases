@@ -1,0 +1,183 @@
+<html><head>
+<style type="text/css">
+table.main {
+  position: relative;
+  border: 1px solid white;
+  color: #FFF;
+  background: #000;
+}
+  
+div.overlay {
+  position: relative;
+  width: 100px;
+  overflow: hidden;
+}
+td.r {
+  text-align: right;
+}
+td.ctr {
+  text-align: center;
+}
+img.lr {
+  position: absolute;
+  left: 0px;
+  width: 100px;
+}
+img.lr.i0 {
+  position: relative;
+}
+img.i0 { opacity: 1 }
+img.i1 { opacity: 1 }
+img.i2 { opacity: 1 }
+img.i3 { opacity: 1 }
+img.i4 { opacity: 1 }
+img.i5 { opacity: 1 }
+img.i6 { opacity: 1 }ls
+
+img.i7 { opacity: 1 }
+img.i8 { opacity: 1 }
+img.i9 { opacity: 1 }
+</style>
+<script type="text/javascript">
+function getParameterByName(name) {
+  name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+  var regex = new RegExp("[\\?&]" + name + "=([^&#]*)");
+  var results = regex.exec(location.search);
+  return results == null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+}
+
+function onload() {
+  var SliceDirs = [['Left','Right'],['Posterior','Anterior'],['Inferior','Superior']];
+  // NEXT LINE USED IN REPLACEMENT OPERATION
+  var defaultLayers = [];
+  var layers = defaultLayers;
+  for (var i=0; i<10; i++) {
+    var lr = getParameterByName('layer'+i);
+    if (lr) {
+      var parts = lr.split('.');
+      var ext = parts.pop();
+      lr = parts.join('.');
+      var title = getParameterByName('title'+i);
+      layers[i] = {
+        "name": lr,
+        "ext":ext,
+        "title":title,
+        "src":null
+      }
+    }
+  }
+  
+  // NEXT LINE USED IN REPLACEMENT OPERATION
+  var defaultSliceRange = [];
+  var sliceRange = defaultSliceRange;
+  var dims = ['x','y','z']
+  for (var d=0; d<3; d++) {
+    s = getParameterByName('slices_'+dims[d]);
+    if (s) {
+      sliceRange[d] = s.split(':');
+    }
+    for (var i in sliceRange[d]) sliceRange[d][i] = parseInt(sliceRange[d][i]);
+  }
+      
+  // NEXT LINE USED IN REPLACEMENT OPERATION
+  var imgDir = '';
+
+  var ans = '';
+  for (var d in dims) {
+    var T = '<table class="main"><tr>';
+    T += '<td class="r"><div class="overlay">'+SliceDirs[d][0]+'</div></td>';
+    var dim = dims[d];
+    for (var s=sliceRange[d][0]; s<=sliceRange[d][2]; s+=sliceRange[d][1]) {
+      T += '<td><div class="overlay">';
+      for (i = 0; i<layers.length; i++) {
+        lr = layers[i];
+        if (lr.name) {
+          var pngFile = lr.name+'_'+dim+s+'.'+lr.ext;
+          style = ''
+          T += '<img class="lr i'+i+'"'+style+' src="'+imgDir+pngFile+'"/>';
+        }
+      }
+      T += '</div></td>';
+    }
+    T += '<td class="posdim"><div class="overlay">'+SliceDirs[d][1]+'</div></td>';
+    T += '</tr><tr><td class="r">slice-'+dim+'</td>';
+    for (var s=sliceRange[d][0]; s<sliceRange[d][2]; s+=sliceRange[d][1]) {
+      T += '<td class="ctr">'+s+'</td>';     
+    }
+    T += '</tr></table>';
+    ans += T;
+  }
+  document.getElementById('MAIN').innerHTML = ans
+  var controls = ['<table style="margin: auto">'];
+  for (i = 0; i<layers.length; i++) {
+    lr = layers[i];
+    if (lr.name) {
+      var title = lr.title? lr.title : lr.name;
+      controls.push('<tr><td class="r"><i>'+title+'</i></td><td><select id="selectOpacity'+i+'" type="select" size="1" onchange="applyOpacity(this.options[this.selectedIndex].value,'+i+')"><option value="0">Hidden</option><option value="0.25">25% visible</option><option value="0.5">50% visible</option><option value="0.75">75% visible</option><option selected value="1">100% visible</option></select></td><td><input type="button" value="toggle" onclick="toggleLayer('+i+')">&nbsp;(<a href="'+lr.src+'">nifti-source</a>)</td></tr>');
+    }
+  }
+  controls.push('</table>')
+  document.getElementById('controls').innerHTML = controls.join('');
+}
+
+// http://www.hunlock.com/blogs/Totally_Pwn_CSS_with_Javascript
+function getCSSRule(ruleName, deleteFlag) {               // Return requested style obejct
+   ruleName=ruleName.toLowerCase();                       // Convert test string to lower case.
+   if (document.styleSheets) {                            // If browser can play with stylesheets
+      for (var i=0; i<document.styleSheets.length; i++) { // For each stylesheet
+         var styleSheet=document.styleSheets[i];          // Get the current Stylesheet
+         var ii=0;                                        // Initialize subCounter.
+         var cssRule=false;                               // Initialize cssRule. 
+         do {                                             // For each rule in stylesheet
+            if (styleSheet.cssRules) {                    // Browser uses cssRules?
+               cssRule = styleSheet.cssRules[ii];         // Yes --Mozilla Style
+            } else {                                      // Browser usses rules?
+               cssRule = styleSheet.rules[ii];            // Yes IE style. 
+            }                                             // End IE check.
+            if (cssRule)  {                               // If we found a rule...
+               if (cssRule.selectorText.toLowerCase()==ruleName) { //  match ruleName?
+                 return cssRule;                          // return the style object.
+               }                                          // End found rule name
+            }                                             // end found cssRule
+            ii++;                                         // Increment sub-counter
+         } while (cssRule)                                // end While loop
+      }                                                   // end For loop
+   }                                                      // end styleSheet ability check
+   return false;                                          // we found NOTHING!
+}                                                         // end getCSSRule 
+
+function toggleLayer(i) {
+  var elem = document.getElementById('selectOpacity'+i);
+  if (elem) {
+    if (elem.selectedIndex > 0) {
+      elem.selectedIndex = 0;
+    } else {
+      elem.selectedIndex = elem.options.length-1;
+    }
+    elem.onchange();
+  }
+}
+
+function applyOpacity(val,i) {
+  var rule = getCSSRule('img.i'+i)
+  if (rule) {
+    if (val==0 && i>0) {
+      rule.style.display = 'none';
+    } else {
+      rule.style.display = 'inline';
+      rule.style.opacity = val;
+    }
+  }
+}
+</script>
+</head>
+<body onload="onload()">
+<div style="text-align: center">
+  <div id="controls"></div>
+  <div style="width:100%; overflow-x: scroll">
+    <div id="MAIN"></div>
+  </div>
+</div>
+</body>
+</html>
+  
