@@ -20,3 +20,6 @@ For Windows
 - go to the directory contatining mindthegap.exe
 - type: mindthegap.exe -h
 - The above command will show you how to use the software.
+
+Link to Scalable Brain Atlas website: http://scalablebrainatlas.incf.org/
+Link to an SBA template: http://scalablebrainatlas.incf.org/main/coronal3d.php?template=DB08&
