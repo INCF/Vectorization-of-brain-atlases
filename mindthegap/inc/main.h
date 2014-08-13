@@ -9,6 +9,8 @@
  * Mentors: Rembrandt Bakker, Piotr Majka
  * Student: Dhruv Kohli
  * blog: https://rtvba.weebly.com
+ * Software name: mindthegap
+ * Brief: Vectorize bitmaps without introducing gap/overlaps between adjacent areas
  */
 
 #endif
