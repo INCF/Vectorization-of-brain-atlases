@@ -7,7 +7,12 @@ import re
 def argument_parser():
     """ Define the argument parser and return the parser object. """
     parser = argparse.ArgumentParser(
-        description='description',
+        description="""
+            Returns the limits in real world coordinates occupied by the nifti volume. 
+            In voxel coordinates, this is spanned by the left-posterior-inferior corner (-0.5,-0.5,0.5)
+            and the right-anterior-superior corner (dims-1)+(0.5,0.5,0.5) 
+            These values are transformed to real world coordinates using the get_best_affine() matrix.
+        """,
         formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument('-i','--nifti_src', type=str, help="Input Nifti file", required=True)
     parser.add_argument('-o','--out', type=str, help="Output rasLimits.json file", required=False)
