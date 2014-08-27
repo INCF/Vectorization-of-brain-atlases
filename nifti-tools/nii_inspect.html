@@ -10,7 +10,7 @@ table.main {
 div.overlay {
   position: relative;
   width: 100px;
-  overflow: hidden;
+  overflow: visible;
 }
 td.r {
   text-align: right;
@@ -58,10 +58,12 @@ function onload() {
       var ext = parts.pop();
       lr = parts.join('.');
       var title = getParameterByName('title'+i);
+      var imgsize_mm = getParameterByName('imgsize_mm'+i);
       layers[i] = {
         "name": lr,
         "ext":ext,
         "title":title,
+        "imgsize_mm":imgsize_mm,
         "src":null
       }
     }
@@ -85,15 +87,34 @@ function onload() {
   var ans = '';
   for (var d in dims) {
     var T = '<table class="main"><tr>';
-    T += '<td class="r"><div class="overlay">'+SliceDirs[d][0]+'</div></td>';
     var dim = dims[d];
+    T += '<td class="r"><div class="overlay">'+SliceDirs[d][0]+'</div></td>';
     for (var s=sliceRange[d][0]; s<=sliceRange[d][2]; s+=sliceRange[d][1]) {
-      T += '<td><div class="overlay">';
+      if (layers.length>0) {
+        var style = '';
+        if (layers[0].imgsize_mm) {
+          var sz = layers[0].imgsize_mm;
+          var dpi = 300/(sz[0]+sz[1]+sz[2]);
+          var w = (d==0 ? sz[1] : sz[0]);
+          var width = Math.round(dpi*w);
+          style = ' style="width:'+width+'"';
+        }
+      }
+      T += '<td><div class="overlay"'+style+'>';
       for (i = 0; i<layers.length; i++) {
         lr = layers[i];
         if (lr.name) {
           var pngFile = lr.name+'_'+dim+s+'.'+lr.ext;
-          style = ''
+          style = '';
+          if (lr.imgsize_mm) {
+            var sz = lr.imgsize_mm;
+            var dpi = 300/(sz[0]+sz[1]+sz[2]);
+            var w = (d==0 ? sz[1] : sz[0]);
+            var h = (d==2 ? sz[1] : sz[2]);
+            var width = Math.round(dpi*w);
+            var height = Math.round(dpi*h);
+            style = ' style="width: '+width+'px; height: '+height+'px"';
+          }
           T += '<img class="lr i'+i+'"'+style+' src="'+imgDir+pngFile+'"/>';
         }
       }

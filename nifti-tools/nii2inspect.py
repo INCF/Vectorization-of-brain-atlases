@@ -139,6 +139,7 @@ def run(args):
             baseName = re.sub('(\.nii|\.nii.gz)$','',op.basename(nifti_src))
 
             import nibabel
+            print 'Loading "{}"'.format(nifti_src)
             nii = nibabel.load(nifti_src)
             img = numpy.squeeze(nii.get_data())
             img_min = numpy.amin(img)
@@ -172,7 +173,7 @@ def run(args):
 
             if len(dims)==4:
                 raise Exception('Error: NIFTI file with RGB color data not supported.')
-            
+                        
             # apply colormap
             fmt = 'jpg'
             index2rgb = None
@@ -247,11 +248,21 @@ def run(args):
                     if i==sliceStart:
                         print 'image {}{} saved to png file "{}".'.format(dim,i,pngFile)
 
+            pixdim = hdr['pixdim'][1:4]
+            imgsize_mm = [
+                round(pixdim[0]*dims[0],1),
+                round(pixdim[1]*dims[1],1),
+                round(pixdim[2]*dims[2],1)
+            ]
+            print 'Image size in mm {}'.format(imgsize_mm)
+
             # update parsedLayers
             pl = {
               "name": baseName,
               "ext": fmt,
-              "src": nifti_src
+              "src": nifti_src,
+              "imgsize_px": dims,
+              "imgsize_mm": imgsize_mm
             }
             if "title" in lr:
                 pl["title"] = lr["title"];
